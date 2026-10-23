@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.1.0** · Status: **draft, awaiting Jiho's approval** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy)
+**Methodology version: 0.2.0** · Status: **draft, awaiting Jiho's approval** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -44,6 +44,10 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 | Net income       | LTM                    | `NetIncomeLoss`                                                                                                                                                                             | Attributable to the parent                                                                                                                                                                |
 | Diluted EPS      | LTM                    | `EarningsPerShareDiluted`                                                                                                                                                                   | See section 5                                                                                                                                                                             |
 
+**How a priority list is applied.** For an LTM metric, use the highest-priority concept that has every LTM component (FY, current YTD and prior-year YTD; or FY alone after a 10-K). This is not simply the first concept that exists. If no concept has all components, the metric is Unsupported. Example: Carrier tags FY2025 D&A of 1,274.0M under both `DepreciationDepletionAndAmortization` and `DepreciationAmortizationAndAccretionNet`, but tags its 10-Q year-to-date D&A only under the second, so the second is used.
+
+**Known consequence (no rule change).** Johnson Controls (JCI) has not tagged `OperatingIncomeLoss` since its period ending 2016-06-24, so its EBITDA, EBITDA margin and EV/EBITDA are Unsupported. JCI stays the September year-end fixture.
+
 ## 4. EBITDA (standardized, unadjusted)
 
 **EBITDA(LTM) = Operating income(LTM) + D&A(LTM)**
@@ -71,18 +75,30 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 
 ## 7. Debt
 
-Prefer inclusive totals, add a component only when it is provably not already inside, and verify the sums.
+Total debt is **built from balance-sheet lines**. Total tags are a cross-check only. All lines are instants at the balance-sheet date.
 
-1. **Total tags** at the balance-sheet date: `DebtAndCapitalLeaseObligations`, `DebtLongtermAndShorttermCombinedAmount`.
-2. **Components.** Short-term: `ShortTermBorrowings`, `CommercialPaper`, `DebtCurrent`. Current long-term: `LongTermDebtAndCapitalLeaseObligationsCurrent` or `LongTermDebtCurrent`. Long-term: `LongTermDebtAndCapitalLeaseObligations` or `LongTermDebtNoncurrent`.
-3. **Finance leases** (`FinanceLeaseLiabilityCurrent`, `FinanceLeaseLiabilityNoncurrent`) are added only when the debt tags used are not "…AndCapitalLeaseObligations" tags, and the filing's `FinanceLeaseLiability…StatementOfFinancialPositionExtensibleList` facts do not point into a debt line.
-4. **Reconcile.** When a total and a component sum both exist, they must agree within 0.1M USD; otherwise use the total and warn.
-5. **Exclude** operating lease liabilities.
+1. **Current debt.**
+   - If `DebtCurrent` is reported, current debt = `DebtCurrent`. It is an inclusive subtotal, so never add `ShortTermBorrowings`, `CommercialPaper` or current long-term debt to it.
+   - Otherwise, current debt = `ShortTermBorrowings` + `CommercialPaper` + (`LongTermDebtAndCapitalLeaseObligationsCurrent`, else `LongTermDebtCurrent`), counting each line that is reported.
+2. **Noncurrent debt** = `LongTermDebtAndCapitalLeaseObligations`, else `LongTermDebtNoncurrent`. Never use both. Never use `LongTermDebt` (it includes the current portion).
+3. **Total debt** = current debt + noncurrent debt.
+4. **Finance leases** (`FinanceLeaseLiabilityCurrent`, `FinanceLeaseLiabilityNoncurrent`) are added only when the debt tags used are not "…AndCapitalLeaseObligations" tags, and the filing's `FinanceLeaseLiability…StatementOfFinancialPositionExtensibleList` facts do not point into a debt line.
+5. **Cross-check.** If `DebtAndCapitalLeaseObligations` or `DebtLongtermAndShorttermCombinedAmount` differs from the build by more than 0.1M USD, keep the build, warn `W_DEBT_TOTAL_TAG_DIFFERS`, and show both.
+6. **Exclude** operating lease liabilities.
+
+Open for M2 (not decided): how to handle a current-debt line that is not reported on the balance sheet.
+
+Evidence (SEC data, checked 2026-10-23):
+
+| Company, date       | Lines                                                                                                                                                  | Build (USD m) | Total tag (USD m)                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------ |
+| LII, 2026-06-30     | no `DebtCurrent`; `CommercialPaper` 412.0 + `LongTermDebtAndCapitalLeaseObligationsCurrent` 20.1 + `LongTermDebtAndCapitalLeaseObligations` 1,149.2    | 1,581.3       | `DebtAndCapitalLeaseObligations` 1,581.3: ties                                                         |
+| Carrier, 2026-03-31 | `DebtCurrent` 1,736.0 (already includes `CommercialPaper` 708.0 and `LongTermDebtCurrent` 1,005.0) + `LongTermDebtAndCapitalLeaseObligations` 10,422.0 | 12,158.0      | `DebtAndCapitalLeaseObligations` 11,427.0 = 1,005.0 + 10,422.0, which omits the commercial paper: warn |
 
 ## 8. Cash
 
 - Cash = `CashAndCashEquivalentsAtCarryingValue` plus short-term investments (`ShortTermInvestments`, `MarketableSecuritiesCurrent`, `AvailableForSaleSecuritiesDebtSecuritiesCurrent`) when present and not already included.
-- Restricted cash is excluded. If only `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents` exists, it is used with the warning "includes restricted cash".
+- Restricted cash is excluded. Fallbacks, in order, when no unrestricted cash tag exists: `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents`, then `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations`. Either one carries the warning `W_RESTRICTED_CASH_INCLUDED` ("may include restricted cash"). Example: Trane's 10-Q for 2026-06-30 tags cash only under the second fallback (1,318.3M).
 
 ## 9. Enterprise value
 
@@ -121,7 +137,7 @@ EV/Revenue = EV ÷ Revenue(LTM) · EV/EBITDA = EV ÷ EBITDA(LTM) · P/E = Price 
 
 Target LTM metric × peer 25th percentile, median and 75th percentile multiple gives implied EV. Subtract debt and add cash for implied equity value, then divide by shares for an implied price. Shown only when every target input is valid.
 
-## 14. Policy constants (v0.1.0)
+## 14. Policy constants (v0.2.0)
 
 | Constant                                            | Value                                    | Section            |
 | --------------------------------------------------- | ---------------------------------------- | ------------------ |
@@ -133,7 +149,7 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Current YTD start tolerance after FY end            | ±7 days                                  | 2                  |
 | Prior-YTD duration tolerance                        | ±7 days                                  | 2                  |
 | Prior-YTD start offset tolerance (≈ 1 year earlier) | ±10 days                                 | 2                  |
-| Debt total vs. component-sum tolerance              | 0.1M USD                                 | 7                  |
+| Debt build vs. total-tag cross-check tolerance      | 0.1M USD                                 | 7                  |
 | Stale-filer cutoff (latest periodic filing age)     | > 200 days → Unsupported                 | §8.6 of blueprint  |
 | Peer revenue screen                                 | 0.2x–5x target screening revenue         | §10.2 of blueprint |
 | Peers selected                                      | 8 by default; user may keep 5–12; max 12 | §10.2 of blueprint |
@@ -141,3 +157,10 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A               | 1                  |
 
 Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are v1 starting values pending approval.
+
+## 15. Change log
+
+| Version | Date             | Change                                                                                                                                                                                                                                                                         |
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.1.0   | October 23, 2026 | Blueprint §7 restated                                                                                                                                                                                                                                                          |
+| 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals" |
