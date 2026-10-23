@@ -1,0 +1,47 @@
+{
+  "ticker": "WSO",
+  "cik": "0000105016",
+  "accession": "0001193125-26-340204",
+  "form": "10-Q",
+  "filedDate": "2026-08-07",
+  "reportDate": "2026-06-30",
+  "asof": "2026Q2",
+  "files": [
+    {
+      "role": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000105016.json",
+      "file": "submissions.json.gz",
+      "retrievedAt": "2026-10-23T12:07:31.067Z",
+      "bytes": 161401,
+      "gzippedBytes": 26657,
+      "sha256": "2b0feed820ef6f9ff9896790d767d7bba70cd472c0d8163ebd503b64f8a979ac"
+    },
+    {
+      "role": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000105016.json",
+      "file": "companyfacts.json.gz",
+      "retrievedAt": "2026-10-23T12:07:31.414Z",
+      "bytes": 2777619,
+      "gzippedBytes": 187322,
+      "sha256": "75cca2e9289905091bf09294da823a609dc1065c57237a581452b8a38105acc0"
+    },
+    {
+      "role": "filing-index",
+      "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/index.json",
+      "file": "index.json.gz",
+      "retrievedAt": "2026-10-23T12:07:31.746Z",
+      "bytes": 5221,
+      "gzippedBytes": 669,
+      "sha256": "597d1739cd3aae0a7f64132f105430328b84efa9c7c76a770697cd270111ce25"
+    },
+    {
+      "role": "xbrl-instance",
+      "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630_htm.xml",
+      "file": "wso-20260630_htm.xml.gz",
+      "retrievedAt": "2026-10-23T12:07:31.841Z",
+      "bytes": 1064076,
+      "gzippedBytes": 63535,
+      "sha256": "d974c3a71e865848a1ce7014e73d70fa009da50f18c1c5995e0d0d612133a93f"
+    }
+  ]
+}
