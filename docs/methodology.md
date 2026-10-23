@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.2.0** · Status: **draft, awaiting Jiho's approval** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.2.0** · Status: **approved by Jiho Moon, October 23, 2026** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -156,7 +156,7 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Excluded SIC range                                  | 6000–6799                                | §3 of blueprint    |
 | Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A               | 1                  |
 
-Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are v1 starting values pending approval.
+Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are approved as v1 starting values.
 
 ## 15. Change log
 
