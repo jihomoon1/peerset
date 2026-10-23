@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PeerSet",
-  description: "First-pass trading comps from SEC filings, with every number traceable to its filing.",
+  description:
+    "First-pass trading comps from SEC filings, with every number traceable to its filing.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
