@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "role": "company-tickers-exchange",
+      "url": "https://www.sec.gov/files/company_tickers_exchange.json",
+      "file": "company_tickers_exchange.json.gz",
+      "retrievedAt": "2026-10-24T21:09:03.751Z",
+      "bytes": 523122,
+      "gzippedBytes": 178551,
+      "sha256": "f5a8b5c09137999ca3815f91df8b97a3602f24d0818255001e38bc77aae9c472"
+    }
+  ]
+}
