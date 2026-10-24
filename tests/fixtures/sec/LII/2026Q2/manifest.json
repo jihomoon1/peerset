@@ -1,0 +1,47 @@
+{
+  "ticker": "LII",
+  "cik": "0001069202",
+  "accession": "0001069202-26-000087",
+  "form": "10-Q",
+  "filedDate": "2026-07-29",
+  "reportDate": "2026-06-30",
+  "asof": "2026Q2",
+  "files": [
+    {
+      "role": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001069202.json",
+      "file": "submissions.json.gz",
+      "retrievedAt": "2026-10-23T12:07:28.063Z",
+      "bytes": 157300,
+      "gzippedBytes": 20658,
+      "sha256": "2053d4c2194f945fa3c341d1f8ca9dc6952b3053a1695f15e3bf85a5f0e1bbb1"
+    },
+    {
+      "role": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001069202.json",
+      "file": "companyfacts.json.gz",
+      "retrievedAt": "2026-10-23T12:07:28.577Z",
+      "bytes": 4266684,
+      "gzippedBytes": 256803,
+      "sha256": "f0291f411002ac66080e7ba074fa848d602589552e6e3d48f26e8ca7c431d4dc"
+    },
+    {
+      "role": "filing-index",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/index.json",
+      "file": "index.json.gz",
+      "retrievedAt": "2026-10-23T12:07:29.195Z",
+      "bytes": 8690,
+      "gzippedBytes": 912,
+      "sha256": "07be8461fcb010d26df03ddf5c29dcddc8033157618cdc2682afc868cdf100b0"
+    },
+    {
+      "role": "xbrl-instance",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630_htm.xml",
+      "file": "lii-20260630_htm.xml.gz",
+      "retrievedAt": "2026-10-23T12:07:29.392Z",
+      "bytes": 1184784,
+      "gzippedBytes": 55554,
+      "sha256": "258fb54d2b29029ee918a2d5152d4aec1db570591ce7d1094a52eb9aadbcf400"
+    }
+  ]
+}
