@@ -12,3 +12,8 @@ function toUtcMs(iso: string): number {
 export function daysBetween(a: string, b: string): number {
   return Math.round((toUtcMs(b) - toUtcMs(a)) / DAY_MS);
 }
+
+// The ISO date n days after (or before, when negative) the given one.
+export function addDays(iso: string, n: number): string {
+  return new Date(toUtcMs(iso) + n * DAY_MS).toISOString().slice(0, 10);
+}
