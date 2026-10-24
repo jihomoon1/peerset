@@ -13,7 +13,7 @@ import type {
   PeriodicForm,
   UnsupportedReason,
 } from "@/domain/types";
-import { parseOrThrow, SubmissionsSchema } from "./schemas";
+import { parseOrThrow, SubmissionsSchema, type Submissions } from "./schemas";
 import { filingIndexPageUrl, padCik } from "./urls";
 
 const FOREIGN_FORMS = new Set(["20-F", "20-F/A", "40-F", "40-F/A"]);
@@ -31,7 +31,27 @@ export function buildIdentity(
   raw: unknown,
   { asOf }: { asOf: string },
 ): CompanyIdentity {
-  const s = parseOrThrow(SubmissionsSchema, raw, "submissions");
+  return identityFromSubmissions(parseSubmissions(raw), { asOf });
+}
+
+export function parseSubmissions(raw: unknown): Submissions {
+  return parseOrThrow(SubmissionsSchema, raw, "submissions");
+}
+
+// accession → report date for every filing in the recent list (companyfacts lacks it).
+export function reportDatesByAccession(s: Submissions): Map<string, string> {
+  const out = new Map<string, string>();
+  const { accessionNumber, reportDate } = s.filings.recent;
+  accessionNumber.forEach((accession, i) => {
+    if (reportDate[i]) out.set(accession, reportDate[i]);
+  });
+  return out;
+}
+
+export function identityFromSubmissions(
+  s: Submissions,
+  { asOf }: { asOf: string },
+): CompanyIdentity {
   const cik = padCik(s.cik);
   const recent = s.filings.recent;
 
