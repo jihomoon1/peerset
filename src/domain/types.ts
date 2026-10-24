@@ -68,5 +68,6 @@ export interface CompanyIdentity {
   fiscalYearEnd: string; // 'MMDD' from submissions; shifts for 52/53-week filers
   stateOfIncorporation: string;
   latestPeriodic: (FilingReference & { primaryDocument: string }) | null;
-  support: { supported: true } | { supported: false; reason: UnsupportedReason };
+  support:
+    { supported: true } | { supported: false; reason: UnsupportedReason };
 }

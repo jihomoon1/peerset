@@ -57,7 +57,9 @@ describe("policy matches methodology §14 (v0.2.0)", () => {
   });
 
   it("has the §7 debt and §8 cash concepts", () => {
-    expect(policy.CONCEPTS.debtCurrentSubtotal).toEqual(["us-gaap:DebtCurrent"]);
+    expect(policy.CONCEPTS.debtCurrentSubtotal).toEqual([
+      "us-gaap:DebtCurrent",
+    ]);
     expect(policy.CONCEPTS.debtCurrentLines).toEqual([
       "us-gaap:ShortTermBorrowings",
       "us-gaap:CommercialPaper",
