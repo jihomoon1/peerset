@@ -1,5 +1,5 @@
-// Ticker → CIK from SEC's company_tickers_exchange.json. Exact, uppercase match only:
-// an unknown ticker is refused, never remapped (blueprint §3).
+// Ticker → CIK from SEC's company_tickers_exchange.json. Input is uppercased, then must
+// match a listed ticker exactly: an unknown ticker is refused, never remapped (blueprint §3).
 
 import { TickerNotFoundError } from "@/lib/errors";
 import type { Listing } from "@/domain/types";

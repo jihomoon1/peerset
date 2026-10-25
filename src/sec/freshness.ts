@@ -30,7 +30,8 @@ import {
   submissionsUrl,
 } from "./urls";
 
-// submissions, companyfacts, filing index, instance, plus one spare (M1a scope).
+// Logical requests per company: submissions, companyfacts, filing index, instance, plus
+// one spare (M1a scope). Client retries on 5xx/timeout are not counted here.
 export const REQUEST_BUDGET = 5;
 
 export type FreshnessStatus =
