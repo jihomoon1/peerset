@@ -32,6 +32,14 @@ export const METRIC_UNITS: Record<MetricKey, string> = {
   dilutedEps: "USD",
 };
 
+export const STATUS_WORDS = {
+  reported: "Reported",
+  derived: "Derived",
+  nm: "NM",
+  missing: "Missing",
+  unsupported: "Unsupported",
+} as const;
+
 export interface Display {
   text: string;
   kind: "value" | "nm" | "missing" | "unsupported";

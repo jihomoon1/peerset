@@ -7,16 +7,13 @@ import {
   type MetricKey,
 } from "@/domain/fundamentals";
 import { formatDate } from "@/lib/format";
-import { displayMetric, METRIC_LABELS, METRIC_UNITS } from "./metricDisplay";
+import {
+  displayMetric,
+  METRIC_LABELS,
+  METRIC_UNITS,
+  STATUS_WORDS,
+} from "./metricDisplay";
 import { ProvenanceDrawer } from "./ProvenanceDrawer";
-
-const STATUS_WORDS = {
-  reported: "Reported",
-  derived: "Derived",
-  nm: "NM",
-  missing: "Missing",
-  unsupported: "Unsupported",
-} as const;
 
 // The seven LTM operating metrics (blueprint §6 target summary). Every value is a
 // button that opens its provenance drawer.

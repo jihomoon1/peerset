@@ -2,6 +2,7 @@
 // face line's value from the facts, and turning classified lines into a Metric with
 // line-level provenance. Pure: tests feed it a face, facts and a date.
 
+import { formatMillions } from "@/lib/format";
 import { selectFact } from "./factSelection";
 import type {
   BalanceSheetFace,
@@ -89,13 +90,9 @@ export function provenance(
   };
 }
 
-// "11,427.0M": warnings quote amounts the way the filings show them.
-export function millions(v: number): string {
-  return `${(v / 1_000_000).toLocaleString("en-US", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  })}M`;
-}
+// "11,427.0M": warnings quote amounts the way the filings show them. Rounding lives
+// in lib/format (CLAUDE.md invariant 2).
+export const millions = (v: number): string => `${formatMillions(v)}M`;
 
 export function faceUnavailableWarning(reason: string): MetricWarning {
   return {
