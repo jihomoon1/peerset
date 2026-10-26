@@ -42,6 +42,7 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
   const candidates: { line: FaceLine; include: boolean; reason: string }[] = [];
   const warnings: MetricWarning[] = [];
   const counted = new Set<string>();
+  const leaseExcluded = new Set<FaceLine>();
   let unsupported:
     Extract<Metric, { status: "unsupported" }>["reason"] | undefined;
 
@@ -54,14 +55,7 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
         reason: "operating lease liability: never debt",
       });
     } else if (FACE.debt.has(concept)) {
-      if (counted.has(concept)) {
-        candidates.push({
-          line,
-          include: false,
-          reason: "same concept already counted above",
-        });
-        continue;
-      }
+      const seen = counted.has(concept);
       counted.add(concept);
       if (line.total) {
         unsupported ??= {
@@ -69,12 +63,19 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
           message: `debt subtotal on the balance sheet: '${label}' (${concept})`,
         };
         candidates.push({ line, include: false, reason: "debt subtotal" });
+      } else if (seen) {
+        candidates.push({
+          line,
+          include: false,
+          reason: "same concept already counted above",
+        });
       } else if (
         !FACE.financeLease.has(concept) &&
         LEASE_LABEL.test(label) &&
         !LEASE_DEBT_WORDS.test(label) &&
         !FINANCE_LEASE_LABEL.test(label)
       ) {
+        leaseExcluded.add(line);
         candidates.push({
           line,
           include: false,
@@ -98,7 +99,7 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
 
   const { lines, unsupported: valueProblem } = resolveLines(candidates, input);
   for (const l of lines)
-    if (l.reason.startsWith("lease line"))
+    if ([...leaseExcluded].some((x) => x.order === l.order))
       warnings.push({
         code: "W_LEASE_LINE_EXCLUDED",
         severity: "caution",

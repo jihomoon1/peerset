@@ -579,6 +579,79 @@ describe("cash from face lines (§8)", () => {
   });
 });
 
+describe("review fixes", () => {
+  it("cash: a cash-plus-restricted label with an unclassified concept is Unsupported, not dropped", () => {
+    const r = computeCash(
+      sheet(
+        [
+          [
+            "co:CashAndRestricted",
+            "Cash, cash equivalents and restricted cash",
+            9 * M,
+          ],
+        ],
+        [],
+      ),
+    );
+    expect(r.metric).toMatchObject({
+      status: "unsupported",
+      reason: { code: "UNRECOGNIZED_CASH_LINE" },
+    });
+  });
+
+  it("cash: a restricted-only label with an unclassified concept is excluded", () => {
+    const r = computeCash(
+      sheet(
+        [
+          CASH,
+          ["co:EscrowCash", "Restricted cash and cash equivalents", 2 * M],
+        ],
+        [],
+      ),
+    );
+    expect(value(r.metric)).toBe(51.5 * M);
+  });
+
+  it("cash: 'Short term investments' without a hyphen still looks like cash", () => {
+    const r = computeCash(
+      sheet([CASH, ["co:Sti", "Short term investments", 1 * M]], []),
+    );
+    expect(r.metric.status).toBe("unsupported");
+  });
+
+  it("debt: a total row repeating an earlier concept is still a subtotal", () => {
+    const r = computeDebt(
+      sheet(
+        [CASH],
+        [
+          ["us-gaap:LongTermDebtNoncurrent", "Long-term debt", 100 * M],
+          ["us-gaap:LongTermDebtNoncurrent", "Total long-term debt", 100 * M],
+        ],
+      ),
+    );
+    expect(r.metric).toMatchObject({
+      status: "unsupported",
+      reason: { code: "DEBT_SUBTOTAL_ON_FACE" },
+    });
+  });
+
+  it("debt: the lease warning survives a lease line whose value has no fact", () => {
+    const r = computeDebt(
+      sheet(
+        [CASH],
+        [
+          [
+            "us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent",
+            "Current portion of lease liabilities",
+            null,
+          ],
+        ],
+      ),
+    );
+    expect(codes(r.metric)).toContain("W_LEASE_LINE_EXCLUDED");
+  });
+});
+
 describe("preferred stock and NCI from the face (§9)", () => {
   const equity: Row[] = [
     ["us-gaap:PreferredStockValue", "Preferred stock, $0.50 par value", 0],
@@ -744,6 +817,25 @@ describe("fallback when the face is unavailable (§7 rule 7: 0.2.1 tag rules)", 
       "W_FACE_UNAVAILABLE",
       "W_RESTRICTED_CASH_INCLUDED",
     ]);
+  });
+
+  it("fallback preferred uses only PreferredStockValue (no double count)", () => {
+    const i = input([
+      at("us-gaap:PreferredStockValue", 50 * M),
+      at("us-gaap:PreferredStockValueOutstanding", 50 * M),
+    ]);
+    expect(value(computePreferred(i).metric)).toBe(50 * M);
+  });
+
+  it("fallback cash adds the first short-term investment tag only", () => {
+    const r = computeCash(
+      input([
+        at("us-gaap:CashAndCashEquivalentsAtCarryingValue", 10 * M),
+        at("us-gaap:ShortTermInvestments", 5 * M),
+        at("us-gaap:AvailableForSaleSecuritiesDebtSecuritiesCurrent", 5 * M),
+      ]),
+    );
+    expect(value(r.metric)).toBe(15 * M);
   });
 
   it("NCI and preferred from their tags", () => {

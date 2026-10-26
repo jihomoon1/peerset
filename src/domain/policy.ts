@@ -269,7 +269,7 @@ export const FACE = {
     "AvailableForSaleSecuritiesDebtSecuritiesNoncurrent",
   ),
   // §9
-  preferred: usGaap("PreferredStockValue", "PreferredStockValueOutstanding"),
+  preferred: usGaap("PreferredStockValue"),
   nci: usGaap(
     "MinorityInterest",
     "RedeemableNoncontrollingInterestEquityCarryingAmount",
@@ -285,8 +285,10 @@ export const LEASE_DEBT_WORDS = /debt|borrowing|note|loan|credit/i;
 export const FINANCE_LEASE_LABEL = /finance|capital/i;
 // §8: an assets-side face line "looks like cash" when its label matches.
 export const CASH_LIKE_LABEL =
-  /^cash\b|cash equivalents|short-term (cash )?investments|marketable securities|time deposits/i;
-export const RESTRICTED_LABEL = /restricted/i;
+  /^cash\b|cash equivalents|short[- ]term (cash )?investments|marketable securities|time deposits/i;
+// §8: a restricted-only label ("Restricted cash", "Restricted cash and cash
+// equivalents"); "cash … and restricted cash" also holds unrestricted cash.
+export const RESTRICTED_ONLY_LABEL = /^restricted\b/i;
 // §9: unclassified lines that look like preferred stock or NCI.
 export const PREFERRED_LIKE_LABEL = /preferred/i;
 export const NCI_LIKE_LABEL = /non-?controlling|minority interest/i;

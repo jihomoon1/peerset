@@ -10,7 +10,7 @@ import {
   type BalanceSheetItem,
 } from "./balanceSheet";
 import { selectFact } from "./factSelection";
-import { FACE, NCI_LIKE_LABEL, PREFERRED_LIKE_LABEL } from "./policy";
+import { CONCEPTS, FACE, NCI_LIKE_LABEL, PREFERRED_LIKE_LABEL } from "./policy";
 import type {
   FaceLine,
   FaceLineProvenance,
@@ -105,7 +105,9 @@ function fromTags(input: BalanceSheetInput, kind: Kind): BalanceSheetItem {
   if (input.face.kind !== "unavailable") throw new RangeError("face present");
   const warning = faceUnavailableWarning(input.face.reason);
   const used: ReportedFinancialFact[] = [];
-  for (const concept of kind.concepts) {
+  // §9 fallback: the tags named in the methodology (PreferredStockValue; MinorityInterest,
+  // RedeemableNoncontrollingInterestEquityCarryingAmount).
+  for (const concept of CONCEPTS.notInEv.filter((c) => kind.concepts.has(c))) {
     const sel = selectFact(input.facts, concept, { end: input.date });
     if (sel.kind === "found") used.push(sel.fact);
   }

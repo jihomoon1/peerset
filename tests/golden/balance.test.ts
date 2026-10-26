@@ -62,6 +62,20 @@ async function run(g: Golden) {
   );
 }
 
+const SCALE: Record<string, number> = { Millions: 1e6, Thousands: 1e3 };
+
+// The golden's own arithmetic: each value is the displayed number times the scale.
+function checkTranscription(g: GoldenItem, scale: string) {
+  for (const line of g.lines)
+    expect(
+      Math.round(Number(line.displayed.replace(/[$,\s]/g, "")) * SCALE[scale]),
+      line.concept,
+    ).toBe(line.value);
+  expect(
+    g.lines.filter((l) => l.included).reduce((sum, l) => sum + l.value, 0),
+  ).toBe(g.total);
+}
+
 function checkItem(item: BalanceSheetItem, g: GoldenItem) {
   expect(item.method).toBe("face");
   for (const line of g.lines) {
@@ -107,14 +121,22 @@ describe.each(goldens.map((g) => [g.ticker, g] as const))(
       expect(f.methodologyVersion).toBe(g.methodologyVersion);
     });
 
+    it("golden values are the displayed numbers times the scale", () => {
+      checkTranscription(g.debt, g.statement.scale);
+      checkTranscription(g.cash, g.statement.scale);
+    });
+
     it("debt: every face line and the total equal the filing", () => {
       checkItem(f.debt, g.debt);
-      if (g.debt.crossCheck)
-        expect(
-          f.debt.metric.warnings.find(
-            (w) => w.code === "W_DEBT_TOTAL_TAG_DIFFERS",
-          )?.message,
-        ).toContain(g.debt.crossCheck.concept);
+      if (g.debt.crossCheck) {
+        const message = f.debt.metric.warnings.find(
+          (w) => w.code === "W_DEBT_TOTAL_TAG_DIFFERS",
+        )?.message;
+        expect(message).toContain(g.debt.crossCheck.concept);
+        expect(message).toContain(
+          `${(g.debt.crossCheck.value / 1e6).toLocaleString("en-US", { minimumFractionDigits: 1 })}M`,
+        );
+      }
     });
 
     it("cash: every face line and the total equal the filing", () => {

@@ -11,7 +11,12 @@ import {
   type BalanceSheetItem,
 } from "./balanceSheet";
 import { selectFact } from "./factSelection";
-import { CASH_LIKE_LABEL, CONCEPTS, FACE, RESTRICTED_LABEL } from "./policy";
+import {
+  CASH_LIKE_LABEL,
+  CONCEPTS,
+  FACE,
+  RESTRICTED_ONLY_LABEL,
+} from "./policy";
 import type {
   FaceLine,
   FaceLineProvenance,
@@ -76,7 +81,7 @@ export function computeCash(input: BalanceSheetInput): BalanceSheetItem {
         reason: "long-term investment: not cash",
       });
     } else if (cashLike) {
-      if (RESTRICTED_LABEL.test(label)) {
+      if (RESTRICTED_ONLY_LABEL.test(label)) {
         candidates.push({
           line,
           include: false,
@@ -137,10 +142,12 @@ function cashFromTags(
   const cash = at(CONCEPTS.cash[0]);
   if (cash) {
     used.push(cash);
-    for (const c of CONCEPTS.shortTermInvestments) {
-      const f = at(c);
-      if (f) used.push(f);
-    }
+    // "when present and not already included": the tags overlap (AFS debt
+    // securities sit inside ShortTermInvestments), so only the first one found.
+    const sti = CONCEPTS.shortTermInvestments
+      .map(at)
+      .find((f) => f !== undefined);
+    if (sti) used.push(sti);
   } else {
     for (const c of CONCEPTS.cashRestrictedFallback) {
       const f = at(c);
