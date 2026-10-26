@@ -206,6 +206,7 @@ describe("recorded Alpha Vantage responses (2026-10-26)", () => {
   it.each([
     ["LII.json", "LII", 376.01],
     ["WSO.json", "WSO", 322.98],
+    ["WSO-B.json", "WSO-B", 287.5],
   ])("%s: close and trading date of the latest row", (file, symbol, close) => {
     expect(parseDailySeries(body(file), symbol, RETRIEVED)).toMatchObject({
       symbol,

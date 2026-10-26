@@ -17,8 +17,8 @@ const TIMEOUT_MS = 10_000;
 // (recorded 2026-10-26), so calls go one at a time, at least this far apart.
 export const MIN_INTERVAL_MS = 1_100;
 
-// SEC's ticker spelling → Alpha Vantage's. Plain tickers pass through; class shares
-// follow the spelling checked live in M2b (see docs/reconciliation/WSO.md).
+// SEC's ticker spelling → Alpha Vantage's. Identity: a live check on 2026-10-26 showed
+// Alpha Vantage accepts SEC's class spelling as is (WSO-B; fixture WSO-B.json).
 export function toProviderSymbol(ticker: string): string {
   return ticker;
 }
