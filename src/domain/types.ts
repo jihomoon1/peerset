@@ -1,5 +1,5 @@
-// Domain types from blueprint §11 that the SEC adapter needs. The rest (Metric,
-// LTMCalculation, ...) arrive with M1b when something uses them.
+// Domain types from blueprint §11. Share classes, EV and comps types arrive with the
+// milestones that use them.
 
 export type Unit = "USD" | "USD/shares" | "shares" | "ratio" | "multiple";
 
@@ -70,4 +70,96 @@ export interface CompanyIdentity {
   latestPeriodic: (FilingReference & { primaryDocument: string }) | null;
   support:
     { supported: true } | { supported: false; reason: UnsupportedReason };
+}
+
+// ── Metrics (blueprint §11, §15) ────────────────────────────────────────────
+
+export type WarningCode =
+  | "W_FILING_PARSED"
+  | "W_FILING_MISSING"
+  | "W_REVENUE_CONCEPTS_DIFFER"
+  | "W_DA_FROM_CASH_FLOW"
+  | "W_53_WEEKS"
+  | "W_EPS_CROSSCHECK"
+  | "W_SOURCE_CONFLICT"; // same filing, same period, companyfacts and filing disagree
+
+export interface MetricWarning {
+  code: WarningCode;
+  message: string;
+  severity: "info" | "caution";
+}
+
+// Why a value is NM (methodology §10). Multiples arrive in M2; margins never are NM.
+export type NmReason =
+  | "REVENUE_NOT_POSITIVE"
+  | "EBITDA_NOT_POSITIVE"
+  | "EPS_NOT_POSITIVE"
+  | "EV_NOT_POSITIVE"
+  | "ABOVE_CAP";
+
+// Metric-level reasons. Blueprint §11 reuses the issuer-level UnsupportedReason here,
+// but those codes (FOREIGN_FILER, ...) can't say "cannot reconstruct LTM", so metrics
+// get their own list.
+export interface MetricUnsupportedReason {
+  code:
+    | "LTM_CHECK_FAILED" // a §2 check failed
+    | "NO_CONCEPT_WITH_ALL_COMPONENTS" // §3: no concept has FY, YTD and prior YTD
+    | "SOURCE_CONFLICT" // companyfacts and the filing disagree on the same fact
+    | "FILING_MISSING" // freshness filing-missing: never compute on an older quarter
+    | "INPUT_UNSUPPORTED"; // a derived metric whose input is Unsupported
+  message: string;
+}
+
+// A fact used directly, or another metric's value used as an input.
+export type Provenance =
+  ReportedFinancialFact | { metric: string; value: number };
+
+// Every financial value carries a status. Only 'reported' and 'derived' are usable
+// numbers; reading .value requires narrowing on status first.
+export type Metric =
+  | {
+      status: "reported" | "derived";
+      value: number;
+      unit: Unit;
+      period: ReportingPeriod;
+      formula: string;
+      inputs: Provenance[];
+      warnings: MetricWarning[];
+    }
+  | {
+      status: "nm";
+      value: number;
+      reason: NmReason;
+      inputs: Provenance[];
+      warnings: MetricWarning[];
+    }
+  | { status: "missing"; reason: string; warnings: MetricWarning[] }
+  | {
+      status: "unsupported";
+      reason: MetricUnsupportedReason;
+      warnings: MetricWarning[];
+    };
+
+export type LTMCheckName =
+  | "fiscal-year-duration"
+  | "ytd-starts-after-fiscal-year"
+  | "prior-ytd-duration"
+  | "prior-ytd-start-offset"
+  | "same-concept";
+
+export interface LTMCheck {
+  name: LTMCheckName;
+  passed: boolean;
+  detail?: string;
+}
+
+// How one LTM value was built (methodology §2), kept for the provenance drawer.
+export interface LTMCalculation {
+  method: "annual" | "fy_plus_ytd_minus_prior_ytd";
+  concept: string;
+  ltmEnd: string;
+  fy: ReportedFinancialFact;
+  ytdCurrent?: ReportedFinancialFact; // present for the 10-Q method
+  ytdPrior?: ReportedFinancialFact;
+  checks: LTMCheck[];
 }
