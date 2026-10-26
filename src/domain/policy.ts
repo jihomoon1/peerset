@@ -45,11 +45,22 @@ export const PURE_UNIT_CONCEPTS: ReadonlySet<string> = new Set([
   "us-gaap:StockholdersEquityNoteStockSplitConversionRatio1",
 ]);
 
+// §1.2: monetary facts in USD, EPS in USD/shares, share counts in shares, the split
+// ratio in pure. Each concept is accepted only in its own unit.
+const SHARE_COUNT_CONCEPTS: ReadonlySet<string> = new Set([
+  "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+  "dei:EntityCommonStockSharesOutstanding",
+]);
+
+export function requiredUnit(concept: string): string {
+  if (concept === "us-gaap:EarningsPerShareDiluted") return "USD/shares";
+  if (SHARE_COUNT_CONCEPTS.has(concept)) return "shares";
+  if (PURE_UNIT_CONCEPTS.has(concept)) return "pure";
+  return "USD";
+}
+
 export function isAcceptedUnit(concept: string, unit: string): boolean {
-  return (
-    ACCEPTED_UNITS.has(unit) ||
-    (unit === "pure" && PURE_UNIT_CONCEPTS.has(concept))
-  );
+  return unit === requiredUnit(concept);
 }
 
 // ── Concept lists ───────────────────────────────────────────────────────────

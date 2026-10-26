@@ -179,6 +179,24 @@ describe("D&A (§3)", () => {
     ]);
   });
 
+  it("a failed fallback keeps its warnings (e.g. a source conflict)", () => {
+    const facts = [
+      ...series("us-gaap:Depreciation", [40, 21, 20]),
+      fact({
+        concept: "us-gaap:Depreciation",
+        value: 22,
+        start: "2026-01-01",
+        end: "2026-06-30",
+        filing: q2,
+        source: "filing",
+      }),
+      ...series("us-gaap:AmortizationOfIntangibleAssets", [10, 5, 5]),
+    ];
+    const { metric } = computeDa(at(facts));
+    expect(metric.status).toBe("unsupported");
+    expect(metric.warnings.map((w) => w.code)).toContain("W_SOURCE_CONFLICT");
+  });
+
   it("the pair needs both lines: depreciation alone is Unsupported", () => {
     const facts = series("us-gaap:Depreciation", [40, 21, 20]);
     expect(computeDa(at(facts)).metric.status).toBe("unsupported");

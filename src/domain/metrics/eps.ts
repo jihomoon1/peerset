@@ -12,6 +12,7 @@ import {
   SPLIT_LIKE_RATIO,
 } from "../policy";
 import type { LTMCalculation, Metric, MetricWarning } from "../types";
+import { formatPercent, formatPerShare } from "@/lib/format";
 import { isUsable, ltmMetric, type LtmMetricResult } from "./common";
 
 export type EpsCrossCheck =
@@ -118,7 +119,7 @@ function detectSplit(
   return isSplitLike(ratio)
     ? {
         split: true,
-        evidence: `prior-year YTD EPS first filed as ${original.value} (${original.filing.accession}), restated to ${restated.value} (${restated.filing.accession}): ratio ${ratio.toFixed(2)}`,
+        evidence: `prior-year YTD EPS first filed as ${original.value} (${original.filing.accession}), restated to ${restated.value} (${restated.filing.accession}): ratio ${formatPerShare(ratio)}`,
       }
     : { split: false };
 }
@@ -137,7 +138,7 @@ export function computeEps(input: LtmInput, netIncome: Metric): EpsResult {
   if (check.status === "checked" && check.gap > EPS_CROSSCHECK_TOLERANCE)
     warnings.push({
       code: "W_EPS_CROSSCHECK",
-      message: `LTM diluted EPS ${r.value.toFixed(2)} differs by ${(check.gap * 100).toFixed(1)}% from LTM net income ÷ FY diluted shares (${check.impliedEps.toFixed(2)})`,
+      message: `LTM diluted EPS ${formatPerShare(r.value)} differs by ${formatPercent(check.gap)} from LTM net income ÷ FY diluted shares (${formatPerShare(check.impliedEps)})`,
       severity: "caution",
     });
   const split = detectSplit(input, r.calc);

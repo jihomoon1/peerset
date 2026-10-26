@@ -116,6 +116,27 @@ describe("policy matches methodology §14 (v0.2.1)", () => {
     ]);
   });
 
+  it("§1.2: each concept is accepted only in its own unit", () => {
+    const ok = policy.isAcceptedUnit;
+    expect(ok("us-gaap:Revenues", "USD")).toBe(true);
+    expect(ok("us-gaap:Revenues", "shares")).toBe(false);
+    expect(ok("us-gaap:EarningsPerShareDiluted", "USD/shares")).toBe(true);
+    expect(ok("us-gaap:EarningsPerShareDiluted", "USD")).toBe(false);
+    expect(
+      ok("us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding", "shares"),
+    ).toBe(true);
+    expect(
+      ok("us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding", "USD"),
+    ).toBe(false);
+    expect(ok("dei:EntityCommonStockSharesOutstanding", "shares")).toBe(true);
+    expect(ok("dei:EntityCommonStockSharesOutstanding", "USD")).toBe(false);
+    expect(
+      ok("us-gaap:StockholdersEquityNoteStockSplitConversionRatio1", "pure"),
+    ).toBe(true);
+    expect(ok("us-gaap:CommercialPaper", "pure")).toBe(false);
+    expect(ok("us-gaap:CommercialPaper", "EUR")).toBe(false);
+  });
+
   it("accepts unit pure only for the §5 split-ratio fact", () => {
     expect(policy.PURE_UNIT_CONCEPTS).toEqual(
       new Set(["us-gaap:StockholdersEquityNoteStockSplitConversionRatio1"]),

@@ -49,7 +49,7 @@ export type LtmResult =
 // never decide the result on their own: a period outside them is "missing", one
 // inside them still has to pass the §2 checks. Both outcomes are Unsupported.
 const MIN_ANNUAL_DAYS = 300; // longer than any 9-month YTD (≤ 280 days for 40 weeks)
-const PRIOR_YTD_SEARCH_DAYS = 45;
+const COMPONENT_SEARCH_DAYS = 45; // around the expected FY end and prior-YTD start
 
 const YEAR_DAYS = 365;
 const WEEKS_53_DAYS = 371;
@@ -133,18 +133,25 @@ function findComponents(
     };
   }
 
-  // Latest fiscal year ending before the LTM end.
-  const fy = periods
-    .filter((c) => isFy(c) && c.end < ltmEnd)
-    .sort((a, b) => b.end.localeCompare(a.end))[0];
-  // Current YTD: ends at the LTM end, starts nearest the day after the FY ends.
-  const ytd = fy
+  // Current YTD: the longest period under a year that ends at the LTM end.
+  const ytd = periods
+    .filter(
+      (c) => c.end === ltmEnd && lengthDays(c.start, c.end) < MIN_ANNUAL_DAYS,
+    )
+    .sort((a, b) => a.start.localeCompare(b.start))[0];
+  // Fiscal year: the 10-K period ending nearest the day before the YTD starts. A
+  // concept whose latest FY is far from there lacks the component (§3), so the next
+  // concept in the priority list is tried.
+  const fy = ytd
     ? closest(
         periods.filter(
           (c) =>
-            c.end === ltmEnd && lengthDays(c.start, c.end) < MIN_ANNUAL_DAYS,
+            isFy(c) &&
+            c.end < ltmEnd &&
+            Math.abs(daysBetween(addDays(c.end, 1), ytd.start)) <=
+              COMPONENT_SEARCH_DAYS,
         ),
-        (c) => Math.abs(daysBetween(addDays(fy.end, 1), c.start)),
+        (c) => Math.abs(daysBetween(addDays(c.end, 1), ytd.start)),
       )
     : undefined;
   // Prior-year YTD: starts about a year before the current YTD, similar length.
@@ -154,7 +161,7 @@ function findComponents(
           (c) =>
             c.end < ytd.start &&
             Math.abs(daysBetween(c.start, ytd.start) - YEAR_DAYS) <=
-              PRIOR_YTD_SEARCH_DAYS,
+              COMPONENT_SEARCH_DAYS,
         ),
         (c) =>
           Math.abs(daysBetween(c.start, ytd.start) - YEAR_DAYS) +
@@ -248,7 +255,11 @@ export function ltmForConcept(
     const accessions = [
       ...new Set(conflict.facts.map((f) => f.filing.accession)),
     ];
-    const message = `${concept} ${conflict.what}: companyfacts and the filing disagree (${conflict.facts.map((f) => `${f.source} ${f.value}`).join(" vs ")}, ${accessions.join(", ")})`;
+    const cause =
+      accessions.length === 1
+        ? "companyfacts and the filing disagree"
+        : "facts filed the same day disagree";
+    const message = `${concept} ${conflict.what}: ${cause} (${conflict.facts.map((f) => `${f.source} ${f.filing.accession} ${f.value}`).join(" vs ")})`;
     return unsupported("SOURCE_CONFLICT", message, [
       { code: "W_SOURCE_CONFLICT", message, severity: "caution" },
     ]);

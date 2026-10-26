@@ -310,6 +310,21 @@ describe("missing components and concept choice (methodology §3)", () => {
       expect(c?.concept).toBe(DAAN);
   });
 
+  it("a concept whose latest FY is years old lacks the FY component, so the next concept is used", () => {
+    const k23 = f("10-K", "2024-02-15", "2023-12-31");
+    const facts = [
+      d(DDA, "2023-01-01", "2023-12-31", 900, k23), // stopped tagging FY after 2023
+      d(DDA, "2026-01-01", "2026-06-30", 650, q),
+      d(DDA, "2025-01-01", "2025-06-30", 620, q),
+      d(DAAN, "2025-01-01", "2025-12-31", 1_274, k),
+      d(DAAN, "2026-01-01", "2026-06-30", 650, q),
+      d(DAAN, "2025-01-01", "2025-06-30", 620, q),
+    ];
+    const r = ok(computeLtm(input(facts, "2026-06-30", "10-Q"), [DDA, DAAN]));
+    expect(r.calc.concept).toBe(DAAN);
+    expect(r.value).toBe(1_274 + 650 - 620);
+  });
+
   it("never mixes concepts: priority 1 FY + priority 2 YTDs is not enough", () => {
     const facts = [
       d(DDA, "2025-01-01", "2025-12-31", 1_274, k),
@@ -407,5 +422,20 @@ describe("freshness and sources", () => {
       reason: { code: "SOURCE_CONFLICT" },
       warnings: [expect.objectContaining({ code: "W_SOURCE_CONFLICT" })],
     });
+  });
+
+  it("names the cause of a conflict: two filings on the same day are not 'companyfacts vs filing'", () => {
+    const other = { ...q, accession: "0000000001-26-999999" };
+    const r = computeLtm(
+      input(
+        [...facts, d(REV, "2026-01-01", "2026-06-30", 531, other, "filing")],
+        "2026-06-30",
+        "10-Q",
+      ),
+      [REV],
+    );
+    if (r.kind !== "unsupported") throw new Error("expected unsupported");
+    expect(r.reason.message).toContain("filed the same day disagree");
+    expect(r.reason.message).not.toContain("companyfacts and the filing");
   });
 });

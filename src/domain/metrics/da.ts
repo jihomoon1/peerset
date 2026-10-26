@@ -71,7 +71,12 @@ export function computeDa(input: LtmInput): DaResult {
         code: main.reason.code,
         message: `${main.reason.message}; fallback ${CONCEPTS.daComponents.join(" + ")} ${why.length ? `unavailable (${why.join("; ")})` : "covers different periods"}`,
       },
-      warnings: [FROM_CASH_FLOW],
+      warnings: mergeWarnings(
+        ...[dep, amort].map((r) =>
+          r.kind === "no-components" ? [] : r.warnings,
+        ),
+        [FROM_CASH_FLOW],
+      ),
     },
     ltmParts: [],
   };
