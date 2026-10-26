@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  errorResponseBody,
+  httpStatusFor,
   InternalError,
+  InvalidInputError,
   PeerSetError,
   SecRateLimitedError,
   SecSchemaChangedError,
@@ -50,5 +53,47 @@ describe("error classes (blueprint §15)", () => {
     const err = new SecSchemaChangedError("companyfacts: facts.us-gaap");
     expect(err.userMessage).not.toContain("facts.us-gaap");
     expect(err.message).toContain("facts.us-gaap");
+  });
+});
+
+describe("HTTP mapping (blueprint §15)", () => {
+  it.each([
+    [new InvalidInputError("ticker is required"), 400],
+    [new TickerNotFoundError("XYZ"), 404],
+    [new UnsupportedIssuerError("files 20-F reports"), 422],
+    [new SecRateLimitedError("403"), 429],
+    [new SecSchemaChangedError("x"), 502],
+    [new SecUnavailableError("503"), 503],
+    [new InternalError("bug"), 500],
+  ] as const)("%s → %i", (err, status) => {
+    expect(httpStatusFor(err)).toBe(status);
+  });
+
+  it("an invalid input says what is wrong and is not retryable", () => {
+    const err = new InvalidInputError("Ticker must be 1–10 letters");
+    expect(err).toMatchObject({ code: "INVALID_INPUT", retryable: false });
+    expect(err.userMessage).toBe("Ticker must be 1–10 letters");
+  });
+
+  it("the response body holds only the code, user message and request ID", () => {
+    const err = new SecUnavailableError("timeout: data.sec.gov/secret-detail");
+    const body = errorResponseBody(err, "req-1");
+    expect(body).toEqual({
+      code: "SEC_UNAVAILABLE",
+      message: "SEC didn't respond; try again later",
+      retryable: true,
+      requestId: "req-1",
+    });
+    expect(JSON.stringify(body)).not.toContain("secret-detail");
+  });
+
+  it("an unknown thrown value becomes INTERNAL without its message", () => {
+    const body = errorResponseBody(
+      new TypeError("x is undefined at foo.ts:3"),
+      "r",
+    );
+    expect(body.code).toBe("INTERNAL");
+    expect(JSON.stringify(body)).not.toContain("foo.ts");
+    expect(httpStatusFor(new TypeError("x"))).toBe(500);
   });
 });

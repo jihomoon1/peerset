@@ -9,7 +9,7 @@ import { padCik } from "./urls";
 export const TICKER_LIST_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
 
-const TICKER_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/; // blueprint §13
+export const TICKER_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/; // blueprint §13
 
 interface TickerRow {
   cik: string;
