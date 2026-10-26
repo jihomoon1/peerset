@@ -1,4 +1,4 @@
-# LII reconciliation — LTM through June 30, 2026
+# LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
 Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 (LTM rows below; 0.3.0 changed no LTM value) · golden file `tests/golden/LII-2026Q2.json`
 
@@ -67,6 +67,25 @@ Methodology 0.3.0 §7–§9 · golden file `tests/golden/LII-2026Q2-balance.json
 3. Under "Current Assets", write down "Cash and cash equivalents" and "Short-term investments". Add them: that is cash. "Restricted cash equivalents" (below total current assets) is deliberately left out.
 4. Check that the operating lease lines are **not** in total debt, that "Preferred stock" shows no shares issued, and that there is no noncontrolling-interest line.
 5. If a row matches, change its Status to **Confirmed** and commit (`docs: confirm LII EV inputs`). If not, leave it and note the difference.
+
+## Valuation at test price
+
+Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/LII-2026Q2-valuation.json`. **The price is a test input, not market data:** 500.00 USD as of October 23, 2026. Alpha Vantage's actual close that day was 376.01, and it is not used here. Analysis date: October 26, 2026. Amounts in USD, written out in full so each row ties to the dollar. Multiples are shown to 0.01x; the page shows one decimal.
+
+| Row                                   | PeerSet        | Filing input or manual calc                                                 | Source                                                                                     | Status        |
+| ------------------------------------- | -------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------- |
+| Shares outstanding (one class, `LII`) | 34,560,675     | 34,560,675 as of July 22, 2026                                              | 10-Q **cover page**, the shares-outstanding line, `dei:EntityCommonStockSharesOutstanding` | Awaiting Jiho |
+| Market cap                            | 17,280,337,500 | 500.00 × 34,560,675 = 17,280,337,500                                        | Test price × cover shares                                                                  | Awaiting Jiho |
+| Total debt                            | 1,581,300,000  | from "EV inputs" above                                                      | Confirmed row                                                                              | Confirmed     |
+| Cash and short-term investments       | 52,100,000     | from "EV inputs" above                                                      | Confirmed row                                                                              | Confirmed     |
+| **Enterprise value**                  | 18,809,537,500 | 17,280,337,500 + 1,581,300,000 − 52,100,000 = 18,809,537,500                | §9                                                                                         | Awaiting Jiho |
+| Not in EV                             | no warning     | preferred 0; no noncontrolling interest line                                | §9                                                                                         | Awaiting Jiho |
+| EV / Revenue (LTM)                    | 3.55x          | 18,809,537,500 ÷ 5,302,200,000 = 3.5475                                     | Revenue row above (Confirmed)                                                              | Awaiting Jiho |
+| EV / EBITDA (LTM)                     | 16.15x         | 18,809,537,500 ÷ 1,164,900,000 = 16.1469                                    | EBITDA row above (Confirmed)                                                               | Awaiting Jiho |
+| P / E (LTM diluted)                   | 22.21x         | 500.00 ÷ 22.51 = 22.2124                                                    | Diluted EPS row above (Confirmed); single class, no split since the 10-K                   | Awaiting Jiho |
+| Dates shown                           |                | price October 23, 2026 · balance sheet June 30, 2026 · shares July 22, 2026 | As-of strip and EV drawer                                                                  | Awaiting Jiho |
+
+**How to check (about 5 minutes).** Open the 10-Q link at the top of this file. On the cover page, find the line saying how many shares of common stock were outstanding as of July 22, 2026, and compare it with 34,560,675. Then redo the multiplications and divisions above on a calculator. If a row matches, change its Status to **Confirmed**.
 
 ## Golden change log
 
