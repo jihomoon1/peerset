@@ -1,0 +1,321 @@
+{
+  "ticker": "WSO",
+  "cik": "0000105016",
+  "asOf": "2026-10-26",
+  "latestFiling": {
+    "form": "10-Q",
+    "accession": "0001193125-26-340204",
+    "filed": "2026-08-07",
+    "reportDate": "2026-06-30"
+  },
+  "ltmPeriod": {
+    "start": "2025-07-01",
+    "end": "2026-06-30"
+  },
+  "methodologyVersion": "0.3.1",
+  "note": "Transcribed from the filings' XBRL facts (10-K FY2025 via companyfacts; 10-Q six-month columns from the filing instance), read directly from the frozen fixture files, not from the engine. Values are tagged in USD thousands (decimals=-3), so each is exact to the dollar. Each source names the XBRL concept; Jiho confirms the caption and value against the rendered filings (docs/reconciliation/WSO.md). Status: Awaiting Jiho.",
+  "metrics": {
+    "revenue": {
+      "concept": "us-gaap:Revenues",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 7239290000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001193125-26-082486",
+            "filed": "2026-02-27",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+            "column": "2025",
+            "statement": "Consolidated Statements of Income",
+            "line": "the line tagged us-gaap:Revenues (caption to confirm)"
+          }
+        },
+        "ytdCurrent": {
+          "value": 3637869000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:Revenues (caption to confirm)",
+            "column": "Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 3593528000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:Revenues (caption to confirm)",
+            "column": "Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 7283631000,
+      "math": "7,239,290 + 3,637,869 − 3,593,528 = 7,283,631 (USD thousands)"
+    },
+    "operatingIncome": {
+      "concept": "us-gaap:OperatingIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 720347000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001193125-26-082486",
+            "filed": "2026-02-27",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+            "column": "2025",
+            "statement": "Consolidated Statements of Income",
+            "line": "the line tagged us-gaap:OperatingIncomeLoss (caption to confirm)"
+          }
+        },
+        "ytdCurrent": {
+          "value": 348556000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:OperatingIncomeLoss (caption to confirm)",
+            "column": "Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 384057000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:OperatingIncomeLoss (caption to confirm)",
+            "column": "Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 684846000,
+      "math": "720,347 + 348,556 − 384,057 = 684,846 (USD thousands)"
+    },
+    "da": {
+      "concept": "us-gaap:DepreciationDepletionAndAmortization",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 43752000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001193125-26-082486",
+            "filed": "2026-02-27",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+            "column": "2025",
+            "statement": "Consolidated Statements of Cash Flows",
+            "line": "the line tagged us-gaap:DepreciationDepletionAndAmortization (caption to confirm)"
+          }
+        },
+        "ytdCurrent": {
+          "value": 21943000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Cash Flows (R8)",
+            "line": "the line tagged us-gaap:DepreciationDepletionAndAmortization (caption to confirm)",
+            "column": "Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 21687000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Cash Flows (R8)",
+            "line": "the line tagged us-gaap:DepreciationDepletionAndAmortization (caption to confirm)",
+            "column": "Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 44008000,
+      "math": "43,752 + 21,943 − 21,687 = 44,008 (USD thousands)"
+    },
+    "netIncome": {
+      "concept": "us-gaap:NetIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 496994000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001193125-26-082486",
+            "filed": "2026-02-27",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+            "column": "2025",
+            "statement": "Consolidated Statements of Income",
+            "line": "the line tagged us-gaap:NetIncomeLoss (caption to confirm)"
+          }
+        },
+        "ytdCurrent": {
+          "value": 242410000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:NetIncomeLoss (caption to confirm)",
+            "column": "Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 263674000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:NetIncomeLoss (caption to confirm)",
+            "column": "Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 475730000,
+      "math": "496,994 + 242,410 − 263,674 = 475,730 (USD thousands)"
+    },
+    "dilutedEps": {
+      "concept": "us-gaap:EarningsPerShareDiluted",
+      "unit": "USD/shares",
+      "components": {
+        "fy": {
+          "value": 12.25,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001193125-26-082486",
+            "filed": "2026-02-27",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+            "column": "2025",
+            "statement": "Consolidated Statements of Income",
+            "line": "the line tagged us-gaap:EarningsPerShareDiluted (caption to confirm)"
+          }
+        },
+        "ytdCurrent": {
+          "value": 5.92,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:EarningsPerShareDiluted (caption to confirm)",
+            "column": "Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 6.5,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001193125-26-340204",
+            "filed": "2026-08-07",
+            "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm",
+            "statement": "Condensed Consolidated Unaudited Statements of Income (R2)",
+            "line": "the line tagged us-gaap:EarningsPerShareDiluted (caption to confirm)",
+            "column": "Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 11.67,
+      "math": "12.25 + 5.92 − 6.50 = 11.67"
+    },
+    "ebitda": {
+      "ltm": 728854000,
+      "math": "Operating income 684,846 + D&A 44,008 = 728,854 (USD thousands)"
+    },
+    "ebitdaMargin": {
+      "ltmNumerator": 728854000,
+      "ltmDenominator": 7283631000,
+      "math": "728,854 ÷ 7,283,631 = 10.01%"
+    }
+  },
+  "epsCrossCheck": {
+    "fyDilutedShares": 37899859,
+    "source": {
+      "document": "Form 10-K for the year ended December 31, 2025",
+      "accession": "0001193125-26-082486",
+      "filed": "2026-02-27",
+      "url": "https://www.sec.gov/Archives/edgar/data/105016/000119312526082486/wso-20251231.htm",
+      "column": "2025",
+      "statement": "Consolidated Statements of Income",
+      "line": "the line tagged us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding (caption to confirm)"
+    },
+    "math": "475.7 ÷ 37.9 = 12.55 vs 11.67: gap 7.6%, above the 5% threshold, so W_EPS_CROSSCHECK is expected"
+  }
+}
