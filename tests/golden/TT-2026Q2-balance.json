@@ -1,0 +1,65 @@
+{
+  "ticker": "TT",
+  "cik": "0001466258",
+  "company": "Trane Technologies plc",
+  "fixture": "TT/2026Q2",
+  "asOf": "2026-10-26",
+  "filing": {
+    "form": "10-Q",
+    "accession": "0001628280-26-051117",
+    "filed": "2026-07-30",
+    "reportDate": "2026-06-30",
+    "document": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/tt-20260630.htm"
+  },
+  "statement": {
+    "name": "Condensed Consolidated Balance Sheets",
+    "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R5.htm",
+    "scale": "Millions"
+  },
+  "methodologyVersion": "0.3.0",
+  "note": "Every value is read from the filing's rendered balance sheet ('Condensed Consolidated Balance Sheets', column 2026-06-30), USD millions as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 \u00a77-\u00a79.",
+  "debt": {
+    "lines": [
+      {
+        "label": "Short-term borrowings and current maturities of long-term debt",
+        "concept": "us-gaap:DebtCurrent",
+        "displayed": "693.1",
+        "value": 693100000,
+        "included": true
+      },
+      {
+        "label": "Long-term debt",
+        "concept": "us-gaap:LongTermDebtNoncurrent",
+        "displayed": "3,923.7",
+        "value": 3923700000,
+        "included": true
+      }
+    ],
+    "total": 4616800000,
+    "warnings": []
+  },
+  "cash": {
+    "lines": [
+      {
+        "label": "Cash, Cash Equivalents, Restricted Cash and Restricted Cash Equivalents, Including Disposal Group and Discontinued Operations",
+        "concept": "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations",
+        "displayed": "1,318.3",
+        "value": 1318300000,
+        "included": true
+      }
+    ],
+    "total": 1318300000,
+    "warnings": ["W_RESTRICTED_CASH_INCLUDED"]
+  },
+  "preferred": {
+    "status": "missing",
+    "note": "no preferred stock line on the balance sheet"
+  },
+  "nci": {
+    "status": "derived",
+    "label": "Noncontrolling interests",
+    "concept": "us-gaap:MinorityInterest",
+    "displayed": "22.2",
+    "value": 22200000
+  }
+}
