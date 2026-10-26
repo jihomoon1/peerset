@@ -48,6 +48,8 @@ export type ShareClassBlocker =
 
 export interface ShareClasses {
   classes: ShareClass[];
+  // Classes the cover reports, usable or not; P/E needs exactly one (§5).
+  coverClassCount: number;
   blocker?: ShareClassBlocker;
   warnings: MetricWarning[];
 }
@@ -77,13 +79,14 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
         status: "missing",
         reason: "no cover-page share count in the latest filing",
       },
+      coverClassCount: 0,
       warnings: [],
     };
 
-  // The cover reports one date; if several appear, the latest is the cover's.
-  const sharesAsOf = fromLatest
-    .map((f) => f.period.end)
-    .reduce((a, b) => (a > b ? a : b));
+  // The cover reports one date. Counts at different dates can't be summed, and a
+  // class at an earlier date must not drop out, so different dates block.
+  const dates = [...new Set(fromLatest.map((f) => f.period.end))].sort();
+  const sharesAsOf = dates[dates.length - 1];
   const symbols = input.textFacts.filter(
     (t) => t.concept === SYMBOL && t.filing.accession === latest.accession,
   );
@@ -100,8 +103,27 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
 
   const pairs: { member: string; selection: Selection; symbol?: string }[] = [];
   let blocker: ShareClassBlocker | undefined;
+  let coverClassCount: number;
+  if (dates.length > 1)
+    blocker = unsupported(
+      "SHARE_CLASS_MISMATCH",
+      `cover share counts have different dates (${dates.join(", ")})`,
+    );
+  // A count on any other axis is neither consolidated nor one class: never skipped.
+  const otherAxis = fromLatest.find((f) => {
+    const keys = Object.keys(f.dimensions);
+    return (
+      keys.length > 1 || (keys.length === 1 && keys[0] !== CLASS_OF_STOCK_AXIS)
+    );
+  });
+  if (otherAxis)
+    blocker ??= unsupported(
+      "SHARE_CLASS_MISMATCH",
+      `a cover share count is reported on another axis (${Object.keys(otherAxis.dimensions).join(", ")})`,
+    );
 
   if (perClass.length > 0) {
+    coverClassCount = perClass.length;
     for (const { classMember, selection } of perClass)
       pairs.push({
         member: classMember,
@@ -121,6 +143,7 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
       ),
     ];
     const plain = symbols.find((t) => Object.keys(t.dimensions).length === 0);
+    coverClassCount = Math.max(1, listed.length);
     if (listed.length > 1)
       blocker = unsupported(
         "SHARE_CLASS_MISMATCH",
@@ -177,5 +200,15 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
       severity: "info",
     });
 
-  return { classes, ...(blocker ? { blocker } : {}), warnings };
+  if (classes.length === 0)
+    blocker ??= unsupported(
+      "SHARE_CLASS_MISMATCH",
+      "no consolidated or per-class cover share count to use",
+    );
+  return {
+    classes,
+    coverClassCount,
+    ...(blocker ? { blocker } : {}),
+    warnings,
+  };
 }

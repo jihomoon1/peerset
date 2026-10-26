@@ -1,6 +1,6 @@
 # WSO reconciliation — EV inputs, LTM and valuation at June 30, 2026
 
-Watsco, Inc. · CIK 0000105016 · methodology 0.3.0 (0.3.1 changed no value here) · golden file `tests/golden/WSO-2026Q2-balance.json`
+Watsco, Inc. · CIK 0000105016 · methodology 0.3.1 (balance rows checked under 0.3.0; 0.3.1 changed no value) · golden files `tests/golden/WSO-2026Q2-balance.json`, `tests/golden/WSO-2026Q2.json`, `tests/golden/WSO-2026Q2-valuation.json`
 
 **Document:** **10-Q** for the quarter ended June 30, 2026, filed August 7, 2026, accession 0001193125-26-340204: [document](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm) · [filing index](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/0001193125-26-340204-index.htm) · SEC's rendering of the balance sheet: [R4.htm](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/R4.htm)
 
@@ -74,7 +74,7 @@ Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/WSO-2026Q2-valuati
 | **Enterprise value**                  | 18,108,366,300 | 18,563,487,300 + 9,068,000 − 464,189,000 = 18,108,366,300                                  | §9                                                                                                                                                        | Awaiting Jiho |
 | Noncontrolling interest test          | no warning     | 478,797,000 ÷ 18,563,487,300 = 2.58%, not above 5%                                         | §9. The warning would start below a price of 232.13 for both classes (478,797,000 ÷ 0.05 ÷ 41,252,194 shares); the unit test checks 200.00 (5.80%, warns) | Awaiting Jiho |
 | EV / Revenue (LTM)                    | 2.49x          | 18,108,366,300 ÷ 7,283,631,000 = 2.4862                                                    | LTM table above                                                                                                                                           | Awaiting Jiho |
-| EV / EBITDA (LTM)                     | 24.84x         | 18,108,366,300 ÷ 728,854,000 = 24.8450                                                     | LTM table above                                                                                                                                           | Awaiting Jiho |
+| EV / EBITDA (LTM)                     | 24.84x         | 18,108,366,300 ÷ 728,854,000 = 24.844985                                                   | LTM table above                                                                                                                                           | Awaiting Jiho |
 | P / E                                 | Unsupported    | "P/E is computed for single-class companies only"                                          | §5                                                                                                                                                        | Awaiting Jiho |
 | Dates shown                           |                | price October 23, 2026 · balance sheet June 30, 2026 · shares August 4, 2026               | As-of strip and EV drawer                                                                                                                                 | Awaiting Jiho |
 

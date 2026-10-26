@@ -262,3 +262,19 @@ describe("pacing (Alpha Vantage free tier: about 1 request per second)", () => {
     expect(waits).toEqual([1100, 1100]);
   });
 });
+
+describe("provider prices get the same limits as typed ones (blueprint §13)", () => {
+  it("a close of 1,000,000 or more is PRICE_UNAVAILABLE", () => {
+    expect(() =>
+      parseDailySeries(
+        {
+          "Time Series (Daily)": {
+            "2026-10-23": { "4. close": "1000000.0000" },
+          },
+        },
+        "SYN",
+        RETRIEVED,
+      ),
+    ).toThrow(PriceUnavailableError);
+  });
+});

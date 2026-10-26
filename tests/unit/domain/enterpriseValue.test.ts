@@ -42,6 +42,7 @@ function twoClasses(): ShareClasses {
         fact: sharesFact(100),
       },
     ],
+    coverClassCount: 2,
     warnings: [],
   };
 }
@@ -374,5 +375,41 @@ describe("computeEnterpriseValue rules", () => {
       cash: item(usd(1_000)),
     });
     expect(value(b.enterpriseValue)).toBe(10 + 100 - 1_000);
+  });
+});
+
+describe("market cap never starts from zero (methodology-reviewer, M2b)", () => {
+  it("no classes and no blocker is Missing, not a derived 0", () => {
+    const r = computeMarketCap(
+      { classes: [], coverClassCount: 0, warnings: [] },
+      [],
+      "2026-10-26",
+    );
+    expect(r.marketCap).toEqual({
+      status: "missing",
+      reason: "no share classes to price",
+      warnings: [],
+    });
+  });
+
+  it("a stale price warns on EV as well as market cap", async () => {
+    const f = await fixtureFundamentals("LII");
+    const { marketCap, priceDate } = computeMarketCap(
+      f.shareClasses,
+      [quote("LII", 500, "2026-10-01")],
+      "2026-10-26",
+    );
+    const b = computeEnterpriseValue({
+      marketCap,
+      debt: f.debt,
+      cash: f.cash,
+      preferred: f.evAdjustments.preferred,
+      nci: f.evAdjustments.nci,
+      balanceSheetDate: f.balanceSheet.date,
+      priceDate,
+    });
+    expect(b.enterpriseValue.warnings.map((w) => w.code)).toEqual([
+      "W_PRICE_STALE",
+    ]);
   });
 });

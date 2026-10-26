@@ -11,6 +11,7 @@ import {
 } from "./enterpriseValue";
 import type { CompanyFundamentals } from "./fundamentals";
 import { computeMultiples, type Multiples } from "./multiples";
+import { isUsable } from "./metrics/common";
 import type { Metric, QuoteSnapshot } from "./types";
 
 export interface Valuation {
@@ -52,7 +53,7 @@ export function priceCompany(
         period: { kind: "instant", end: single.quote.asOfDate },
         formula: `close (${single.quote.source})`,
         inputs: [],
-        warnings: [],
+        warnings: marketCap.warnings.filter((w) => w.code === "W_PRICE_STALE"),
       }
     : undefined;
 
@@ -67,10 +68,23 @@ export function priceCompany(
       ev: bridge.enterpriseValue,
       revenue: f.metrics.revenue,
       ebitda: f.metrics.ebitda,
-      price: price ?? (single ? single.equityValue : marketCap),
+      // Without a usable single class, P/E carries market cap's Missing/Unsupported
+      // reason; market cap is never used as a per-share price.
+      price:
+        price ??
+        (single && !f.shareClasses.blocker
+          ? single.equityValue
+          : isUsable(marketCap)
+            ? {
+                status: "missing",
+                reason: "no single priced class",
+                warnings: [],
+              }
+            : marketCap),
       eps: f.metrics.dilutedEps,
-      // No cover count at all leaves P/E to the missing price, not to MULTI_CLASS.
-      singleClass: classes.length <= 1,
+      // The cover's class count, not the usable classes (one may have dropped
+      // out); no cover count at all leaves P/E to the missing price.
+      singleClass: f.shareClasses.coverClassCount <= 1,
       splitSinceLastAnnual: f.eps.splitSinceLastAnnual,
     }),
   };

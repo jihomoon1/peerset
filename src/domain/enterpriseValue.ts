@@ -88,6 +88,16 @@ export function computeMarketCap(
         : { status: "unsupported", reason: b.reason, warnings: [] };
     return { classes, marketCap, ...withDate };
   }
+  if (classes.length === 0)
+    return {
+      classes,
+      marketCap: {
+        status: "missing",
+        reason: "no share classes to price",
+        warnings: [],
+      },
+      ...withDate,
+    };
   const unpriced = classes.filter((c) => !c.quote).map((c) => c.ticker);
   if (unpriced.length > 0)
     return {
@@ -110,17 +120,18 @@ export function computeMarketCap(
         severity: "caution",
       });
   }
-  const inputs: Provenance[] = classes.flatMap((c) =>
-    isUsable(c.equityValue) ? c.equityValue.inputs : [],
-  );
+  // Every class is listed and priced here; still, never add a class as zero.
+  const values = classes.map((c) => c.equityValue);
+  const unusable = values.find((m) => !isUsable(m));
+  if (unusable)
+    return { classes, marketCap: { ...unusable, warnings: [] }, ...withDate };
+  const usable = values.filter(isUsable);
+  const inputs: Provenance[] = usable.flatMap((m) => m.inputs);
   return {
     classes,
     marketCap: {
       status: "derived",
-      value: classes.reduce(
-        (sum, c) => sum + (isUsable(c.equityValue) ? c.equityValue.value : 0),
-        0,
-      ),
+      value: usable.reduce((sum, m) => sum + m.value, 0),
       unit: "USD",
       period: { kind: "instant", end: priceDate! },
       formula: "Σ price × shares over share classes",
@@ -261,7 +272,11 @@ export function computeEnterpriseValue(
         { metric: "totalDebt", value: totalDebt.value },
         { metric: "cash", value: cash.value },
       ],
-      warnings: mergeWarnings(notInEvWarnings(input)),
+      // A stale price makes EV stale too; other input warnings stay on their rows.
+      warnings: mergeWarnings(
+        marketCap.warnings.filter((w) => w.code === "W_PRICE_STALE"),
+        notInEvWarnings(input),
+      ),
     },
   };
 }

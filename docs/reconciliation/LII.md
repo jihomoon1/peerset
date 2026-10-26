@@ -1,6 +1,6 @@
 # LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 (LTM rows below; 0.3.0 changed no LTM value) · golden file `tests/golden/LII-2026Q2.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.3.1 (LTM rows checked under 0.2.1; 0.3.0 and 0.3.1 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 

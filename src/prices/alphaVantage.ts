@@ -8,6 +8,7 @@ import { isIsoDate } from "@/domain/dates";
 import type { QuoteSnapshot } from "@/domain/types";
 import { PriceRateLimitedError, PriceUnavailableError } from "@/lib/errors";
 import type { QuoteProvider } from "./provider";
+import { PRICE_LIMIT } from "./userEntered";
 
 export const ALPHA_VANTAGE_HOST = "www.alphavantage.co"; // CLAUDE.md allow-list
 const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
@@ -75,7 +76,7 @@ export function parseDailySeries(
   const latest = dates.reduce((a, b) => (a > b ? a : b));
   const raw = parsed.data["Time Series (Daily)"][latest]["4. close"];
   const close = Number(raw);
-  if (!/^\d+(\.\d+)?$/.test(raw) || !(close > 0))
+  if (!/^\d+(\.\d+)?$/.test(raw) || !(close > 0) || close >= PRICE_LIMIT)
     throw new PriceUnavailableError(
       `${symbol}: close on ${latest} is not a price`,
     );

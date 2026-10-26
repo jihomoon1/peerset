@@ -76,6 +76,7 @@ describe("priceCompany without usable share classes", () => {
       ...f,
       shareClasses: {
         classes: [],
+        coverClassCount: 0,
         blocker: {
           status: "missing" as const,
           reason: "no cover-page share count in the latest filing",
@@ -88,5 +89,45 @@ describe("priceCompany without usable share classes", () => {
       status: "missing",
       reason: "P/E needs price, which is missing",
     });
+  });
+});
+
+describe("P/E follows the cover's classes, not the usable ones", () => {
+  it("a share-class blocker makes P/E Unsupported even with one priced class", async () => {
+    const f = await fixtureFundamentals("LII");
+    const g = {
+      ...f,
+      shareClasses: {
+        ...f.shareClasses,
+        coverClassCount: 2,
+        blocker: {
+          status: "unsupported" as const,
+          reason: {
+            code: "SHARE_CLASS_MISMATCH" as const,
+            message: "one cover share count for several listed classes",
+          },
+        },
+      },
+    };
+    const v = priceCompany(g, [quote("LII", 500)], "2026-10-26");
+    expect(v.multiples.pe).toMatchObject({
+      status: "unsupported",
+      reason: { code: "MULTI_CLASS" },
+    });
+  });
+
+  it("a stale price warns on P/E", async () => {
+    const f = await fixtureFundamentals("LII");
+    const v = priceCompany(
+      f,
+      [{ ...quote("LII", 500), asOfDate: "2026-10-01" }],
+      "2026-10-26",
+    );
+    expect(v.multiples.pe.warnings.map((w) => w.code)).toContain(
+      "W_PRICE_STALE",
+    );
+    expect(v.multiples.evEbitda.warnings.map((w) => w.code)).toContain(
+      "W_PRICE_STALE",
+    );
   });
 });

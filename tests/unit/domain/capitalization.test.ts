@@ -274,3 +274,83 @@ describe.each([
     ).toEqual([[ticker, count, asOf]]);
   });
 });
+
+describe("no class silently drops out (methodology-reviewer, M2b)", () => {
+  it("classes with different cover dates make market cap Unsupported", () => {
+    const r = computeShareClasses(
+      input({
+        facts: [
+          shares(100, COMMON, "2026-08-04"),
+          shares(20, CLASS_B, "2026-07-31"),
+        ],
+        textFacts: [symbol("SYN", COMMON), symbol("SYNB", CLASS_B)],
+        listings: [
+          { ticker: "SYN", exchange: "NYSE" },
+          { ticker: "SYN-B", exchange: "NYSE" },
+        ],
+      }),
+    );
+    expect(r.blocker).toMatchObject({
+      status: "unsupported",
+      reason: {
+        code: "SHARE_CLASS_MISMATCH",
+        message:
+          "cover share counts have different dates (2026-07-31, 2026-08-04)",
+      },
+    });
+  });
+
+  it("a cover count on another axis that no class picks up is Unsupported", () => {
+    const r = computeShareClasses(
+      input({
+        facts: [
+          fact({
+            concept: SHARES,
+            value: 100,
+            end: "2026-08-04",
+            filing: q2,
+            unit: "shares",
+            source: "filing",
+            dimensions: {
+              [AXIS]: COMMON,
+              "dei:LegalEntityAxis": "syn:SubMember",
+            },
+          }),
+        ],
+        textFacts: [symbol("SYN")],
+      }),
+    );
+    expect(r.classes).toEqual([]);
+    expect(r.blocker).toMatchObject({
+      status: "unsupported",
+      reason: { code: "SHARE_CLASS_MISMATCH" },
+    });
+  });
+
+  it("counts the cover's classes, even ones that couldn't be used", () => {
+    const conflicted = computeShareClasses(
+      input({
+        facts: [shares(100, COMMON), shares(101, COMMON), shares(20, CLASS_B)],
+        textFacts: [symbol("SYN", COMMON), symbol("SYNB", CLASS_B)],
+      }),
+    );
+    expect(conflicted.classes).toHaveLength(1);
+    expect(conflicted.coverClassCount).toBe(2);
+    const oneCountTwoListed = computeShareClasses(
+      input({
+        facts: [shares(1_000)],
+        textFacts: [symbol("SYN", COMMON), symbol("SYNB", CLASS_B)],
+        listings: [
+          { ticker: "SYN", exchange: "NYSE" },
+          { ticker: "SYN-B", exchange: "NYSE" },
+        ],
+      }),
+    );
+    expect(oneCountTwoListed.coverClassCount).toBe(2);
+    expect(
+      computeShareClasses(
+        input({ facts: [shares(1_000)], textFacts: [symbol("SYN")] }),
+      ).coverClassCount,
+    ).toBe(1);
+  });
+});
