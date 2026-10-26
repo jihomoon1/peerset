@@ -28,7 +28,7 @@ Statement: "CONDENSED CONSOLIDATED UNAUDITED BALANCE SHEETS", June 30, 2026 colu
 
 ## How to check (about 10 minutes)
 
-1. Open the **10-Q** document above and find "CONDENSED CONSOLIDATED UNAUDITED BALANCE SHEETS" (page 3). Use the **June 30, 2026** column. Amounts are in thousands.
+1. Open the **10-Q** document above and find "CONDENSED CONSOLIDATED UNAUDITED BALANCE SHEETS" (near the start, under Part I, Item 1). Use the **June 30, 2026** column. Amounts are in thousands.
 2. Under "Current liabilities", find "Current portion of lease liabilities" (119,723). Confirm there is no line for borrowings under a revolving credit agreement.
 3. Under "Long-term obligations", find "Finance lease liabilities, net of current portion" (9,068) and "Operating lease liabilities, net of current portion" (406,478). Total debt should be the finance lease line only.
 4. Under "Current assets", add "Cash and cash equivalents" and "Short-term cash investments".
