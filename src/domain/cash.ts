@@ -119,6 +119,17 @@ export function computeCash(input: BalanceSheetInput): BalanceSheetItem {
       lines,
       method: "face",
     };
+  // Jiho, M2a: cash is never a default 0.
+  if (!lines.some((l) => l.included && l.fact))
+    return {
+      metric: {
+        status: "missing",
+        reason: "the balance sheet's cash lines show no amount",
+        warnings,
+      },
+      lines,
+      method: "face",
+    };
   return {
     metric: sumOf(lines, input.date, FORMULA, warnings),
     lines,

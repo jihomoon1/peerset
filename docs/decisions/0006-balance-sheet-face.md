@@ -39,6 +39,10 @@ Every EDGAR filing ships SEC-rendered statements: `FilingSummary.xml` plus one `
 
 - **Carrier 2026-03-31** tags its 10,422.0 noncurrent debt under both `LongTermDebtNoncurrent` and `LongTermDebtAndCapitalLeaseObligations` (companyfacts, 10-Q 0001783180-26-000026), so the table above and the methodology §7.F evidence table are both correct.
 
+## Methodology review (M2a)
+
+The methodology-reviewer agent compared the branch with 0.3.0. Code mismatches were fixed. Jiho decided: debt lines that all show no amount are Reported 0 (`W_DEBT_LINES_NO_AMOUNT`) and such cash is Missing; the implementation details above (operating leases never trigger rule 3, per-member sections, the total-assets split, duplicates, long-term investments, the cash list, unrecognized preferred/NCI lines, inclusive totals, fallback Missing) are written into 0.3.0 itself; temporary-equity preferred stays Unsupported until a real filing is checked.
+
 ## Not chosen
 
 - The presentation linkbase (`_pre.xml`): Watsco's filing has none, while every filing has the rendered statements.

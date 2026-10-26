@@ -433,7 +433,7 @@ describe("debt from face lines (§7)", () => {
       ],
     );
     expect(computeDebt(input).metric).toMatchObject({
-      status: "derived",
+      status: "reported",
       value: 0,
     });
   });
@@ -649,6 +649,95 @@ describe("review fixes", () => {
       ),
     );
     expect(codes(r.metric)).toContain("W_LEASE_LINE_EXCLUDED");
+  });
+});
+
+describe("Jiho's M2a decisions on blank lines and inclusive totals", () => {
+  it("debt lines that all show no amount: Reported 0 with a note", () => {
+    const r = computeDebt(
+      sheet(
+        [CASH],
+        [["us-gaap:ShortTermBorrowings", "Short-term borrowings", undefined]],
+      ),
+    );
+    expect(r.metric).toMatchObject({ status: "reported", value: 0 });
+    expect(r.metric.warnings).toEqual([
+      {
+        code: "W_DEBT_LINES_NO_AMOUNT",
+        message: "the balance sheet's debt lines show no amount",
+        severity: "info",
+      },
+    ]);
+  });
+
+  it("an excluded lease line alone: Reported 0 with both notes", () => {
+    const r = computeDebt(
+      sheet(
+        [CASH],
+        [
+          [
+            "us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent",
+            "Current portion of lease liabilities",
+            5 * M,
+          ],
+        ],
+      ),
+    );
+    expect(r.metric).toMatchObject({ status: "reported", value: 0 });
+    expect(codes(r.metric)).toEqual([
+      "W_LEASE_LINE_EXCLUDED",
+      "W_DEBT_LINES_NO_AMOUNT",
+    ]);
+  });
+
+  it("cash lines that all show no amount: Missing, never 0", () => {
+    const r = computeCash(
+      sheet(
+        [
+          [
+            "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+            "Cash and cash equivalents",
+            undefined,
+          ],
+        ],
+        [],
+      ),
+    );
+    expect(r.metric).toMatchObject({
+      status: "missing",
+      reason: "the balance sheet's cash lines show no amount",
+    });
+  });
+
+  it("an inclusive debt total next to other debt lines is a subtotal (rule i)", () => {
+    const r = computeDebt(
+      sheet(
+        [CASH],
+        [
+          [
+            "us-gaap:LongTermDebtCurrent",
+            "Current portion of long-term debt",
+            10 * M,
+          ],
+          [
+            "us-gaap:LongTermDebt",
+            "Long-term debt, including current portion",
+            110 * M,
+          ],
+        ],
+      ),
+    );
+    expect(r.metric).toMatchObject({
+      status: "unsupported",
+      reason: { code: "DEBT_SUBTOTAL_ON_FACE" },
+    });
+  });
+
+  it("an inclusive debt total as the only debt line counts", () => {
+    const r = computeDebt(
+      sheet([CASH], [["us-gaap:LongTermDebt", "Long-term debt", 110 * M]]),
+    );
+    expect(value(r.metric)).toBe(110 * M);
   });
 });
 

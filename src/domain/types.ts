@@ -91,6 +91,7 @@ export type WarningCode =
   | "W_SOURCE_CONFLICT" // same filing, same period, companyfacts and filing disagree
   | "W_FACE_UNAVAILABLE" // §7 rule 7: balance-sheet face unreadable, tag rules used
   | "W_NO_DEBT_LINES" // §7 rule 4: no debt lines, debt is a reported 0
+  | "W_DEBT_LINES_NO_AMOUNT" // §7 rule 4: debt lines all blank, a reported 0
   | "W_DEBT_TOTAL_TAG_DIFFERS" // §7 rule 6
   | "W_LEASE_LINE_EXCLUDED" // §7 rule 2: debt-tagged lease-only line left out
   | "W_RESTRICTED_CASH_INCLUDED"; // §8

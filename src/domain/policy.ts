@@ -218,6 +218,13 @@ export const FACE = {
     "CapitalLeaseObligationsCurrent",
     "CapitalLeaseObligationsNoncurrent",
   ),
+  // §7 rule 2: inclusive totals count only as the single debt line on the face.
+  inclusiveDebtTotal: usGaap(
+    "LongTermDebt",
+    "DebtAndCapitalLeaseObligations",
+    "DebtLongtermAndShorttermCombinedAmount",
+    "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+  ),
   // §7 rule 2, lease-only labels: these concepts are leases by definition, so the
   // label rule does not apply to them.
   financeLease: usGaap(

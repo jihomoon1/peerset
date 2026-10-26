@@ -97,6 +97,17 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
     }
   }
 
+  // §7 rule 2: an inclusive total next to other debt lines would double count.
+  const debtConcepts = [...counted];
+  const inclusive = input.face.lines.find(
+    (l) => FACE.inclusiveDebtTotal.has(l.concept) && debtConcepts.length > 1,
+  );
+  if (inclusive)
+    unsupported ??= {
+      code: "DEBT_SUBTOTAL_ON_FACE",
+      message: `debt subtotal on the balance sheet: '${inclusive.label}' (${inclusive.concept}) includes other debt lines shown`,
+    };
+
   const { lines, unsupported: valueProblem } = resolveLines(candidates, input);
   for (const l of lines)
     if ([...leaseExcluded].some((x) => x.order === l.order))
@@ -128,6 +139,30 @@ export function computeDebt(input: BalanceSheetInput): BalanceSheetItem {
           {
             code: "W_NO_DEBT_LINES",
             message: "no debt lines on the balance sheet",
+            severity: "info",
+          },
+        ],
+      },
+      lines,
+      method: "face",
+    };
+
+  // Jiho, M2a: debt lines that all show no amount are a reported 0, like rule 4.
+  if (!lines.some((l) => l.included && l.fact))
+    return {
+      metric: {
+        status: "reported",
+        value: 0,
+        unit: "USD",
+        period: { kind: "instant", end: input.date },
+        formula:
+          "The balance sheet's debt lines show no amount (methodology §7 rule 4)",
+        inputs: [],
+        warnings: [
+          ...warnings,
+          {
+            code: "W_DEBT_LINES_NO_AMOUNT",
+            message: "the balance sheet's debt lines show no amount",
             severity: "info",
           },
         ],
