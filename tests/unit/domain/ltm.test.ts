@@ -79,6 +79,7 @@ describe("December year-end", () => {
     ];
     const r = ok(computeLtm(input(facts, "2026-03-31", "10-Q"), [REV]));
     expect(r.value).toBe(1000 + 260 - 240);
+    expect(r.calc.value).toBe(r.value);
     expect(r.calc.method).toBe("fy_plus_ytd_minus_prior_ytd");
     expect(r.period).toEqual({
       kind: "duration",
@@ -231,6 +232,7 @@ describe("failing checks make the metric Unsupported, naming the check", () => {
     );
     expect(r.reason.message).toContain("fiscal-year-duration");
     expect(r.calc?.checks[0]).toMatchObject({ passed: false });
+    expect(r.calc).not.toHaveProperty("value"); // no LTM when a check fails
   });
 
   it("fiscal year longer than 378 days", () => {

@@ -169,4 +169,5 @@ export interface LTMCalculation {
   ytdCurrent?: ReportedFinancialFact; // present for the 10-Q method
   ytdPrior?: ReportedFinancialFact;
   checks: LTMCheck[];
+  value?: number; // the LTM result; present only when every check passed
 }

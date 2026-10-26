@@ -310,7 +310,7 @@ export function ltmForConcept(
       severity: "info",
     });
 
-  return { kind: "ok", value, period, calc, warnings };
+  return { kind: "ok", value, period, calc: { ...calc, value }, warnings };
 }
 
 // LTM for a metric: the first concept in priority order that has every component.
