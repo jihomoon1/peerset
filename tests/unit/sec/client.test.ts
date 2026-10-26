@@ -283,3 +283,17 @@ describe("SEC client", () => {
     }
   });
 });
+
+describe("fetch cache opt-in (blueprint §14)", () => {
+  it("caches a request only when a lifetime is given", async () => {
+    const { client, calls } = setup([ok(), ok()]);
+    await settle(client.getJson(URL_OK, { revalidate: 21_600 }));
+    await settle(client.getJson(URL_OK));
+    expect(calls[0][1]).toMatchObject({
+      cache: "force-cache",
+      next: { revalidate: 21_600 },
+    });
+    expect(calls[1][1]).not.toHaveProperty("cache");
+    expect(calls[1][1]).not.toHaveProperty("next");
+  });
+});

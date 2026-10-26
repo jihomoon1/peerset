@@ -23,9 +23,15 @@ export type SecResponse =
 export type SecJsonResponse =
   { kind: "ok"; data: unknown } | { kind: "not-found"; url: string };
 
+// Opt a request into Next's fetch Data Cache for `revalidate` seconds (blueprint §14).
+// Only small responses: Vercel refuses cache items over 2 MB, so companyfacts never.
+export interface FetchCacheOptions {
+  revalidate?: number;
+}
+
 export interface SecClient {
-  get(url: string): Promise<SecResponse>;
-  getJson(url: string): Promise<SecJsonResponse>;
+  get(url: string, cache?: FetchCacheOptions): Promise<SecResponse>;
+  getJson(url: string, cache?: FetchCacheOptions): Promise<SecJsonResponse>;
 }
 
 type Sleep = (ms: number) => Promise<void>;
@@ -97,7 +103,10 @@ export function createSecClient(options: SecClientOptions = {}): SecClient {
       "SEC_USER_AGENT is not set; add it to .env.local or the deployment settings",
     );
 
-  async function attempt(url: string): Promise<Attempt> {
+  async function attempt(
+    url: string,
+    cache: FetchCacheOptions,
+  ): Promise<Attempt> {
     await limiter.acquire(sleep);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -108,6 +117,12 @@ export function createSecClient(options: SecClientOptions = {}): SecClient {
           "Accept-Encoding": "gzip, deflate",
         },
         signal: controller.signal,
+        ...(cache.revalidate !== undefined
+          ? {
+              cache: "force-cache" as const,
+              next: { revalidate: cache.revalidate },
+            }
+          : {}),
       });
       const body = await readCapped(res);
       return { kind: "response", status: res.status, body };
@@ -120,7 +135,10 @@ export function createSecClient(options: SecClientOptions = {}): SecClient {
     }
   }
 
-  async function get(url: string): Promise<SecResponse> {
+  async function get(
+    url: string,
+    cache: FetchCacheOptions = {},
+  ): Promise<SecResponse> {
     const { host, pathname } = checkUrl(url);
     const started = Date.now();
     let retries = 0;
@@ -137,7 +155,7 @@ export function createSecClient(options: SecClientOptions = {}): SecClient {
     for (;;) {
       let result: Attempt;
       try {
-        result = await attempt(url);
+        result = await attempt(url, cache);
       } catch (err) {
         if (err instanceof TooLargeError) {
           done("too-large", 0);
@@ -181,8 +199,11 @@ export function createSecClient(options: SecClientOptions = {}): SecClient {
     }
   }
 
-  async function getJson(url: string): Promise<SecJsonResponse> {
-    const res = await get(url);
+  async function getJson(
+    url: string,
+    cache: FetchCacheOptions = {},
+  ): Promise<SecJsonResponse> {
+    const res = await get(url, cache);
     if (res.kind === "not-found") return res;
     try {
       return {
