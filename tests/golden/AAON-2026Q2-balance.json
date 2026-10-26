@@ -1,0 +1,81 @@
+{
+  "ticker": "AAON",
+  "cik": "0000824142",
+  "company": "AAON, Inc.",
+  "fixture": "AAON/2026Q2",
+  "asOf": "2026-10-26",
+  "filing": {
+    "form": "10-Q",
+    "accession": "0000824142-26-000055",
+    "filed": "2026-08-10",
+    "reportDate": "2026-06-30",
+    "document": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/aaon-20260630.htm"
+  },
+  "statement": {
+    "name": "Consolidated Balance Sheets",
+    "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R2.htm",
+    "scale": "Thousands"
+  },
+  "methodologyVersion": "0.3.0",
+  "note": "Every value is read from the filing's rendered balance sheet ('Consolidated Balance Sheets', column 2026-06-30), USD thousands as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 \u00a77-\u00a79.",
+  "debt": {
+    "lines": [
+      {
+        "label": "Debt, long-term",
+        "concept": "us-gaap:LineOfCredit",
+        "displayed": "435,000",
+        "value": 435000000,
+        "included": true
+      }
+    ],
+    "total": 435000000,
+    "warnings": []
+  },
+  "cash": {
+    "lines": [
+      {
+        "label": "Cash and cash equivalents",
+        "concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+        "displayed": "13",
+        "value": 13000,
+        "included": true
+      },
+      {
+        "label": "Restricted cash",
+        "concept": "us-gaap:RestrictedCash",
+        "displayed": "12,714",
+        "value": 12714000,
+        "included": false
+      }
+    ],
+    "total": 13000,
+    "warnings": []
+  },
+  "preferred": {
+    "status": "derived",
+    "label": "Preferred stock",
+    "concept": "us-gaap:PreferredStockValue",
+    "displayed": "0",
+    "value": 0
+  },
+  "nci": {
+    "status": "missing",
+    "note": "no noncontrolling interest line on the balance sheet"
+  },
+  "notDebt": [
+    {
+      "label": "Short-term obligations of NMTC",
+      "concept": "aaon:NewMarketTaxCreditObligationCurrent",
+      "displayed": "7,535",
+      "value": 7535000,
+      "why": "label is not debt-like (methodology \u00a77 rule 3); confirmed by Jiho in M2a"
+    },
+    {
+      "label": "New market tax credit obligation",
+      "concept": "aaon:NewMarketTaxCreditObligationNoncurrent",
+      "displayed": "21,331",
+      "value": 21331000,
+      "why": "label is not debt-like (methodology \u00a77 rule 3); confirmed by Jiho in M2a"
+    }
+  ]
+}

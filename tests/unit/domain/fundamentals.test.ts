@@ -76,7 +76,47 @@ const input = (
       filing: k25,
       unit: "shares",
     }),
+    ...(status === "filing-missing"
+      ? []
+      : [
+          ["us-gaap:CashAndCashEquivalentsAtCarryingValue", 40],
+          ["us-gaap:LongTermDebtNoncurrent", 300],
+          ["us-gaap:MinorityInterest", 5],
+        ].map(([concept, value]) =>
+          fact({
+            concept: concept as string,
+            value: value as number,
+            end: "2026-06-30",
+            filing: q2,
+            source: "filing",
+          }),
+        )),
   ],
+  textFacts: [],
+  balanceSheet: {
+    date: "2026-06-30",
+    face:
+      status === "filing-missing"
+        ? { kind: "unavailable", reason: "filing index returned 404" }
+        : {
+            kind: "face",
+            url: "https://www.sec.gov/Archives/edgar/data/1/000000000126000050/R2.htm",
+            statement: "Consolidated Balance Sheets",
+            scale: "Millions",
+            lines: [
+              ["us-gaap:CashAndCashEquivalentsAtCarryingValue", "Cash", "40"],
+              ["us-gaap:Assets", "Total assets", "900"],
+              ["us-gaap:LongTermDebtNoncurrent", "Long-term debt", "300"],
+              ["us-gaap:MinorityInterest", "Noncontrolling interest", "5"],
+            ].map(([concept, label, displayed], i) => ({
+              order: i + 1,
+              concept,
+              label,
+              total: label.startsWith("Total"),
+              displayed,
+            })),
+          },
+  },
   freshness: {
     status,
     latestAccession: q2.accession,
@@ -114,7 +154,7 @@ describe("buildFundamentals", () => {
     expect(f.ltmEnd).toBe("2026-06-30");
     expect(f.freshness.status).toBe("filing-parsed");
     expect(f.warnings.map((w) => w.code)).toEqual(["W_FILING_PARSED"]);
-    expect(f.methodologyVersion).toBe("0.2.1");
+    expect(f.methodologyVersion).toBe("0.3.0");
   });
 
   it("keeps each metric's LTM calculation for the drawer", () => {
@@ -129,6 +169,21 @@ describe("buildFundamentals", () => {
     expect(f.eps.splitSinceLastAnnual).toBe(false);
   });
 
+  it("adds debt, cash and the EV adjustments from the balance-sheet face", () => {
+    expect(f.balanceSheet).toEqual({
+      date: "2026-06-30",
+      statement: {
+        url: "https://www.sec.gov/Archives/edgar/data/1/000000000126000050/R2.htm",
+        name: "Consolidated Balance Sheets",
+        scale: "Millions",
+      },
+    });
+    expect(f.debt.metric).toMatchObject({ status: "derived", value: 300 });
+    expect(f.cash.metric).toMatchObject({ status: "derived", value: 40 });
+    expect(f.evAdjustments.nci.metric).toMatchObject({ value: 5 });
+    expect(f.evAdjustments.preferred.metric.status).toBe("missing");
+  });
+
   it("is plain JSON: a round trip changes nothing", () => {
     expect(JSON.parse(JSON.stringify(f))).toEqual(f);
   });
@@ -137,5 +192,8 @@ describe("buildFundamentals", () => {
     const g = buildFundamentals(input("filing-missing"));
     for (const m of Object.values(g.metrics))
       expect(m.status).toBe("unsupported");
+    expect(g.balanceSheet.statement).toBeNull();
+    expect(g.debt.metric.status).toBe("missing");
+    expect(g.cash.metric.status).toBe("missing");
   });
 });

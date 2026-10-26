@@ -387,6 +387,26 @@ describe("parser edge cases (synthetic)", () => {
     expect(textFacts).toEqual([]);
   });
 
+  it("also keeps the extra concepts asked for (balance-sheet face lines)", () => {
+    const { facts } = parseInstance(
+      instance(`
+        <gaap:AccountsPayableCurrent contextRef="i" unitRef="u1" decimals="-5">1</gaap:AccountsPayableCurrent>
+        <co:NewMarketTaxCreditObligationCurrent contextRef="i" unitRef="u1" decimals="-3">7535000</co:NewMarketTaxCreditObligationCurrent>
+        <co:Unrequested contextRef="i" unitRef="u1" decimals="-3">9</co:Unrequested>`),
+      FILING,
+      {
+        extraConcepts: new Set([
+          "us-gaap:AccountsPayableCurrent",
+          "co:NewMarketTaxCreditObligationCurrent",
+        ]),
+      },
+    );
+    expect(facts.map((f) => [f.concept, f.value, f.unit])).toEqual([
+      ["us-gaap:AccountsPayableCurrent", 1, "USD"],
+      ["co:NewMarketTaxCreditObligationCurrent", 7535000, "USD"],
+    ]);
+  });
+
   it("drops units outside USD, shares and USD/shares (pure only for the split ratio)", () => {
     const { facts } = parseInstance(
       instance(

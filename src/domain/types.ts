@@ -88,7 +88,13 @@ export type WarningCode =
   | "W_DA_FROM_CASH_FLOW"
   | "W_53_WEEKS"
   | "W_EPS_CROSSCHECK"
-  | "W_SOURCE_CONFLICT"; // same filing, same period, companyfacts and filing disagree
+  | "W_SOURCE_CONFLICT" // same filing, same period, companyfacts and filing disagree
+  | "W_FACE_UNAVAILABLE" // §7 rule 7: balance-sheet face unreadable, tag rules used
+  | "W_NO_DEBT_LINES" // §7 rule 4: no debt lines, debt is a reported 0
+  | "W_DEBT_LINES_NO_AMOUNT" // §7 rule 4: debt lines all blank, a reported 0
+  | "W_DEBT_TOTAL_TAG_DIFFERS" // §7 rule 6
+  | "W_LEASE_LINE_EXCLUDED" // §7 rule 2: debt-tagged lease-only line left out
+  | "W_RESTRICTED_CASH_INCLUDED"; // §8
 
 export interface MetricWarning {
   code: WarningCode;
@@ -113,7 +119,12 @@ export interface MetricUnsupportedReason {
     | "NO_CONCEPT_WITH_ALL_COMPONENTS" // §3: no concept has FY, YTD and prior YTD
     | "SOURCE_CONFLICT" // companyfacts and the filing disagree on the same fact
     | "FILING_MISSING" // freshness filing-missing: never compute on an older quarter
-    | "INPUT_UNSUPPORTED"; // a derived metric whose input is Unsupported
+    | "INPUT_UNSUPPORTED" // a derived metric whose input is Unsupported
+    | "UNRECOGNIZED_DEBT_LINE" // §7 rule 3
+    | "DEBT_SUBTOTAL_ON_FACE" // §7 rule 3
+    | "UNRECOGNIZED_CASH_LINE" // §8
+    | "UNRECOGNIZED_EQUITY_LINE" // §9: preferred/NCI-looking line not classified
+    | "FACE_VALUE_WITHOUT_FACT"; // §7 rule 5
   message: string;
 }
 
@@ -170,4 +181,39 @@ export interface LTMCalculation {
   ytdPrior?: ReportedFinancialFact;
   checks: LTMCheck[];
   value?: number; // the LTM result; present only when every check passed
+}
+
+// ── Balance-sheet face (methodology 0.3.0 §7–§9) ────────────────────────────
+
+// One row of the rendered balance sheet (R#.htm). It says only which concept the
+// company presents and under what label; its value comes from the XBRL instance.
+export interface FaceLine {
+  order: number; // row number in the rendered table, headings included
+  concept: string; // 'us-gaap:CommercialPaper', or a filer QName 'lii:Foo'
+  label: string;
+  total: boolean; // label starts with "Total"
+  displayed: string; // the cell shown at the balance-sheet date, "" when blank
+}
+
+// The rendered balance sheet of the latest periodic filing, or why it could not be
+// read (then §7 rule 7: the 0.2.1 tag rules with W_FACE_UNAVAILABLE).
+export type BalanceSheetFace =
+  | {
+      kind: "face";
+      url: string; // the R#.htm on sec.gov
+      statement: string; // its short name, e.g. 'Consolidated Balance Sheets'
+      scale: string | null; // 'Millions' | 'Thousands' as displayed
+      lines: FaceLine[];
+    }
+  | { kind: "unavailable"; reason: string };
+
+// How one face line (or, in the fallback, one tag) was treated, for the drawer.
+export interface FaceLineProvenance {
+  order: number | null; // row on the rendered balance sheet; null for a fallback tag
+  label: string;
+  concept: string;
+  value: number | null; // full units; null when no consolidated fact at the date
+  included: boolean;
+  reason: string;
+  fact?: ReportedFinancialFact;
 }

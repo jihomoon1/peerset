@@ -68,14 +68,39 @@ describe("getCompanyFacts — LII (companyfacts behind)", async () => {
     expect(shares?.value).toBe(34_560_675);
   });
 
-  it("uses 4 SEC requests: submissions, companyfacts, index, instance", () => {
-    expect(result.requestsMade).toBe(4);
+  it("uses 6 SEC requests: submissions, companyfacts, index, FilingSummary, balance sheet, instance", () => {
+    expect(result.requestsMade).toBe(6);
     expect(requested).toEqual([
       "https://data.sec.gov/submissions/CIK0001069202.json",
       "https://data.sec.gov/api/xbrl/companyfacts/CIK0001069202.json",
       "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/index.json",
+      "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/FilingSummary.xml",
+      "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm",
       "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630_htm.xml",
     ]);
+  });
+
+  it("returns the balance-sheet face lines at the report date (methodology §7 rule 1)", () => {
+    expect(result.balanceSheet.date).toBe("2026-06-30");
+    const face = result.balanceSheet.face;
+    if (face.kind !== "face") throw new Error(face.reason);
+    expect(face).toMatchObject({
+      url: "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm",
+      statement: "Consolidated Balance Sheets",
+      scale: "Millions",
+    });
+    expect(face.lines.map((l) => l.concept)).toContain(
+      "us-gaap:LongTermDebtAndCapitalLeaseObligations",
+    );
+  });
+
+  it("parses every face-line concept from the instance, whitelisted or not", () => {
+    const ap = result.facts.find(
+      (f) =>
+        f.concept === "us-gaap:AccountsPayableCurrent" &&
+        f.period.end === "2026-06-30",
+    );
+    expect(ap).toMatchObject({ value: 523_500_000, source: "filing" });
   });
 
   it("returns the identity", () => {
@@ -115,8 +140,15 @@ describe("getCompanyFacts — WSO (companyfacts current)", async () => {
     expect(symbols).toEqual(["WSO", "WSOB"]);
   });
 
-  it("stays within the 5-request budget", () => {
-    expect(result.requestsMade).toBe(4);
+  it("stays within the 7-request budget", () => {
+    expect(result.requestsMade).toBe(6);
+  });
+
+  it("finds the balance sheet at R4.htm", () => {
+    expect(result.balanceSheet.face).toMatchObject({
+      kind: "face",
+      statement: "Condensed Consolidated Unaudited Balance Sheets",
+    });
   });
 });
 
@@ -153,7 +185,74 @@ describe("getCompanyFacts — edge cases", () => {
   });
 });
 
+describe("getCompanyFacts — balance-sheet face unavailable", () => {
+  it("still parses the instance when FilingSummary.xml is missing", async () => {
+    const fake = fixtureFetch(["LII/2026Q2"]);
+    const noSummary = (async (input: string | URL | Request) =>
+      String(input).endsWith("/FilingSummary.xml")
+        ? new Response("", { status: 404 })
+        : fake.fetch(input)) as typeof fetch;
+    const c = createSecClient({
+      fetch: noSummary,
+      env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
+      logger: () => {},
+      limiter: createLimiter(0),
+    });
+    const result = await getCompanyFacts("0001069202", {
+      asOf: AS_OF,
+      client: c,
+    });
+    expect(result.balanceSheet.face).toEqual({
+      kind: "unavailable",
+      reason: "FilingSummary.xml returned 404",
+    });
+    expect(result.freshness.status).toBe("filing-parsed");
+    expect(result.requestsMade).toBe(5);
+  });
+
+  it("is unavailable when the filing itself is missing", async () => {
+    const fake = fixtureFetch(["LII/2026Q2"]);
+    const only = (async (input: string | URL | Request) =>
+      String(input).includes("/Archives/")
+        ? new Response("", { status: 404 })
+        : fake.fetch(input)) as typeof fetch;
+    const c = createSecClient({
+      fetch: only,
+      env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
+      logger: () => {},
+      limiter: createLimiter(0),
+    });
+    const result = await getCompanyFacts("0001069202", {
+      asOf: AS_OF,
+      client: c,
+    });
+    expect(result.balanceSheet.face.kind).toBe("unavailable");
+  });
+});
+
 describe("getCompanyFacts — fetch caching", () => {
+  it("caches the rendered statements for 30 days per accession", async () => {
+    const fake = fixtureFetch(["LII/2026Q2"]);
+    const inits = new Map<string, RequestInit | undefined>();
+    const client = createSecClient({
+      fetch: (async (input: string, init?: RequestInit) => {
+        inits.set(String(input), init);
+        return fake.fetch(input, init);
+      }) as typeof fetch,
+      env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
+      logger: () => {},
+      limiter: createLimiter(0),
+    });
+    await getCompanyFacts("0001069202", { asOf: AS_OF, client });
+    const base =
+      "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/";
+    for (const file of ["FilingSummary.xml", "R2.htm"])
+      expect(inits.get(base + file), file).toMatchObject({
+        cache: "force-cache",
+        next: { revalidate: 30 * 24 * 3600 },
+      });
+  });
+
   it("caches submissions when asked, never companyfacts", async () => {
     const fake = fixtureFetch(["LII/2026Q2"]);
     const inits = new Map<string, RequestInit | undefined>();

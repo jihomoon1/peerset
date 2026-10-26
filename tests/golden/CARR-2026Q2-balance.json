@@ -1,0 +1,77 @@
+{
+  "ticker": "CARR",
+  "cik": "0001783180",
+  "company": "Carrier Global Corporation",
+  "fixture": "CARR/2026Q2",
+  "asOf": "2026-10-26",
+  "filing": {
+    "form": "10-Q",
+    "accession": "0001783180-26-000032",
+    "filed": "2026-07-28",
+    "reportDate": "2026-06-30",
+    "document": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/carr-20260630.htm"
+  },
+  "statement": {
+    "name": "CONDENSED CONSOLIDATED BALANCE SHEET",
+    "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/R4.htm",
+    "scale": "Millions"
+  },
+  "methodologyVersion": "0.3.0",
+  "note": "Every value is read from the filing's rendered balance sheet ('CONDENSED CONSOLIDATED BALANCE SHEET', column 2026-06-30), USD millions as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 \u00a77-\u00a79.",
+  "debt": {
+    "lines": [
+      {
+        "label": "Short-term borrowings and current portion of long-term debt",
+        "concept": "us-gaap:DebtCurrent",
+        "displayed": "1,638",
+        "value": 1638000000,
+        "included": true
+      },
+      {
+        "label": "Long-term debt",
+        "concept": "us-gaap:LongTermDebtNoncurrent",
+        "displayed": "10,314",
+        "value": 10314000000,
+        "included": true
+      },
+      {
+        "label": "Operating lease liabilities",
+        "concept": "us-gaap:OperatingLeaseLiabilityNoncurrent",
+        "displayed": "442",
+        "value": 442000000,
+        "included": false
+      }
+    ],
+    "total": 11952000000,
+    "warnings": ["W_DEBT_TOTAL_TAG_DIFFERS"],
+    "crossCheck": {
+      "concept": "us-gaap:DebtAndCapitalLeaseObligations",
+      "value": 11230000000,
+      "source": "XBRL instance fact at the balance-sheet date (not a face line)"
+    }
+  },
+  "cash": {
+    "lines": [
+      {
+        "label": "Cash and cash equivalents",
+        "concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+        "displayed": "1,344",
+        "value": 1344000000,
+        "included": true
+      }
+    ],
+    "total": 1344000000,
+    "warnings": []
+  },
+  "preferred": {
+    "status": "missing",
+    "note": "no preferred stock line on the balance sheet"
+  },
+  "nci": {
+    "status": "derived",
+    "label": "Non-controlling interest",
+    "concept": "us-gaap:MinorityInterest",
+    "displayed": "325",
+    "value": 325000000
+  }
+}

@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.2.1** · Status: **approved by Jiho Moon, October 26, 2026** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.3.0** · Status: **approved by Jiho Moon, October 26, 2026 (0.3.0 approved in M2a planning)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -76,7 +76,29 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 
 ## 7. Debt
 
-Total debt is **built from balance-sheet lines**. Total tags are a cross-check only. All lines are instants at the balance-sheet date.
+Debt and cash are built from the lines the company presents on its balance sheet ("face lines"). All values are instants at the balance-sheet date.
+
+1. **Face lines.** In the latest periodic filing's `FilingSummary.xml`, the balance sheet is the report in menu category "Statements" whose short name matches "balance sheet", "financial position" or "financial condition" and does not contain "Parenthetical" (if several match, the lowest position). Its rendered `R#.htm` gives each row's concept (`defref_<prefix>_<LocalName>`) and label. Values come from the filing's XBRL instance: the consolidated fact (no dimensions) for that concept at the balance-sheet date, at full precision. The rendered page decides only **which** concepts are face lines, and their labels. Reading stops at the first per-member section of the rendered table (a heading such as "Class B Common Stock [Member]"), because those rows are dimensional, not consolidated. The total-assets row (`Assets`) splits the assets side from the liabilities side; if it is missing, every line is checked as both. The same concept on two face rows counts once.
+2. **Total debt** = the sum of face lines whose concept is in the debt classification:
+   - short-term borrowings, commercial paper, bank loans and notes payable, lines of credit (current and long-term), current and noncurrent long-term debt (including "…AndCapitalLeaseObligations" lines), secured, unsecured, convertible and senior notes;
+   - finance lease liabilities when shown as their own face lines;
+   - bank overdrafts.
+
+   The concept list is in `policy.ts`. Operating lease liabilities are never debt, and operating-lease concepts never trigger rule 3. Inclusive totals (`LongTermDebt`, `DebtAndCapitalLeaseObligations`, `DebtLongtermAndShorttermCombinedAmount`, `LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities`) count only when they are the single debt line on the face; next to other debt lines they make total debt Unsupported ("debt subtotal on the balance sheet").
+
+   **Lease-only labels.** A face line tagged with a debt concept other than a finance-lease concept, whose label mentions "lease" but none of debt, borrowing, note, loan or credit, is counted only if the label says "finance" or "capital" lease. Otherwise (a generic or operating lease label) it is excluded with the caution warning `W_LEASE_LINE_EXCLUDED` naming the line, because it may contain operating leases. Example: Watsco's 10-Q for 2026-06-30 tags "Current portion of lease liabilities" (119.7M) as `LongTermDebtAndCapitalLeaseObligationsCurrent`, but it has no separate current operating-lease line and its noncurrent leases are 406.5M operating and 9.1M finance, so the line is mostly operating leases.
+
+3. **Unrecognized debt line.** A face line on the liabilities side (after the total-assets row) whose label matches debt, borrowing, notes payable, loan, credit facility, line of credit, commercial paper or revolving, but whose concept is not in the debt classification, makes total debt **Unsupported**: "unrecognized debt line: '<label>' (<concept>)". Never guess. A classified debt line labeled as a total ("Total …") also makes total debt Unsupported ("debt subtotal on the balance sheet"), because face lines must be disjoint.
+4. **No debt lines.** If no face line is classified as debt and none looks like debt, total debt is **Reported 0** with the note `W_NO_DEBT_LINES` ("no debt lines on the balance sheet"). Likewise, if the face has debt lines but none shows an amount (each is "—", or the only one is an excluded lease line), total debt is **Reported 0** with the note `W_DEBT_LINES_NO_AMOUNT` ("the balance sheet's debt lines show no amount"). These are the only cases where 0 is a reported fact, not a missing value.
+5. **Blank face line.** A face line with no consolidated fact at the date (the face shows "—" or nothing) contributes nothing, noted in provenance. A face line that shows a value but has no matching consolidated fact makes the total Unsupported.
+6. **Cross-check.** When `DebtAndCapitalLeaseObligations` or `DebtLongtermAndShorttermCombinedAmount` is reported at the date and differs from the face sum by more than 0.1M USD, keep the face sum, warn `W_DEBT_TOTAL_TAG_DIFFERS`, and show both.
+7. **Fallback.** If the rendered balance sheet cannot be found or parsed, debt and cash use the tag rules of methodology 0.2.1 (§7.F and §8.F below) and carry the warning `W_FACE_UNAVAILABLE` ("balance-sheet face unavailable; tag rules used"). Never silently. In the fallback, total debt is Missing when the current or the noncurrent component has no tag.
+
+Why (SEC data, checked 2026-10-22): the 0.2.1 tag lists fail for four of six HVAC peers. AAON tags its revolver `LineOfCredit` (not in the list: debt Missing); Graco's `ShortTermBankLoansAndNotesPayable` 30.0 and `UnsecuredDebtCurrent` 0.7 were not in the list (debt understated); Watsco has no noncurrent debt line and a `FinanceLeaseLiabilityNoncurrent` 9.1 line; Trane tags cash only under the disposal-group-inclusive concept. Face lines are disjoint (no double counting), every presented line is seen, and "absent from the face" means "not reported". See `docs/decisions/0006-balance-sheet-face.md`.
+
+### 7.F Fallback: tag rules (methodology 0.2.1)
+
+Used only when the balance-sheet face is unavailable (§7 rule 7). Total tags are a cross-check only. All lines are instants at the balance-sheet date.
 
 1. **Current debt.**
    - If `DebtCurrent` is reported, current debt = `DebtCurrent`. It is an inclusive subtotal, so never add `ShortTermBorrowings`, `CommercialPaper` or current long-term debt to it.
@@ -87,8 +109,6 @@ Total debt is **built from balance-sheet lines**. Total tags are a cross-check o
 5. **Cross-check.** If `DebtAndCapitalLeaseObligations` or `DebtLongtermAndShorttermCombinedAmount` differs from the build by more than 0.1M USD, keep the build, warn `W_DEBT_TOTAL_TAG_DIFFERS`, and show both.
 6. **Exclude** operating lease liabilities.
 
-Open for M2 (not decided): how to handle a current-debt line that is not reported on the balance sheet.
-
 Evidence (SEC data, checked 2026-10-23):
 
 | Company, date       | Lines                                                                                                                                                  | Build (USD m) | Total tag (USD m)                                                                                      |
@@ -98,6 +118,17 @@ Evidence (SEC data, checked 2026-10-23):
 
 ## 8. Cash
 
+- Cash = the sum of face lines (§7 rule 1) classified as:
+  - cash and cash equivalents (`CashAndCashEquivalentsAtCarryingValue`, `Cash`, `CashEquivalentsAtCarryingValue`);
+  - short-term investments or marketable securities (`ShortTermInvestments`, `MarketableSecuritiesCurrent`, `AvailableForSaleSecuritiesDebtSecuritiesCurrent`, `OtherShortTermInvestments`, and time deposits as `CertificatesOfDepositAtCarryingValue`). The full list is in `policy.ts`. Long-term investments (`MarketableSecuritiesNoncurrent`, `LongTermInvestments`, `AvailableForSaleSecuritiesDebtSecuritiesNoncurrent`) are never cash.
+- A face line whose concept includes restricted cash (`CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents`, `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations`) counts, with the warning `W_RESTRICTED_CASH_INCLUDED` ("may include restricted cash"). Example: Trane's 10-Q for 2026-06-30 presents cash only under the disposal-group-inclusive concept (1,318.3M).
+- Restricted cash presented on its own line is excluded.
+- **Unrecognized cash line.** A face line on the assets side (up to the total-assets row) whose label starts with "cash" or matches cash equivalents, short-term investments, marketable securities or time deposits, but whose concept is not classified (and is not separately presented restricted cash), makes cash **Unsupported**: "unrecognized cash line: '<label>' (<concept>)".
+- No cash line on the face, or cash lines that all show no amount → cash is Missing. Cash is never a default 0.
+- Blank face lines and the fallback follow §7 rules 5 and 7.
+
+### 8.F Fallback: tag rules (methodology 0.2.1)
+
 - Cash = `CashAndCashEquivalentsAtCarryingValue` plus short-term investments (`ShortTermInvestments`, `MarketableSecuritiesCurrent`, `AvailableForSaleSecuritiesDebtSecuritiesCurrent`) when present and not already included.
 - Restricted cash is excluded. Fallbacks, in order, when no unrestricted cash tag exists: `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents`, then `CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations`. Either one carries the warning `W_RESTRICTED_CASH_INCLUDED` ("may include restricted cash"). Example: Trane's 10-Q for 2026-06-30 tags cash only under the second fallback (1,318.3M).
 
@@ -105,7 +136,7 @@ Evidence (SEC data, checked 2026-10-23):
 
 **EV = Market cap + Total debt − Cash and short-term investments**
 
-Preferred stock, noncontrolling interests and equity-method investments are left out. Warning "material item not in EV" when `PreferredStockValue` > 0, or noncontrolling interest (`MinorityInterest`, `RedeemableNoncontrollingInterestEquityCarryingAmount`) exceeds 5% of market cap. Balance-sheet items are as of the LTM end date, prices as of the price date, shares as of the cover date; all three are shown.
+Preferred stock, noncontrolling interests and equity-method investments are left out. Warning "material item not in EV" when `PreferredStockValue` > 0, or noncontrolling interest (`MinorityInterest`, `RedeemableNoncontrollingInterestEquityCarryingAmount`) exceeds 5% of market cap. Preferred stock and noncontrolling interest (in equity or temporary equity) are read from the balance-sheet face (§7 rule 1) the same way; if the face is unavailable, the tags above are used. No such line → Missing. A face line whose label looks like preferred stock or noncontrolling interest (not a "Total …" row) but whose concept is not classified makes that item Unsupported. Temporary-equity preferred stock is not classified yet, so it is Unsupported until a real filing is checked. Balance-sheet items are as of the LTM end date, prices as of the price date, shares as of the cover date; all three are shown.
 
 ## 10. Multiples and the NM policy
 
@@ -138,7 +169,7 @@ EV/Revenue = EV ÷ Revenue(LTM) · EV/EBITDA = EV ÷ EBITDA(LTM) · P/E = Price 
 
 Target LTM metric × peer 25th percentile, median and 75th percentile multiple gives implied EV. Subtract debt and add cash for implied equity value, then divide by shares for an implied price. Shown only when every target input is valid.
 
-## 14. Policy constants (v0.2.1)
+## 14. Policy constants (v0.3.0)
 
 | Constant                                            | Value                                    | Section            |
 | --------------------------------------------------- | ---------------------------------------- | ------------------ |
@@ -151,6 +182,8 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Prior-YTD duration tolerance                        | ±7 days                                  | 2                  |
 | Prior-YTD start offset tolerance (≈ 1 year earlier) | ±10 days                                 | 2                  |
 | Debt build vs. total-tag cross-check tolerance      | 0.1M USD                                 | 7                  |
+| Rendered statements cached per accession            | 30 days                                  | 7                  |
+| SEC requests per company (budget)                   | 7                                        | 7                  |
 | Stale-filer cutoff (latest periodic filing age)     | > 200 days → Unsupported                 | §8.6 of blueprint  |
 | Peer revenue screen                                 | 0.2x–5x target screening revenue         | §10.2 of blueprint |
 | Peers selected                                      | 8 by default; user may keep 5–12; max 12 | §10.2 of blueprint |
@@ -162,8 +195,9 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 
 ## 15. Change log
 
-| Version | Date             | Change                                                                                                                                                                                                                                                                         |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0.1.0   | October 23, 2026 | Blueprint §7 restated                                                                                                                                                                                                                                                          |
-| 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals" |
-| 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14): within 2% of 1.5 or a whole number 2–50; the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in M1b                                                                                                               |
+| Version | Date             | Change                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.0   | October 23, 2026 | Blueprint §7 restated                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals"                                                                                                                                                          |
+| 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14): within 2% of 1.5 or a whole number 2–50; the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in M1b                                                                                                                                                                                                                                                                        |
+| 0.3.0   | October 26, 2026 | Debt, cash, preferred and NCI built from balance-sheet face lines (FilingSummary + rendered R file; values from the XBRL instance); unrecognized debt or cash line → Unsupported; lease-only debt-tagged lines excluded unless labeled finance or capital lease (`W_LEASE_LINE_EXCLUDED`); no debt lines → Reported 0 (`W_NO_DEBT_LINES`); 0.2.1 tag rules kept as fallback with `W_FACE_UNAVAILABLE`. Approved by Jiho in M2a planning |

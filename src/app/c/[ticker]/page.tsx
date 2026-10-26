@@ -1,12 +1,13 @@
 // /c/[ticker]: the minimal M1 analysis page (blueprint §5 step 4, §6). Identity,
-// financials strip, the operating block with its provenance drawer, and the
-// disclaimer. Not the M4 workbench.
+// financials strip, the operating block and the balance-sheet block (debt and cash),
+// each with its provenance drawer, and the disclaimer. Not the M4 workbench.
 
 import Link from "next/link";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import { errorResponseBody, PeerSetError } from "@/lib/errors";
 import { defaultDeps, loadFundamentals } from "@/lib/fundamentals";
 import { log } from "@/lib/log";
+import { BalanceSheetBlock } from "@/ui/BalanceSheetBlock";
 import { ErrorState } from "@/ui/ErrorState";
 import { FinancialsStrip } from "@/ui/FinancialsStrip";
 import { IdentityLine } from "@/ui/IdentityLine";
@@ -56,6 +57,7 @@ export default async function CompanyPage({
             <IdentityLine identity={f.identity} />
             <FinancialsStrip f={f} />
             <OperatingBlock f={f} />
+            <BalanceSheetBlock f={f} />
           </>
         ) : (
           error && <ErrorState error={error} />

@@ -9,6 +9,8 @@ import { createLimiter, createSecClient } from "@/sec/client";
 import { getCompanyFacts } from "@/sec/freshness";
 import { ProvenanceDrawer } from "@/ui/ProvenanceDrawer";
 import { OperatingBlock } from "@/ui/OperatingBlock";
+import { BalanceSheetBlock } from "@/ui/BalanceSheetBlock";
+import { BalanceSheetDrawer } from "@/ui/BalanceSheetDrawer";
 import { fixtureFetch } from "../../helpers/fixtures";
 
 // M1 gate: the drawer shows formula, inputs, concept, period, accession and link for
@@ -95,5 +97,58 @@ describe("OperatingBlock", () => {
     expect(html).toContain("EBITDA (standardized, unadjusted)");
     expect(html).toContain("22.51");
     expect(html).toContain("22.0%");
+  });
+});
+
+describe("BalanceSheetBlock", () => {
+  it("shows total debt and cash as buttons that open a dialog, no price or EV", () => {
+    const html = renderToStaticMarkup(<BalanceSheetBlock f={f} />);
+    expect(html).toContain("Balance sheet (for EV)");
+    expect(html).toContain("<table");
+    expect(html.match(/aria-haspopup="dialog"/g)).toHaveLength(2);
+    expect(html).toContain("1,581.3");
+    expect(html).toContain("52.1");
+    expect(html).toContain("June 30, 2026");
+    expect(html).not.toMatch(/market cap|enterprise value/i);
+  });
+});
+
+describe("BalanceSheetDrawer (M2a gate: face lines with labels, concepts, values, reasons)", () => {
+  const render = (item: "debt" | "cash") =>
+    renderToStaticMarkup(
+      <BalanceSheetDrawer f={f} item={item} onClose={() => {}} />,
+    );
+
+  it("debt: every face line with label, concept, value and why", () => {
+    const html = render("debt");
+    expect(html).toContain('aria-labelledby="drawer-title"');
+    expect(html).toContain("Total debt");
+    for (const text of [
+      "Commercial paper",
+      "us-gaap:CommercialPaper",
+      "412.0",
+      "Current maturities of long-term debt",
+      "20.1",
+      "us-gaap:LongTermDebtAndCapitalLeaseObligations",
+      "1,149.2",
+      "Current operating lease liabilities",
+      "operating lease liability: never debt",
+      "Included",
+      "Excluded",
+    ])
+      expect(html, text).toContain(text);
+    // The rendered statement it came from, linked.
+    expect(html).toContain(
+      'href="https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm"',
+    );
+    expect(html).toContain("Consolidated Balance Sheets");
+  });
+
+  it("cash: includes cash and short-term investments, excludes restricted cash", () => {
+    const html = render("cash");
+    expect(html).toContain("Cash and short-term investments");
+    expect(html).toContain("51.5");
+    expect(html).toContain("0.6");
+    expect(html).toContain("restricted cash presented separately: excluded");
   });
 });

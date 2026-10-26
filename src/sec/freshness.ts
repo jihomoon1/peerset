@@ -1,10 +1,15 @@
 // Freshness reconciliation (blueprint §8.3). submissions decides what the latest
 // filing is; companyfacts is trusted only when it contains that filing, otherwise the
 // filing's own XBRL instance is parsed. The instance is always parsed for cover-page
-// share classes. Facts from both sources are returned as-is: choosing between them is
+// share classes and for the balance-sheet face lines (methodology 0.3.0 §7). Facts from both sources are returned as-is: choosing between them is
 // the domain's job (factSelection, M1b).
 
+import {
+  SEC_REQUESTS_PER_COMPANY,
+  STATEMENT_CACHE_SECONDS,
+} from "@/domain/policy";
 import type {
+  BalanceSheetFace,
   CompanyIdentity,
   FilingReference,
   FreshnessStatus,
@@ -16,9 +21,16 @@ import {
   TickerNotFoundError,
   UnsupportedIssuerError,
 } from "@/lib/errors";
-import type { SecClient, SecJsonResponse, SecResponse } from "./client";
+import type {
+  FetchCacheOptions,
+  SecClient,
+  SecJsonResponse,
+  SecResponse,
+} from "./client";
 import { trimCompanyFacts, type TrimmedCompanyFacts } from "./companyFacts";
 import { locateInstance, parseInstance } from "./filingInstance";
+import { FilingIndexSchema, parseOrThrow } from "./schemas";
+import { locateBalanceSheet, parseBalanceSheet } from "./statements";
 import {
   identityFromSubmissions,
   parseSubmissions,
@@ -31,9 +43,10 @@ import {
   submissionsUrl,
 } from "./urls";
 
-// Logical requests per company: submissions, companyfacts, filing index, instance, plus
-// one spare (M1a scope). Client retries on 5xx/timeout are not counted here.
-export const REQUEST_BUDGET = 5;
+// Logical requests per company: submissions, companyfacts, filing index,
+// FilingSummary.xml, the balance-sheet R file, instance, plus one spare (decision
+// 0006). Client retries on 5xx/timeout are not counted here.
+export const REQUEST_BUDGET = SEC_REQUESTS_PER_COMPANY;
 
 export type { FreshnessStatus };
 
@@ -57,6 +70,8 @@ export interface CompanyFactsResult {
     companyfactsNewestAccession: string | null;
   };
   warnings: AdapterWarning[];
+  // The latest filing's rendered balance sheet, dated at its report date.
+  balanceSheet: { date: string; face: BalanceSheetFace };
   requestsMade: number;
 }
 
@@ -87,9 +102,12 @@ export async function getCompanyFacts(
     count();
     return client.getJson(url, cache);
   };
-  const get = (url: string): Promise<SecResponse> => {
+  const get = (
+    url: string,
+    cache?: FetchCacheOptions,
+  ): Promise<SecResponse> => {
     count();
-    return client.get(url);
+    return client.get(url, cache);
   };
 
   // 1. submissions → identity and the latest periodic filing
@@ -125,8 +143,9 @@ export async function getCompanyFacts(
         };
   const current = trimmed.periodicAccessions.has(latest.accession);
 
-  // 3–4. The latest filing's instance: needed for the facts when companyfacts is
-  // behind, and always for cover-page share classes.
+  // 3–6. The latest filing: index, rendered balance sheet, then the instance —
+  // needed for the facts when companyfacts is behind, and always for cover-page
+  // share classes and the face-line values.
   const filing: FilingReference = {
     accession: latest.accession,
     form: latest.form,
@@ -134,7 +153,10 @@ export async function getCompanyFacts(
     reportDate: latest.reportDate,
     indexUrl: latest.indexUrl,
   };
-  const instance = await fetchInstance(identity.cik, filing, { get, getJson });
+  const { instance, face } = await fetchFiling(identity.cik, filing, {
+    get,
+    getJson,
+  });
 
   const warnings: AdapterWarning[] = [];
   let status: FreshnessStatus;
@@ -172,6 +194,7 @@ export async function getCompanyFacts(
       companyfactsNewestAccession: trimmed.newestPeriodicAccession,
     },
     warnings,
+    balanceSheet: { date: latest.reportDate, face },
     requestsMade,
   };
 }
@@ -180,26 +203,97 @@ type InstanceResult =
   | ({ kind: "parsed" } & ReturnType<typeof parseInstance>)
   | { kind: "missing"; reason: string };
 
-async function fetchInstance(
+interface FilingIo {
+  get: (url: string, cache?: FetchCacheOptions) => Promise<SecResponse>;
+  getJson: (url: string) => Promise<SecJsonResponse>;
+}
+
+const decode = (body: Uint8Array) => new TextDecoder().decode(body);
+
+async function fetchFiling(
   cik: string,
   filing: FilingReference,
-  io: {
-    get: (url: string) => Promise<SecResponse>;
-    getJson: (url: string) => Promise<SecJsonResponse>;
-  },
-): Promise<InstanceResult> {
+  io: FilingIo,
+): Promise<{ instance: InstanceResult; face: BalanceSheetFace }> {
+  const missing = (reason: string) => ({
+    instance: { kind: "missing" as const, reason },
+    face: { kind: "unavailable" as const, reason },
+  });
   const indexRes = await io.getJson(filingIndexJsonUrl(cik, filing.accession));
   if (indexRes.kind === "not-found")
-    return { kind: "missing", reason: "filing index returned 404" };
+    return missing("filing index returned 404");
   const located = locateInstance(indexRes.data);
-  if (located.kind === "no-instance")
-    return { kind: "missing", reason: located.reason };
+
+  const face = await fetchBalanceSheet(cik, filing, indexRes.data, io);
+  if (located.kind === "no-instance") return missing(located.reason);
 
   const res = await io.get(
     filingDocumentUrl(cik, filing.accession, located.name),
   );
   if (res.kind === "not-found")
-    return { kind: "missing", reason: `${located.name} returned 404` };
-  const xml = new TextDecoder().decode(res.body);
-  return { kind: "parsed", ...parseInstance(xml, filing) };
+    return {
+      ...missing(`${located.name} returned 404`),
+      face:
+        face.kind === "face"
+          ? { kind: "unavailable", reason: `${located.name} returned 404` }
+          : face,
+    };
+  const extraConcepts =
+    face.kind === "face"
+      ? new Set(face.lines.map((l) => l.concept))
+      : undefined;
+  return {
+    instance: {
+      kind: "parsed",
+      ...parseInstance(decode(res.body), filing, { extraConcepts }),
+    },
+    face,
+  };
+}
+
+// Methodology 0.3.0 §7 rule 1. Filings never change, so both files are cached per
+// accession; they are small (LII: 46 KB and 142 KB).
+async function fetchBalanceSheet(
+  cik: string,
+  filing: FilingReference,
+  rawIndex: unknown,
+  io: FilingIo,
+): Promise<BalanceSheetFace> {
+  const unavailable = (reason: string): BalanceSheetFace => ({
+    kind: "unavailable",
+    reason,
+  });
+  const cache = { revalidate: STATEMENT_CACHE_SECONDS };
+  const names = new Set(
+    parseOrThrow(
+      FilingIndexSchema,
+      rawIndex,
+      "filing index",
+    ).directory.item.map((i) => i.name),
+  );
+  if (!names.has("FilingSummary.xml"))
+    return unavailable("no FilingSummary.xml in the filing index");
+
+  const summary = await io.get(
+    filingDocumentUrl(cik, filing.accession, "FilingSummary.xml"),
+    cache,
+  );
+  if (summary.kind === "not-found")
+    return unavailable("FilingSummary.xml returned 404");
+  const located = locateBalanceSheet(decode(summary.body));
+  if (located.kind === "unavailable") return located;
+
+  const url = filingDocumentUrl(cik, filing.accession, located.file);
+  const r = await io.get(url, cache);
+  if (r.kind === "not-found")
+    return unavailable(`${located.file} returned 404`);
+  const parsed = parseBalanceSheet(decode(r.body), filing.reportDate);
+  if (parsed.kind === "unavailable") return parsed;
+  return {
+    kind: "face",
+    url,
+    statement: located.shortName,
+    scale: parsed.scale,
+    lines: parsed.lines,
+  };
 }

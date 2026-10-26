@@ -1,6 +1,6 @@
 # LII reconciliation — LTM through June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 · golden file `tests/golden/LII-2026Q2.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 (LTM rows below; 0.3.0 changed no LTM value) · golden file `tests/golden/LII-2026Q2.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -40,3 +40,34 @@ Diff is PeerSet minus the manual calculation, at the precision the filing shows 
 6. If a row matches, change its Status to **Confirmed** and commit with a message such as `docs: confirm LII reconciliation`. If it doesn't, leave it as is and note the difference: per the drift protocol (blueprint §16) it is a new filing, a definition change or a bug, and the golden value is never edited just to make a test pass.
 
 FactSet or any other data service may be used as a second check only, never as the source.
+
+## EV inputs at 2026-06-30
+
+Methodology 0.3.0 §7–§9 · golden file `tests/golden/LII-2026Q2-balance.json`. Source: the **10-Q** for the quarter ended June 30, 2026 (link above), "CONSOLIDATED BALANCE SHEETS", June 30, 2026 column; SEC's rendering: [R2.htm](https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm). USD millions. "PeerSet" is the engine's value from the frozen fixtures.
+
+| Line (as labeled on the balance sheet)   | Concept                                         | PeerSet | Filing                           | In total? | Rule                                                                          | Diff | Status                                                  |
+| ---------------------------------------- | ----------------------------------------------- | ------- | -------------------------------- | --------- | ----------------------------------------------------------------------------- | ---- | ------------------------------------------------------- |
+| Commercial paper                         | `CommercialPaper`                               | 412.0   | 412.0                            | Debt      | §7 rule 2                                                                     | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Current maturities of long-term debt     | `LongTermDebtAndCapitalLeaseObligationsCurrent` | 20.1    | 20.1                             | Debt      | §7 rule 2                                                                     | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Long-term debt                           | `LongTermDebtAndCapitalLeaseObligations`        | 1,149.2 | 1,149.2                          | Debt      | §7 rule 2                                                                     | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Current operating lease liabilities      | `OperatingLeaseLiabilityCurrent`                | 87.2    | 87.2                             | No        | §7 rule 2: never debt                                                         | —    | Confirmed: verified against rendered filings 2026-10-26 |
+| Long-term operating lease liabilities    | `OperatingLeaseLiabilityNoncurrent`             | 356.2   | 356.2                            | No        | §7 rule 2: never debt                                                         | —    | Confirmed: verified against rendered filings 2026-10-26 |
+| **Total debt**                           |                                                 | 1,581.3 | 412.0 + 20.1 + 1,149.2 = 1,581.3 |           | §7; ties to the `DebtAndCapitalLeaseObligations` tag (1,581.3), so no warning | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Cash and cash equivalents                | `CashAndCashEquivalentsAtCarryingValue`         | 51.5    | 51.5                             | Cash      | §8                                                                            | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Short-term investments                   | `ShortTermInvestments`                          | 0.6     | 0.6                              | Cash      | §8                                                                            | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Restricted cash equivalents (noncurrent) | `RestrictedCashNoncurrent`                      | 18.8    | 18.8                             | No        | §8: restricted cash excluded                                                  | —    | Confirmed: verified against rendered filings 2026-10-26 |
+| **Cash and short-term investments**      |                                                 | 52.1    | 51.5 + 0.6 = 52.1                |           | §8                                                                            | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Preferred stock (no shares issued)       | `PreferredStockValue`                           | 0.0     | 0.0                              | Not in EV | §9                                                                            | 0.0  | Confirmed: verified against rendered filings 2026-10-26 |
+| Noncontrolling interest                  | —                                               | —       | no line                          | Not in EV | §9: Missing (none presented)                                                  | —    | Confirmed: verified against rendered filings 2026-10-26 |
+
+### How to check the EV inputs (about 10 minutes)
+
+1. Open the **10-Q** link at the top of this file and find "CONSOLIDATED BALANCE SHEETS" (page 1). Use the **June 30, 2026** column, not December 31, 2025.
+2. Under "Current Liabilities", write down "Commercial paper" and "Current maturities of long-term debt". Under the noncurrent liabilities, write down "Long-term debt". Add the three: that is total debt.
+3. Under "Current Assets", write down "Cash and cash equivalents" and "Short-term investments". Add them: that is cash. "Restricted cash equivalents" (below total current assets) is deliberately left out.
+4. Check that the operating lease lines are **not** in total debt, that "Preferred stock" shows no shares issued, and that there is no noncontrolling-interest line.
+5. If a row matches, change its Status to **Confirmed** and commit (`docs: confirm LII EV inputs`). If not, leave it and note the difference.
+
+## Golden change log
+
+- **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.

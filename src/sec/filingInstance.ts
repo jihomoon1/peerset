@@ -160,9 +160,16 @@ interface Context {
   key: string;
 }
 
+export interface ParseOptions {
+  // Concepts to keep besides the whitelist: the balance-sheet face lines
+  // (methodology 0.3.0 §7 rule 1), which may be any us-gaap or filer concept.
+  extraConcepts?: ReadonlySet<string>;
+}
+
 export function parseInstance(
   xml: string,
   filing: FilingReference,
+  { extraConcepts }: ParseOptions = {},
 ): ParsedInstance {
   const doc = parser.parse(xml) as XmlNode;
   const rootEntry = Object.entries(doc).find(
@@ -192,7 +199,11 @@ export function parseInstance(
   for (const [key, value] of Object.entries(root)) {
     if (key.startsWith("@_") || !Array.isArray(value)) continue;
     const concept = nsx.standardName(key);
-    if (!concept || !CONCEPT_WHITELIST.has(concept)) continue;
+    if (
+      !concept ||
+      !(CONCEPT_WHITELIST.has(concept) || extraConcepts?.has(concept))
+    )
+      continue;
 
     for (const node of value) {
       if (nsx.attr(node, NS.xsi, "nil") === "true") continue;

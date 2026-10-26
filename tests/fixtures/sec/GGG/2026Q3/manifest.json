@@ -1,0 +1,65 @@
+{
+  "ticker": "GGG",
+  "cik": "0000042888",
+  "accession": "0000042888-26-000145",
+  "form": "10-Q",
+  "filedDate": "2026-10-21",
+  "reportDate": "2026-09-25",
+  "asof": "2026Q3",
+  "files": [
+    {
+      "role": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000042888.json",
+      "file": "submissions.json.gz",
+      "retrievedAt": "2026-10-26T15:34:55.101Z",
+      "bytes": 158010,
+      "gzippedBytes": 19657,
+      "sha256": "9662a1be38b83bf51010c06e98ece3575a4dcb3dc7fe761673de3da4646ed119"
+    },
+    {
+      "role": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000042888.json",
+      "file": "companyfacts.json.gz",
+      "retrievedAt": "2026-10-26T15:34:55.425Z",
+      "bytes": 3542855,
+      "gzippedBytes": 237430,
+      "sha256": "14290a84ff90c617b9459e19a316d6ba66b8b00e2dd48aa83f97db4cf7e2a811"
+    },
+    {
+      "role": "filing-index",
+      "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/index.json",
+      "file": "index.json.gz",
+      "retrievedAt": "2026-10-26T15:34:55.737Z",
+      "bytes": 7059,
+      "gzippedBytes": 829,
+      "sha256": "311fc8af396d35ffebcf450d388548144b7afac9eb9316f70baa3451770b3138"
+    },
+    {
+      "role": "xbrl-instance",
+      "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925_htm.xml",
+      "file": "ggg-20260925_htm.xml.gz",
+      "retrievedAt": "2026-10-26T15:34:55.895Z",
+      "bytes": 857164,
+      "gzippedBytes": 35299,
+      "sha256": "3e843d7263f709236681d5b5136618cc36afb97263b6f28dcbf4989905d26ca5"
+    },
+    {
+      "role": "filing-summary",
+      "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/FilingSummary.xml",
+      "file": "FilingSummary.xml.gz",
+      "retrievedAt": "2026-10-26T15:34:56.263Z",
+      "bytes": 30024,
+      "gzippedBytes": 2528,
+      "sha256": "c046f4a3e6205d0577a7b360811d65d80c0d29083c1657a43ba38ac42daada5e"
+    },
+    {
+      "role": "statement-balance-sheet",
+      "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/R4.htm",
+      "file": "R4.htm.gz",
+      "retrievedAt": "2026-10-26T15:34:56.570Z",
+      "bytes": 120917,
+      "gzippedBytes": 8852,
+      "sha256": "9d024db3e7260139d866a0e1016c7a422c30595280feb1a7a8bfb96e27a80b38"
+    }
+  ]
+}

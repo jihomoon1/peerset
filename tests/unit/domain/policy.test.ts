@@ -1,12 +1,24 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import * as policy from "@/domain/policy";
 
-// Expected values are copied by hand from docs/methodology.md (0.2.1). If one of these
+// Expected values are copied by hand from docs/methodology.md (0.3.0). If one of these
 // fails, either policy.ts drifted from the methodology or the methodology changed
 // without a version bump.
-describe("policy matches methodology §14 (v0.2.1)", () => {
+describe("policy matches methodology §14 (v0.3.0)", () => {
   it("has the approved methodology version", () => {
-    expect(policy.METHODOLOGY_VERSION).toBe("0.2.1");
+    expect(policy.METHODOLOGY_VERSION).toBe("0.3.0");
+  });
+
+  it("matches the version written in docs/methodology.md", () => {
+    const doc = readFileSync(
+      path.join(import.meta.dirname, "../../../docs/methodology.md"),
+      "utf8",
+    );
+    expect(/Methodology version: ([\d.]+)/.exec(doc)?.[1]).toBe(
+      policy.METHODOLOGY_VERSION,
+    );
   });
 
   it("has every §14 constant", () => {
@@ -19,6 +31,8 @@ describe("policy matches methodology §14 (v0.2.1)", () => {
     expect(policy.PRIOR_YTD_DURATION_TOLERANCE_DAYS).toBe(7); // §2
     expect(policy.PRIOR_YTD_START_OFFSET_TOLERANCE_DAYS).toBe(10); // §2
     expect(policy.DEBT_TOTAL_TAG_TOLERANCE_USD).toBe(100_000); // §7: 0.1M USD
+    expect(policy.STATEMENT_CACHE_SECONDS).toBe(30 * 24 * 3600); // §14: 30 days
+    expect(policy.SEC_REQUESTS_PER_COMPANY).toBe(7); // §14
     expect(policy.STALE_FILER_DAYS).toBe(200); // blueprint §8.6
     expect(policy.PEER_REVENUE_SCREEN).toEqual({ min: 0.2, max: 5 }); // blueprint §10.2
     expect(policy.PEERS).toEqual({ default: 8, min: 5, max: 12 }); // blueprint §10.2
@@ -94,6 +108,98 @@ describe("policy matches methodology §14 (v0.2.1)", () => {
       "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
       "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsIncludingDisposalGroupAndDiscontinuedOperations",
     ]);
+  });
+
+  describe("§7–§9 face classification (0.3.0)", () => {
+    const gaap = (n: string) => `us-gaap:${n}`;
+
+    it("classifies every debt line named in §7 rule 2", () => {
+      for (const n of [
+        "ShortTermBorrowings",
+        "CommercialPaper",
+        "ShortTermBankLoansAndNotesPayable",
+        "LineOfCredit",
+        "LongTermLineOfCredit",
+        "DebtCurrent",
+        "LongTermDebtCurrent",
+        "LongTermDebtNoncurrent",
+        "LongTermDebtAndCapitalLeaseObligations",
+        "LongTermDebtAndCapitalLeaseObligationsCurrent",
+        "SecuredDebt",
+        "UnsecuredDebtCurrent",
+        "ConvertibleNotesPayable",
+        "SeniorNotes",
+        "FinanceLeaseLiabilityCurrent",
+        "FinanceLeaseLiabilityNoncurrent",
+        "BankOverdrafts",
+      ])
+        expect(policy.FACE.debt.has(gaap(n)), n).toBe(true);
+    });
+
+    it("never classifies operating leases as debt", () => {
+      for (const c of policy.FACE.operatingLease)
+        expect(policy.FACE.debt.has(c), c).toBe(false);
+    });
+
+    it("finance-lease concepts are all debt", () => {
+      for (const c of policy.FACE.financeLease)
+        expect(policy.FACE.debt.has(c), c).toBe(true);
+    });
+
+    it("classifies the §8 cash concepts and keeps restricted cash apart", () => {
+      for (const n of [
+        "CashAndCashEquivalentsAtCarryingValue",
+        "Cash",
+        "CashEquivalentsAtCarryingValue",
+        "ShortTermInvestments",
+        "MarketableSecuritiesCurrent",
+        "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
+      ])
+        expect(policy.FACE.cash.has(gaap(n)), n).toBe(true);
+      expect([...policy.FACE.cashIncludingRestricted]).toEqual(
+        policy.CONCEPTS.cashRestrictedFallback,
+      );
+      for (const c of policy.FACE.restrictedCash)
+        expect(policy.FACE.cash.has(c), c).toBe(false);
+    });
+
+    it("classifies §9 preferred stock and NCI", () => {
+      expect(policy.FACE.preferred.has(gaap("PreferredStockValue"))).toBe(true);
+      expect(policy.FACE.nci.has(gaap("MinorityInterest"))).toBe(true);
+      expect(
+        policy.FACE.nci.has(
+          gaap("RedeemableNoncontrollingInterestEquityCarryingAmount"),
+        ),
+      ).toBe(true);
+    });
+
+    it("§7 rule 3 debt-like labels", () => {
+      for (const label of [
+        "Long-term debt",
+        "Short-term borrowings",
+        "Notes payable to banks",
+        "Term loan",
+        "Revolving credit facility",
+        "Line of credit",
+        "Commercial paper",
+      ])
+        expect(policy.DEBT_LIKE_LABEL.test(label), label).toBe(true);
+      for (const label of ["Accounts payable", "Operating lease liabilities"])
+        expect(policy.DEBT_LIKE_LABEL.test(label), label).toBe(false);
+    });
+
+    it("§8 cash-like labels", () => {
+      for (const label of [
+        "Cash and cash equivalents",
+        "Cash",
+        "Short-term investments",
+        "Short-term cash investments",
+        "Marketable securities",
+        "Time deposits",
+      ])
+        expect(policy.CASH_LIKE_LABEL.test(label), label).toBe(true);
+      expect(policy.CASH_LIKE_LABEL.test("Accounts receivable")).toBe(false);
+    });
   });
 
   it("has the §9 not-in-EV warning concepts", () => {
