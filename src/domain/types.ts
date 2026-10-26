@@ -78,6 +78,18 @@ export type FreshnessStatus =
   | "filing-parsed" // it didn't; the filing's instance was parsed and merged
   | "filing-missing"; // it didn't, and the filing's instance couldn't be found
 
+// ── Prices (blueprint §9, §11) ──────────────────────────────────────────────
+
+// One end-of-day close. Prices are inputs, never real-time (methodology §12).
+export interface QuoteSnapshot {
+  symbol: string; // SEC's spelling of the ticker, e.g. 'WSO-B'
+  close: number;
+  currency: "USD";
+  asOfDate: string; // trading date of the close
+  source: "user_entered" | "alpha_vantage";
+  retrievedAt: string; // ISO timestamp
+}
+
 // ── Metrics (blueprint §11, §15) ────────────────────────────────────────────
 
 export type WarningCode =
