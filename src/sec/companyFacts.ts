@@ -3,8 +3,8 @@
 // No selection happens here: every surviving fact is returned, duplicates included.
 
 import {
-  ACCEPTED_UNITS,
   CONCEPT_WHITELIST,
+  isAcceptedUnit,
   PERIODIC_FORMS,
 } from "@/domain/policy";
 import { addDays } from "@/domain/dates";
@@ -63,7 +63,7 @@ export function trimCompanyFacts(
         `companyfacts: facts.${taxonomy}.${localName}`,
       );
       for (const [unit, facts] of Object.entries(units)) {
-        if (!ACCEPTED_UNITS.has(unit)) continue;
+        if (!isAcceptedUnit(concept, unit)) continue;
         for (const f of facts) {
           if (!PERIODIC_FORMS.has(f.form)) continue;
           rows.push({

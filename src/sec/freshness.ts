@@ -7,6 +7,7 @@
 import type {
   CompanyIdentity,
   FilingReference,
+  FreshnessStatus,
   ReportedFinancialFact,
   ReportedTextFact,
 } from "@/domain/types";
@@ -34,10 +35,7 @@ import {
 // one spare (M1a scope). Client retries on 5xx/timeout are not counted here.
 export const REQUEST_BUDGET = 5;
 
-export type FreshnessStatus =
-  | "current" // companyfacts contains the latest periodic filing
-  | "filing-parsed" // it didn't; the filing's instance was parsed and merged
-  | "filing-missing"; // it didn't, and the filing's instance couldn't be found
+export type { FreshnessStatus };
 
 export interface AdapterWarning {
   code:
@@ -64,7 +62,16 @@ export interface CompanyFactsResult {
 
 export async function getCompanyFacts(
   cik: string,
-  { asOf, client }: { asOf: string; client: SecClient },
+  {
+    asOf,
+    client,
+    submissionsRevalidate,
+  }: {
+    asOf: string;
+    client: SecClient;
+    // Seconds to keep submissions in the fetch cache (blueprint §14: 6 h). Off by default.
+    submissionsRevalidate?: number;
+  },
 ): Promise<CompanyFactsResult> {
   let requestsMade = 0;
   const count = () => {
@@ -73,9 +80,12 @@ export async function getCompanyFacts(
         `SEC request budget of ${REQUEST_BUDGET} exceeded for CIK ${cik}`,
       );
   };
-  const getJson = (url: string): Promise<SecJsonResponse> => {
+  const getJson = (
+    url: string,
+    cache?: { revalidate?: number },
+  ): Promise<SecJsonResponse> => {
     count();
-    return client.getJson(url);
+    return client.getJson(url, cache);
   };
   const get = (url: string): Promise<SecResponse> => {
     count();
@@ -83,7 +93,9 @@ export async function getCompanyFacts(
   };
 
   // 1. submissions → identity and the latest periodic filing
-  const subsRes = await getJson(submissionsUrl(cik));
+  const subsRes = await getJson(submissionsUrl(cik), {
+    revalidate: submissionsRevalidate,
+  });
   if (subsRes.kind === "not-found")
     throw new TickerNotFoundError(cik, "submissions returned 404");
   const submissions = parseSubmissions(subsRes.data);

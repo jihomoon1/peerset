@@ -152,3 +152,32 @@ describe("getCompanyFacts — edge cases", () => {
     expect(result.facts.every((f) => f.source === "companyfacts")).toBe(true);
   });
 });
+
+describe("getCompanyFacts — fetch caching", () => {
+  it("caches submissions when asked, never companyfacts", async () => {
+    const fake = fixtureFetch(["LII/2026Q2"]);
+    const inits = new Map<string, RequestInit | undefined>();
+    const client = createSecClient({
+      fetch: (async (input: string, init?: RequestInit) => {
+        inits.set(String(input), init);
+        return fake.fetch(input, init);
+      }) as typeof fetch,
+      env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
+      logger: () => {},
+      limiter: createLimiter(0),
+    });
+    await getCompanyFacts("0001069202", {
+      asOf: AS_OF,
+      client,
+      submissionsRevalidate: 21_600,
+    });
+    expect(
+      inits.get("https://data.sec.gov/submissions/CIK0001069202.json"),
+    ).toMatchObject({ cache: "force-cache", next: { revalidate: 21_600 } });
+    expect(
+      inits.get(
+        "https://data.sec.gov/api/xbrl/companyfacts/CIK0001069202.json",
+      ),
+    ).not.toHaveProperty("cache");
+  });
+});

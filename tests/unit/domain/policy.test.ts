@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import * as policy from "@/domain/policy";
 
-// Expected values are copied by hand from docs/methodology.md (0.2.0). If one of these
+// Expected values are copied by hand from docs/methodology.md (0.2.1). If one of these
 // fails, either policy.ts drifted from the methodology or the methodology changed
 // without a version bump.
-describe("policy matches methodology §14 (v0.2.0)", () => {
+describe("policy matches methodology §14 (v0.2.1)", () => {
   it("has the approved methodology version", () => {
-    expect(policy.METHODOLOGY_VERSION).toBe("0.2.0");
+    expect(policy.METHODOLOGY_VERSION).toBe("0.2.1");
   });
 
   it("has every §14 constant", () => {
@@ -23,6 +23,10 @@ describe("policy matches methodology §14 (v0.2.0)", () => {
     expect(policy.PEER_REVENUE_SCREEN).toEqual({ min: 0.2, max: 5 }); // blueprint §10.2
     expect(policy.PEERS).toEqual({ default: 8, min: 5, max: 12 }); // blueprint §10.2
     expect(policy.EXCLUDED_SIC_RANGE).toEqual({ min: 6000, max: 6799 }); // blueprint §3
+    expect(policy.SPLIT_LIKE_RATIO).toEqual({
+      targets: [1.5, ...Array.from({ length: 49 }, (_, i) => i + 2)],
+      tolerance: 0.02,
+    }); // §5: 3-for-2, or 2-for-1 through 50-for-1
     expect([...policy.PERIODIC_FORMS]).toEqual([
       "10-K",
       "10-K/A",
@@ -110,6 +114,34 @@ describe("policy matches methodology §14 (v0.2.0)", () => {
       "dei:TradingSymbol",
       "dei:SecurityExchangeName",
     ]);
+  });
+
+  it("§1.2: each concept is accepted only in its own unit", () => {
+    const ok = policy.isAcceptedUnit;
+    expect(ok("us-gaap:Revenues", "USD")).toBe(true);
+    expect(ok("us-gaap:Revenues", "shares")).toBe(false);
+    expect(ok("us-gaap:EarningsPerShareDiluted", "USD/shares")).toBe(true);
+    expect(ok("us-gaap:EarningsPerShareDiluted", "USD")).toBe(false);
+    expect(
+      ok("us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding", "shares"),
+    ).toBe(true);
+    expect(
+      ok("us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding", "USD"),
+    ).toBe(false);
+    expect(ok("dei:EntityCommonStockSharesOutstanding", "shares")).toBe(true);
+    expect(ok("dei:EntityCommonStockSharesOutstanding", "USD")).toBe(false);
+    expect(
+      ok("us-gaap:StockholdersEquityNoteStockSplitConversionRatio1", "pure"),
+    ).toBe(true);
+    expect(ok("us-gaap:CommercialPaper", "pure")).toBe(false);
+    expect(ok("us-gaap:CommercialPaper", "EUR")).toBe(false);
+  });
+
+  it("accepts unit pure only for the §5 split-ratio fact", () => {
+    expect(policy.PURE_UNIT_CONCEPTS).toEqual(
+      new Set(["us-gaap:StockholdersEquityNoteStockSplitConversionRatio1"]),
+    );
+    expect(policy.ACCEPTED_UNITS.has("pure")).toBe(false);
   });
 
   it("whitelist is exactly the union of every concept list", () => {

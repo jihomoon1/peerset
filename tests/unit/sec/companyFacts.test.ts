@@ -29,10 +29,36 @@ describe("companyfacts trimming", () => {
   it("keeps only whitelisted concepts and accepted units", () => {
     for (const f of [...lii.facts, ...wso.facts]) {
       expect(CONCEPT_WHITELIST.has(f.concept)).toBe(true);
-      expect(["USD", "USD/shares", "shares"]).toContain(f.unit);
+      expect(["USD", "USD/shares", "shares", "pure"]).toContain(f.unit);
       expect(f.source).toBe("companyfacts");
       expect(f.dimensions).toEqual({});
     }
+  });
+
+  it("keeps unit pure only for the split-ratio concept (§1.2)", () => {
+    const row = {
+      start: "2026-01-01",
+      end: "2026-06-30",
+      val: 2,
+      accn: "0000000001-26-000050",
+      form: "10-Q",
+      filed: "2026-07-29",
+    };
+    const { facts } = trimCompanyFacts({
+      cik: 1,
+      entityName: "Synthetic",
+      facts: {
+        "us-gaap": {
+          StockholdersEquityNoteStockSplitConversionRatio1: {
+            units: { pure: [row] },
+          },
+          Revenues: { units: { pure: [row] } },
+        },
+      },
+    });
+    expect(facts.map((f) => [f.concept, f.unit])).toEqual([
+      ["us-gaap:StockholdersEquityNoteStockSplitConversionRatio1", "pure"],
+    ]);
   });
 
   it("gives duration facts a start and instant facts none", () => {

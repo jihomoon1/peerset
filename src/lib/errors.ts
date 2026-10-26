@@ -2,6 +2,7 @@
 // internal detail for logs. Detail never contains the User-Agent or any header.
 
 export type ErrorCode =
+  | "INVALID_INPUT"
   | "TICKER_NOT_FOUND"
   | "UNSUPPORTED_ISSUER"
   | "SEC_UNAVAILABLE"
@@ -20,6 +21,14 @@ export abstract class PeerSetError extends Error {
     this.name = new.target.name;
     this.userMessage = userMessage;
     this.detail = detail;
+  }
+}
+
+export class InvalidInputError extends PeerSetError {
+  readonly code = "INVALID_INPUT";
+  readonly retryable = false;
+  constructor(userMessage: string, detail = userMessage) {
+    super(userMessage, detail);
   }
 }
 
@@ -72,4 +81,42 @@ export class InternalError extends PeerSetError {
   constructor(detail: string) {
     super("Something went wrong on our side", detail);
   }
+}
+
+// ── HTTP mapping ────────────────────────────────────────────────────────────
+
+const HTTP_STATUS: Record<ErrorCode, number> = {
+  INVALID_INPUT: 400,
+  TICKER_NOT_FOUND: 404,
+  UNSUPPORTED_ISSUER: 422,
+  SEC_RATE_LIMITED: 429,
+  SEC_SCHEMA_CHANGED: 502,
+  SEC_UNAVAILABLE: 503,
+  INTERNAL: 500,
+};
+
+export function httpStatusFor(err: unknown): number {
+  return err instanceof PeerSetError ? HTTP_STATUS[err.code] : 500;
+}
+
+export interface ErrorResponseBody {
+  code: ErrorCode;
+  message: string;
+  retryable: boolean;
+  requestId: string;
+}
+
+// What the browser sees: never the detail, a stack trace or a raw provider error.
+export function errorResponseBody(
+  err: unknown,
+  requestId: string,
+): ErrorResponseBody {
+  const e =
+    err instanceof PeerSetError ? err : new InternalError("unclassified error");
+  return {
+    code: e.code,
+    message: e.userMessage,
+    retryable: e.retryable,
+    requestId,
+  };
 }
