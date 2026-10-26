@@ -344,9 +344,25 @@ describe("missing components and concept choice (methodology §3)", () => {
       d(REV, "2026-01-01", "2026-06-30", 500, q),
     ];
     const r = computeLtm(input(facts, "2026-06-30", "10-Q"), [REV]);
-    expect(r.kind).toBe("unsupported");
+    expect(r).toMatchObject({
+      kind: "unsupported",
+      reason: { code: "NO_CONCEPT_WITH_ALL_COMPONENTS" },
+    });
     if (r.kind === "unsupported")
-      expect(r.reason.message).toContain("prior-year YTD");
+      expect(r.reason.message).toContain("missing prior-year YTD");
+  });
+
+  it("the prior fiscal year is never taken as the prior-year YTD, so the next concept is used", () => {
+    const facts = [
+      d(DDA, "2025-01-01", "2025-12-31", 1_274, k), // FY and current YTD, no prior YTD
+      d(DDA, "2026-01-01", "2026-06-30", 650, q),
+      d(DAAN, "2025-01-01", "2025-12-31", 1_274, k),
+      d(DAAN, "2026-01-01", "2026-06-30", 650, q),
+      d(DAAN, "2025-01-01", "2025-06-30", 620, q),
+    ];
+    const r = ok(computeLtm(input(facts, "2026-06-30", "10-Q"), [DDA, DAAN]));
+    expect(r.calc.concept).toBe(DAAN);
+    expect(r.value).toBe(1_274 + 650 - 620);
   });
 
   it("a missing fiscal year makes the metric Unsupported", () => {

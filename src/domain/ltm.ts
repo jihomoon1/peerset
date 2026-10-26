@@ -154,12 +154,14 @@ function findComponents(
         (c) => Math.abs(daysBetween(addDays(c.end, 1), ytd.start)),
       )
     : undefined;
-  // Prior-year YTD: starts about a year before the current YTD, similar length.
+  // Prior-year YTD: starts about a year before the current YTD, similar length. Like
+  // the current YTD it is under a year, so a prior FY is never taken for it (§3).
   const prior = ytd
     ? closest(
         periods.filter(
           (c) =>
             c.end < ytd.start &&
+            lengthDays(c.start, c.end) < MIN_ANNUAL_DAYS &&
             Math.abs(daysBetween(c.start, ytd.start) - YEAR_DAYS) <=
               COMPONENT_SEARCH_DAYS,
         ),
