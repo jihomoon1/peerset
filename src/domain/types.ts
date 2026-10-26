@@ -165,7 +165,7 @@ export type Metric =
     }
   | {
       status: "nm";
-      value: number;
+      value: number | null; // the ratio as computed; null when it has none (÷ 0)
       reason: NmReason;
       inputs: Provenance[];
       warnings: MetricWarning[];
