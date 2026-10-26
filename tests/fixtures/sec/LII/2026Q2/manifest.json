@@ -42,6 +42,24 @@
       "bytes": 1184784,
       "gzippedBytes": 55554,
       "sha256": "258fb54d2b29029ee918a2d5152d4aec1db570591ce7d1094a52eb9aadbcf400"
+    },
+    {
+      "role": "filing-summary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/FilingSummary.xml",
+      "file": "FilingSummary.xml.gz",
+      "retrievedAt": "2026-10-26T15:34:40.103Z",
+      "bytes": 45506,
+      "gzippedBytes": 3525,
+      "sha256": "344dbf86ad91e1a03e9408705d0d9effd83fb31335ddfb14d60a6c04e666f3bd"
+    },
+    {
+      "role": "statement-balance-sheet",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm",
+      "file": "R2.htm.gz",
+      "retrievedAt": "2026-10-26T15:34:40.403Z",
+      "bytes": 141935,
+      "gzippedBytes": 10465,
+      "sha256": "a931678a347bd85b2e4a11b71e5012be1a6cd066f456a81a2b9904d1c5e6ab8a"
     }
   ]
 }

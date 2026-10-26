@@ -1,0 +1,65 @@
+{
+  "ticker": "CARR",
+  "cik": "0001783180",
+  "accession": "0001783180-26-000032",
+  "form": "10-Q",
+  "filedDate": "2026-07-28",
+  "reportDate": "2026-06-30",
+  "asof": "2026Q2",
+  "files": [
+    {
+      "role": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001783180.json",
+      "file": "submissions.json.gz",
+      "retrievedAt": "2026-10-26T15:34:59.460Z",
+      "bytes": 87125,
+      "gzippedBytes": 14673,
+      "sha256": "12b4872a9613f0699c232bbc749ab753ef68650701e1eeeb15566ba0a8c8d188"
+    },
+    {
+      "role": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001783180.json",
+      "file": "companyfacts.json.gz",
+      "retrievedAt": "2026-10-26T15:34:59.754Z",
+      "bytes": 1872029,
+      "gzippedBytes": 110548,
+      "sha256": "5a87741e4307b6b623aa04d570499324bc5b73358061782a33130a9e93e2efe6"
+    },
+    {
+      "role": "filing-index",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/index.json",
+      "file": "index.json.gz",
+      "retrievedAt": "2026-10-26T15:34:59.976Z",
+      "bytes": 9036,
+      "gzippedBytes": 942,
+      "sha256": "ea8a0749d740855b8c8a5af55e6d4120b818061614c3b05c72297f3e2207be4a"
+    },
+    {
+      "role": "xbrl-instance",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/carr-20260630_htm.xml",
+      "file": "carr-20260630_htm.xml.gz",
+      "retrievedAt": "2026-10-26T15:35:00.205Z",
+      "bytes": 1755091,
+      "gzippedBytes": 74109,
+      "sha256": "8b5ae9240b41549caded437682ecc3df053d04ed6876fb1d60984aa88f472715"
+    },
+    {
+      "role": "filing-summary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/FilingSummary.xml",
+      "file": "FilingSummary.xml.gz",
+      "retrievedAt": "2026-10-26T15:35:00.529Z",
+      "bytes": 45331,
+      "gzippedBytes": 3864,
+      "sha256": "07c43b895f7617eadd0130998391ede3546f5fc1098340171544661bef689d08"
+    },
+    {
+      "role": "statement-balance-sheet",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000032/R4.htm",
+      "file": "R4.htm.gz",
+      "retrievedAt": "2026-10-26T15:35:00.697Z",
+      "bytes": 170111,
+      "gzippedBytes": 11340,
+      "sha256": "5f1963f8722774777ffb7936766b93eda28d34686e9659cdbd688b1eacbc9f22"
+    }
+  ]
+}
