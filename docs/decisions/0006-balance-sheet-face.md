@@ -37,6 +37,8 @@ Every EDGAR filing ships SEC-rendered statements: `FilingSummary.xml` plus one `
 - **Watsco** tags "Current portion of lease liabilities" (119.7M) as `LongTermDebtAndCapitalLeaseObligationsCurrent`. It has no separate current operating-lease line and its noncurrent leases are 406.5M operating vs 9.1M finance, so the line is mostly operating leases. Jiho's rule (added to 0.3.0 §7 rule 2): a debt-tagged line whose label says only "lease" counts only when it says finance or capital lease; otherwise it is excluded with `W_LEASE_LINE_EXCLUDED`.
 - **AAON** presents "New market tax credit obligation" lines (company tags). Their labels are not debt-like, so they are not debt under 0.3.0 (Jiho confirmed); they are listed in the reconciliation.
 
+- **Carrier 2026-03-31** tags its 10,422.0 noncurrent debt under both `LongTermDebtNoncurrent` and `LongTermDebtAndCapitalLeaseObligations` (companyfacts, 10-Q 0001783180-26-000026), so the table above and the methodology §7.F evidence table are both correct.
+
 ## Not chosen
 
 - The presentation linkbase (`_pre.xml`): Watsco's filing has none, while every filing has the rendered statements.
