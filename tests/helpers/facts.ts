@@ -4,6 +4,7 @@ import type {
   FilingReference,
   PeriodicForm,
   ReportedFinancialFact,
+  ReportedTextFact,
 } from "@/domain/types";
 
 export function filing(
@@ -43,5 +44,25 @@ export function fact(spec: FactSpec): ReportedFinancialFact {
     dimensions: spec.dimensions ?? {},
     filing: spec.filing,
     source: spec.source ?? "companyfacts",
+  };
+}
+
+interface TextFactSpec {
+  concept: string;
+  value: string;
+  start: string;
+  end: string;
+  filing: FilingReference;
+  dimensions?: Record<string, string>;
+}
+
+export function textFact(spec: TextFactSpec): ReportedTextFact {
+  return {
+    concept: spec.concept,
+    value: spec.value,
+    period: { kind: "duration", start: spec.start, end: spec.end },
+    dimensions: spec.dimensions ?? {},
+    filing: spec.filing,
+    source: "filing",
   };
 }

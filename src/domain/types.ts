@@ -1,5 +1,4 @@
-// Domain types from blueprint §11. Share classes, EV and comps types arrive with the
-// milestones that use them.
+// Domain types from blueprint §11. Comps types arrive with the milestone that uses them.
 
 export type Unit = "USD" | "USD/shares" | "shares" | "ratio" | "multiple";
 
@@ -94,7 +93,11 @@ export type WarningCode =
   | "W_DEBT_LINES_NO_AMOUNT" // §7 rule 4: debt lines all blank, a reported 0
   | "W_DEBT_TOTAL_TAG_DIFFERS" // §7 rule 6
   | "W_LEASE_LINE_EXCLUDED" // §7 rule 2: debt-tagged lease-only line left out
-  | "W_RESTRICTED_CASH_INCLUDED"; // §8
+  | "W_RESTRICTED_CASH_INCLUDED" // §8
+  | "W_SHARES_AFTER_BALANCE_SHEET" // §6: cover date after the balance sheet (info)
+  | "W_TICKER_NOT_IN_SEC_LIST" // §6: cover symbol SEC doesn't list for the CIK
+  | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
+  | "W_PRICE_STALE"; // §12: price date > 7 days before the analysis date
 
 export interface MetricWarning {
   code: WarningCode;
@@ -124,7 +127,11 @@ export interface MetricUnsupportedReason {
     | "DEBT_SUBTOTAL_ON_FACE" // §7 rule 3
     | "UNRECOGNIZED_CASH_LINE" // §8
     | "UNRECOGNIZED_EQUITY_LINE" // §9: preferred/NCI-looking line not classified
-    | "FACE_VALUE_WITHOUT_FACT"; // §7 rule 5
+    | "FACE_VALUE_WITHOUT_FACT" // §7 rule 5
+    | "UNLISTED_SHARE_CLASS" // §6: a class with no listed ticker
+    | "SHARE_CLASS_MISMATCH" // §6: share counts and symbols don't pair up by class
+    | "MULTI_CLASS" // §5: P/E is for single-class companies only
+    | "SPLIT_SINCE_ANNUAL"; // §5: stock split since the last 10-K
   message: string;
 }
 

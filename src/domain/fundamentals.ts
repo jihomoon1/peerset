@@ -1,8 +1,11 @@
 // Composes the SEC adapter's facts into one company's pre-price fundamentals: identity,
 // LTM end, the seven operating metrics, their LTM calculations, debt, cash and the EV
-// adjustments from the balance-sheet face, warnings, freshness and methodology version. Plain JSON, so it can be cached and sent to the browser as is.
+// adjustments from the balance-sheet face, cover-page share classes, warnings,
+// freshness and methodology version. Plain JSON, so it can be cached and sent to the
+// browser as is. Prices are applied later by valuation.ts.
 
 import type { BalanceSheetInput, BalanceSheetItem } from "./balanceSheet";
+import { computeShareClasses, type ShareClasses } from "./capitalization";
 import { computeCash } from "./cash";
 import { computeDebt } from "./debt";
 import { computeNci, computePreferred } from "./evAdjustments";
@@ -70,6 +73,7 @@ export interface CompanyFundamentals {
   debt: BalanceSheetItem;
   cash: BalanceSheetItem;
   evAdjustments: { preferred: BalanceSheetItem; nci: BalanceSheetItem };
+  shareClasses: ShareClasses; // §6, from the latest filing's cover page
   warnings: { code: string; message: string }[]; // company-level, from the adapter
   freshness: FundamentalsInput["freshness"];
   methodologyVersion: string;
@@ -148,6 +152,13 @@ export function buildFundamentals(
       preferred: computePreferred(bs),
       nci: computeNci(bs),
     },
+    shareClasses: computeShareClasses({
+      facts: input.facts,
+      textFacts: input.textFacts,
+      latest,
+      listings: input.identity.tickers,
+      balanceSheetDate: bs.date,
+    }),
     warnings: input.warnings.map(({ code, message }) => ({ code, message })),
     freshness: input.freshness,
     methodologyVersion: METHODOLOGY_VERSION,
