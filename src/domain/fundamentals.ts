@@ -1,7 +1,11 @@
 // Composes the SEC adapter's facts into one company's pre-price fundamentals: identity,
-// LTM end, the seven operating metrics, their LTM calculations, warnings, freshness and
-// methodology version. Plain JSON, so it can be cached and sent to the browser as is.
+// LTM end, the seven operating metrics, their LTM calculations, debt, cash and the EV
+// adjustments from the balance-sheet face, warnings, freshness and methodology version. Plain JSON, so it can be cached and sent to the browser as is.
 
+import type { BalanceSheetInput, BalanceSheetItem } from "./balanceSheet";
+import { computeCash } from "./cash";
+import { computeDebt } from "./debt";
+import { computeNci, computePreferred } from "./evAdjustments";
 import type { LtmInput } from "./ltm";
 import { computeDa } from "./metrics/da";
 import { computeEbitda } from "./metrics/ebitda";
@@ -12,17 +16,21 @@ import { computeOperatingIncome } from "./metrics/operatingIncome";
 import { computeRevenue } from "./metrics/revenue";
 import { METHODOLOGY_VERSION } from "./policy";
 import type {
+  BalanceSheetFace,
   CompanyIdentity,
   FreshnessStatus,
   LTMCalculation,
   Metric,
   ReportedFinancialFact,
+  ReportedTextFact,
 } from "./types";
 
 // The parts of the adapter's CompanyFactsResult the domain reads.
 export interface FundamentalsInput {
   identity: CompanyIdentity;
   facts: ReportedFinancialFact[];
+  textFacts: ReportedTextFact[];
+  balanceSheet: { date: string; face: BalanceSheetFace };
   freshness: {
     status: FreshnessStatus;
     latestAccession: string;
@@ -53,6 +61,15 @@ export interface CompanyFundamentals {
     splitSinceLastAnnual: boolean;
     splitEvidence?: string;
   };
+  // Methodology §7–§9, as of the balance-sheet date. statement is null when the
+  // rendered balance sheet couldn't be read (tag fallback).
+  balanceSheet: {
+    date: string;
+    statement: { url: string; name: string; scale: string | null } | null;
+  };
+  debt: BalanceSheetItem;
+  cash: BalanceSheetItem;
+  evAdjustments: { preferred: BalanceSheetItem; nci: BalanceSheetItem };
   warnings: { code: string; message: string }[]; // company-level, from the adapter
   freshness: FundamentalsInput["freshness"];
   methodologyVersion: string;
@@ -80,6 +97,14 @@ export function buildFundamentals(
   const netIncome = computeNetIncome(ltm);
   const eps = computeEps(ltm, netIncome.metric);
   const ebitda = computeEbitda(operatingIncome.metric, da.metric);
+
+  const bs: BalanceSheetInput = {
+    date: input.balanceSheet.date,
+    face: input.balanceSheet.face,
+    facts: input.facts,
+    textFacts: input.textFacts,
+  };
+  const face = input.balanceSheet.face;
 
   const ltmDetail: Record<string, LTMCalculation> = {};
   const keep = (key: string, calc?: LTMCalculation) => {
@@ -109,6 +134,19 @@ export function buildFundamentals(
       crossCheck: eps.crossCheck,
       splitSinceLastAnnual: eps.splitSinceLastAnnual,
       ...(eps.splitEvidence ? { splitEvidence: eps.splitEvidence } : {}),
+    },
+    balanceSheet: {
+      date: bs.date,
+      statement:
+        face.kind === "face"
+          ? { url: face.url, name: face.statement, scale: face.scale }
+          : null,
+    },
+    debt: computeDebt(bs),
+    cash: computeCash(bs),
+    evAdjustments: {
+      preferred: computePreferred(bs),
+      nci: computeNci(bs),
     },
     warnings: input.warnings.map(({ code, message }) => ({ code, message })),
     freshness: input.freshness,

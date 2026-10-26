@@ -88,7 +88,12 @@ export type WarningCode =
   | "W_DA_FROM_CASH_FLOW"
   | "W_53_WEEKS"
   | "W_EPS_CROSSCHECK"
-  | "W_SOURCE_CONFLICT"; // same filing, same period, companyfacts and filing disagree
+  | "W_SOURCE_CONFLICT" // same filing, same period, companyfacts and filing disagree
+  | "W_FACE_UNAVAILABLE" // §7 rule 7: balance-sheet face unreadable, tag rules used
+  | "W_NO_DEBT_LINES" // §7 rule 4: no debt lines, debt is a reported 0
+  | "W_DEBT_TOTAL_TAG_DIFFERS" // §7 rule 6
+  | "W_LEASE_LINE_EXCLUDED" // §7 rule 2: debt-tagged lease-only line left out
+  | "W_RESTRICTED_CASH_INCLUDED"; // §8
 
 export interface MetricWarning {
   code: WarningCode;
@@ -113,7 +118,12 @@ export interface MetricUnsupportedReason {
     | "NO_CONCEPT_WITH_ALL_COMPONENTS" // §3: no concept has FY, YTD and prior YTD
     | "SOURCE_CONFLICT" // companyfacts and the filing disagree on the same fact
     | "FILING_MISSING" // freshness filing-missing: never compute on an older quarter
-    | "INPUT_UNSUPPORTED"; // a derived metric whose input is Unsupported
+    | "INPUT_UNSUPPORTED" // a derived metric whose input is Unsupported
+    | "UNRECOGNIZED_DEBT_LINE" // §7 rule 3
+    | "DEBT_SUBTOTAL_ON_FACE" // §7 rule 3
+    | "UNRECOGNIZED_CASH_LINE" // §8
+    | "UNRECOGNIZED_EQUITY_LINE" // §9: preferred/NCI-looking line not classified
+    | "FACE_VALUE_WITHOUT_FACT"; // §7 rule 5
   message: string;
 }
 
@@ -195,3 +205,14 @@ export type BalanceSheetFace =
       lines: FaceLine[];
     }
   | { kind: "unavailable"; reason: string };
+
+// How one face line (or, in the fallback, one tag) was treated, for the drawer.
+export interface FaceLineProvenance {
+  order: number | null; // row on the rendered balance sheet; null for a fallback tag
+  label: string;
+  concept: string;
+  value: number | null; // full units; null when no consolidated fact at the date
+  included: boolean;
+  reason: string;
+  fact?: ReportedFinancialFact;
+}
