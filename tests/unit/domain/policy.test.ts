@@ -24,10 +24,9 @@ describe("policy matches methodology §14 (v0.2.1)", () => {
     expect(policy.PEERS).toEqual({ default: 8, min: 5, max: 12 }); // blueprint §10.2
     expect(policy.EXCLUDED_SIC_RANGE).toEqual({ min: 6000, max: 6799 }); // blueprint §3
     expect(policy.SPLIT_LIKE_RATIO).toEqual({
-      minRatio: 1.25,
+      targets: [1.5, ...Array.from({ length: 49 }, (_, i) => i + 2)],
       tolerance: 0.02,
-      maxTerm: 10,
-    }); // §5
+    }); // §5: 3-for-2, or 2-for-1 through 50-for-1
     expect([...policy.PERIODIC_FORMS]).toEqual([
       "10-K",
       "10-K/A",

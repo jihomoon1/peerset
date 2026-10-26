@@ -62,7 +62,7 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 - LTM diluted EPS = FY + current YTD − prior-year YTD, from reported EPS facts. Quarters are never summed.
 - Cross-check against LTM net income ÷ fiscal-year weighted-average diluted shares. A gap above 5% adds a warning, not a suppression.
 - A stock split since the last 10-K makes P/E Unsupported ("split since last 10-K"). Detection: a split-ratio fact (`StockholdersEquityNoteStockSplitConversionRatio1`, value other than 1) for a period ending after the last fiscal year end, or the 10-Q's restated prior-YTD EPS differing from the originally filed value by a split-like ratio.
-- **Split-like ratio.** With r = originally filed prior-YTD EPS ÷ restated prior-YTD EPS, the ratio is split-like when max(r, 1/r) ≥ 1.25 and it is within 2% of a fraction n/m with whole numbers n, m ≤ 10 (2-for-1, 3-for-2, 1-for-10, ...).
+- **Split-like ratio.** With r = originally filed prior-YTD EPS ÷ restated prior-YTD EPS, the ratio is split-like when max(r, 1/r) is within 2% of 1.5 (3-for-2) or of a whole number from 2 to 50 (2-for-1 through 50-for-1; reverse splits show as 1/r).
 - P/E = price ÷ LTM diluted EPS, single-class companies only. Multi-class P/E is Unsupported.
 
 ## 6. Shares and market capitalization
@@ -155,7 +155,7 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Peer revenue screen                                 | 0.2x–5x target screening revenue         | §10.2 of blueprint |
 | Peers selected                                      | 8 by default; user may keep 5–12; max 12 | §10.2 of blueprint |
 | Excluded SIC range                                  | 6000–6799                                | §3 of blueprint    |
-| Split-like EPS ratio                                | ≥ 1.25x, within 2% of n/m with n, m ≤ 10 | 5                  |
+| Split-like EPS ratio                                | within 2% of 1.5 or a whole number 2–50  | 5                  |
 | Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A               | 1                  |
 
 Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are approved as v1 starting values.
@@ -166,4 +166,4 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0.1.0   | October 23, 2026 | Blueprint §7 restated                                                                                                                                                                                                                                                          |
 | 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals" |
-| 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14); the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in the M1b plan                                                                                                                                               |
+| 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14): within 2% of 1.5 or a whole number 2–50; the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in M1b                                                                                                               |

@@ -19,12 +19,11 @@ export const STALE_FILER_DAYS = 200; // blueprint §8.6: older → Unsupported
 export const PEER_REVENUE_SCREEN = { min: 0.2, max: 5 } as const; // blueprint §10.2
 export const PEERS = { default: 8, min: 5, max: 12 } as const; // blueprint §10.2
 export const EXCLUDED_SIC_RANGE = { min: 6000, max: 6799 } as const; // blueprint §3
-// §5: an EPS ratio r is split-like when max(r, 1/r) ≥ 1.25 and it is within 2% of a
-// fraction n/m with n, m ≤ 10 (2-for-1, 3-for-2, 1-for-10, ...).
+// §5: an EPS ratio r is split-like when max(r, 1/r) is within 2% of 1.5 (3-for-2) or
+// of a whole number from 2 to 50 (2-for-1 ... 50-for-1; reverse splits via 1/r).
 export const SPLIT_LIKE_RATIO = {
-  minRatio: 1.25,
+  targets: [1.5, ...Array.from({ length: 49 }, (_, i) => i + 2)],
   tolerance: 0.02,
-  maxTerm: 10,
 } as const;
 
 export const PERIODIC_FORMS: ReadonlySet<string> = new Set([
