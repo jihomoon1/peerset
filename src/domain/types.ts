@@ -171,3 +171,27 @@ export interface LTMCalculation {
   checks: LTMCheck[];
   value?: number; // the LTM result; present only when every check passed
 }
+
+// ── Balance-sheet face (methodology 0.3.0 §7–§9) ────────────────────────────
+
+// One row of the rendered balance sheet (R#.htm). It says only which concept the
+// company presents and under what label; its value comes from the XBRL instance.
+export interface FaceLine {
+  order: number; // row number in the rendered table, headings included
+  concept: string; // 'us-gaap:CommercialPaper', or a filer QName 'lii:Foo'
+  label: string;
+  total: boolean; // label starts with "Total"
+  displayed: string; // the cell shown at the balance-sheet date, "" when blank
+}
+
+// The rendered balance sheet of the latest periodic filing, or why it could not be
+// read (then §7 rule 7: the 0.2.1 tag rules with W_FACE_UNAVAILABLE).
+export type BalanceSheetFace =
+  | {
+      kind: "face";
+      url: string; // the R#.htm on sec.gov
+      statement: string; // its short name, e.g. 'Consolidated Balance Sheets'
+      scale: string | null; // 'Millions' | 'Thousands' as displayed
+      lines: FaceLine[];
+    }
+  | { kind: "unavailable"; reason: string };
