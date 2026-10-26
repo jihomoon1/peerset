@@ -1,0 +1,322 @@
+{
+  "ticker": "LII",
+  "cik": "0001069202",
+  "asOf": "2026-10-23",
+  "latestFiling": {
+    "form": "10-Q",
+    "accession": "0001069202-26-000087",
+    "filed": "2026-07-29",
+    "reportDate": "2026-06-30"
+  },
+  "ltmPeriod": {
+    "start": "2025-07-01",
+    "end": "2026-06-30"
+  },
+  "freshness": "filing-parsed",
+  "methodologyVersion": "0.2.1",
+  "note": "Values are read from the rendered filings, not from the engine. The filings show USD millions to one decimal; the XBRL facts carry decimals=-5, so each value times 1,000,000 is exact to the dollar. The FY2025 10-K changed inventory from LIFO to FIFO in Q4 2025 and restated prior periods; the 10-Q's prior-year columns are on the restated basis.",
+  "metrics": {
+    "revenue": {
+      "concept": "us-gaap:Revenues",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 5195300000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Net sales",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 2680400000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Net sales",
+            "column": "For the Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 2573500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Net sales",
+            "column": "For the Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 5302200000,
+      "math": "5,195.3 + 2,680.4 − 2,573.5 = 5,302.2"
+    },
+    "operatingIncome": {
+      "concept": "us-gaap:OperatingIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 1041500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Operating income",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 518500000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Operating income",
+            "column": "For the Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 517000000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Operating income",
+            "column": "For the Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 1043000000,
+      "math": "1,041.5 + 518.5 − 517.0 = 1,043.0"
+    },
+    "da": {
+      "concept": "us-gaap:DepreciationAndAmortization",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 112500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Cash Flows",
+            "line": "Depreciation and amortization",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 61800000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Cash Flows (Unaudited)",
+            "line": "Depreciation and amortization",
+            "column": "For the Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 52400000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Cash Flows (Unaudited)",
+            "line": "Depreciation and amortization",
+            "column": "For the Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 121900000,
+      "math": "112.5 + 61.8 − 52.4 = 121.9"
+    },
+    "netIncome": {
+      "concept": "us-gaap:NetIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 805800000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Net income",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 386200000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Net income",
+            "column": "For the Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 403500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Net income",
+            "column": "For the Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 788500000,
+      "math": "805.8 + 386.2 − 403.5 = 788.5"
+    },
+    "dilutedEps": {
+      "concept": "us-gaap:EarningsPerShareDiluted",
+      "unit": "USD/shares",
+      "components": {
+        "fy": {
+          "value": 22.79,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Earnings per share Diluted",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 11.06,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Earnings per share Diluted",
+            "column": "For the Six Months Ended June 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 11.34,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001069202-26-000087",
+            "filed": "2026-07-29",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/lii-20260630.htm",
+            "statement": "Consolidated Statements of Operations (Unaudited)",
+            "line": "Earnings per share Diluted",
+            "column": "For the Six Months Ended June 30, 2025"
+          }
+        }
+      },
+      "ltm": 22.51,
+      "math": "22.79 + 11.06 − 11.34 = 22.51"
+    },
+    "ebitda": {
+      "ltm": 1164900000,
+      "math": "Operating income 1,043.0 + D&A 121.9 = 1,164.9"
+    },
+    "ebitdaMargin": {
+      "ltmNumerator": 1164900000,
+      "ltmDenominator": 5302200000,
+      "math": "1,164.9 ÷ 5,302.2 = 21.97%"
+    }
+  },
+  "epsCrossCheck": {
+    "fyDilutedShares": 35400000,
+    "source": {
+      "document": "Form 10-K for the year ended December 31, 2025",
+      "accession": "0001069202-26-000028",
+      "filed": "2026-02-17",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+      "statement": "Consolidated Statements of Operations (page 40)",
+      "line": "Weighted Average Number of Shares Outstanding - Diluted",
+      "column": "2025"
+    },
+    "math": "788.5 ÷ 35.4 = 22.27; gap vs 22.51 is 1.0%, under the 5% warning threshold"
+  }
+}
