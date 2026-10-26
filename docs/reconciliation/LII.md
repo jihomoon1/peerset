@@ -1,6 +1,6 @@
 # LII reconciliation — LTM through June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 · golden file `tests/golden/LII-2026Q2.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 (LTM rows below; 0.3.0 changed no LTM value) · golden file `tests/golden/LII-2026Q2.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -40,3 +40,7 @@ Diff is PeerSet minus the manual calculation, at the precision the filing shows 
 6. If a row matches, change its Status to **Confirmed** and commit with a message such as `docs: confirm LII reconciliation`. If it doesn't, leave it as is and note the difference: per the drift protocol (blueprint §16) it is a new filing, a definition change or a bug, and the golden value is never edited just to make a test pass.
 
 FactSet or any other data service may be used as a second check only, never as the source.
+
+## Golden change log
+
+- **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.

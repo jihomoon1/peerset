@@ -76,7 +76,7 @@ describe("GET /api/fundamentals", () => {
     expect(companyFactsCalls()).toBe(1); // second request served from the cache
 
     expect(calls[0]).toEqual({
-      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.2.1"],
+      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.3.0"],
       revalidate: 86_400,
     });
     const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);
