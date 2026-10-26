@@ -84,6 +84,9 @@ describe("before any price", () => {
     const html = workspace(wso);
     expect(html).toContain("WSO price (USD)");
     expect(html).toContain("WSO-B price (USD)");
+    expect(html.indexOf("WSO price (USD)")).toBeLessThan(
+      html.indexOf("WSO-B price (USD)"),
+    );
     expect(html).toContain("August 4, 2026");
   });
 });
@@ -154,5 +157,9 @@ describe("EvBridgeDrawer", () => {
       "W_LEASE_LINE_EXCLUDED",
     ])
       expect(html, text).toContain(text);
+    // Classes in SEC's listing order: WSO, then WSO-B.
+    expect(html.indexOf("us-gaap:CommonStockMember")).toBeLessThan(
+      html.indexOf("us-gaap:CommonClassBMember"),
+    );
   });
 });

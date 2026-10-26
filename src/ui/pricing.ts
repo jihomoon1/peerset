@@ -2,6 +2,7 @@
 // it is tested without a browser; ValuationBlock only calls these.
 
 import { normalizeSymbol } from "@/domain/capitalization";
+import type { CompanyIdentity } from "@/domain/types";
 import { isIsoDate } from "@/domain/dates";
 import { NM_REASON_TEXT } from "@/domain/nm";
 import type { Metric, QuoteSnapshot } from "@/domain/types";
@@ -126,4 +127,20 @@ export function displayValuationCell(
         note: m.reason.message,
       };
   }
+}
+
+// Orders items by SEC's listing order (WSO before WSO-B), not XBRL member order.
+export function byListingOrder<T>(
+  identity: CompanyIdentity,
+  items: readonly T[],
+  tickerOf: (item: T) => string | undefined,
+): T[] {
+  const listed = identity.tickers.map((l) => l.ticker);
+  const rank = (item: T) => {
+    const t = tickerOf(item);
+    return t !== undefined && listed.includes(t)
+      ? listed.indexOf(t)
+      : listed.length;
+  };
+  return [...items].sort((a, b) => rank(a) - rank(b));
 }

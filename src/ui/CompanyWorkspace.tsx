@@ -8,7 +8,7 @@ import type { QuoteError } from "@/lib/quotes";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
 import { OperatingBlock } from "./OperatingBlock";
-import { parsePastedPrices, quotesFromInputs } from "./pricing";
+import { byListingOrder, parsePastedPrices, quotesFromInputs } from "./pricing";
 import { ValuationBlock } from "./ValuationBlock";
 
 // Holds the page's price inputs, so the as-of strip and the valuation block read the
@@ -28,8 +28,10 @@ export function CompanyWorkspace({
   providerErrors: QuoteError[];
   providerOn: boolean;
 }) {
-  const tickers = f.shareClasses.classes.flatMap((c) =>
-    c.ticker ? [c.ticker] : [],
+  const tickers = byListingOrder(
+    f.identity,
+    f.shareClasses.classes.flatMap((c) => (c.ticker ? [c.ticker] : [])),
+    (t) => t,
   );
   const [inputs, setInputs] = useState<Record<string, string>>(() =>
     Object.fromEntries(

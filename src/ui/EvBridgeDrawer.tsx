@@ -11,7 +11,7 @@ import {
   formatShares,
 } from "@/lib/format";
 import { Drawer, Section, WarningList } from "./Drawer";
-import { displayValuationCell } from "./pricing";
+import { byListingOrder, displayValuationCell } from "./pricing";
 
 const NOT_IN_EV_LABELS = {
   preferred: "Preferred stock",
@@ -137,26 +137,28 @@ export function EvBridgeDrawer({
             </tr>
           </thead>
           <tbody>
-            {v.shareClasses.map((c) => (
-              <tr
-                key={c.classMember}
-                className="border-b border-rule align-top"
-              >
-                <th scope="row" className="py-1 pr-2 text-left font-normal">
-                  {c.ticker ?? "Unlisted"}
-                  <div className="font-mono text-xs text-muted">
-                    {c.classMember}
-                  </div>
-                </th>
-                <td className="py-1 pr-2 text-right">
-                  {c.quote ? formatPrice(c.quote.close) : "—"}
-                </td>
-                <td className="py-1 pr-2 text-right">
-                  {formatShares(c.shares)}
-                </td>
-                <td className="py-1 text-right">{cell(c.equityValue)}</td>
-              </tr>
-            ))}
+            {byListingOrder(f.identity, v.shareClasses, (c) => c.ticker).map(
+              (c) => (
+                <tr
+                  key={c.classMember}
+                  className="border-b border-rule align-top"
+                >
+                  <th scope="row" className="py-1 pr-2 text-left font-normal">
+                    {c.ticker ?? "Unlisted"}
+                    <div className="font-mono text-xs text-muted">
+                      {c.classMember}
+                    </div>
+                  </th>
+                  <td className="py-1 pr-2 text-right">
+                    {c.quote ? formatPrice(c.quote.close) : "—"}
+                  </td>
+                  <td className="py-1 pr-2 text-right">
+                    {formatShares(c.shares)}
+                  </td>
+                  <td className="py-1 text-right">{cell(c.equityValue)}</td>
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
         {cap.note && <p className="mt-1 text-muted">{cap.note}</p>}
