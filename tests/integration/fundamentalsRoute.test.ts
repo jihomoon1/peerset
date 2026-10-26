@@ -9,15 +9,18 @@ import { fixtureFetch } from "../helpers/fixtures";
 // makes any leak into a response easy to spot.
 const UA = "PeerSet-Test leak-canary@example.invalid";
 
-function deps(over: Partial<LoadDeps> & { fetch?: typeof fetch } = {}): {
+function deps(
+  over: Partial<LoadDeps> & { fetch?: typeof fetch; fixture?: string } = {},
+): {
   deps: LoadDeps;
   requested: string[];
   logs: string[];
 } {
-  const fake = fixtureFetch(["_shared", "LII/2026Q2"]);
+  const { fixture = "LII/2026Q2", ...rest } = over;
+  const fake = fixtureFetch(["_shared", fixture]);
   const logs: string[] = [];
   const client = createSecClient({
-    fetch: over.fetch ?? fake.fetch,
+    fetch: rest.fetch ?? fake.fetch,
     env: { SEC_USER_AGENT: UA },
     logger: () => {},
     limiter: createLimiter(0),
@@ -29,7 +32,7 @@ function deps(over: Partial<LoadDeps> & { fetch?: typeof fetch } = {}): {
       asOf: "2026-10-23",
       logger: (event, fields) =>
         logs.push(JSON.stringify({ event, ...fields })),
-      ...over,
+      ...rest,
     },
     requested: fake.requested,
     logs,
@@ -57,6 +60,37 @@ describe("GET /api/fundamentals", () => {
     });
     expect(body.freshness.status).toBe("filing-parsed");
   });
+
+  it.each([
+    ["LII", "LII/2026Q2", 1_581_300_000, 52_100_000],
+    ["WSO", "WSO/2026Q2", 9_068_000, 464_189_000],
+  ])(
+    "returns %s's debt, cash and EV adjustments; cache entry under 2 MB",
+    async (ticker, fixture, debt, cash) => {
+      const { deps: d, logs } = deps({ fixture, asOf: "2026-10-26" });
+      const res = await get(
+        createFundamentalsHandler(() => d, quiet),
+        `?ticker=${ticker}`,
+      );
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.debt.metric).toMatchObject({
+        status: "derived",
+        value: debt,
+      });
+      expect(body.cash.metric).toMatchObject({
+        status: "derived",
+        value: cash,
+      });
+      expect(Object.keys(body.evAdjustments).sort()).toEqual([
+        "nci",
+        "preferred",
+      ]);
+      expect(body.balanceSheet.statement.url).toMatch(/\/R\d+\.htm$/);
+      const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);
+      expect(line.bytes).toBeLessThan(2 * 1024 * 1024);
+    },
+  );
 
   it("caches fundamentals by CIK + latest accession + methodology version, under 2 MB", async () => {
     const calls: { key: string[]; revalidate: number }[] = [];
