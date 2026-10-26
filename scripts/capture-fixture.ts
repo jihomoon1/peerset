@@ -5,8 +5,8 @@
 //     --accession 0001069202-26-000087 --asof 2026Q2
 //
 // --add-statements adds only FilingSummary.xml and the balance-sheet R file to an
-// existing fixture, leaving its other frozen files (and the goldens built on them)
-// untouched.
+// existing fixture and lists them in its manifest.json, leaving its other frozen
+// files (and the goldens built on them) untouched.
 //
 // Reads SEC_USER_AGENT from the environment (or .env.local). The User-Agent is sent
 // to SEC only; it is never written to disk or printed.

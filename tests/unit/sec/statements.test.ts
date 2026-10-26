@@ -213,6 +213,18 @@ describe("parseBalanceSheet", () => {
     });
   });
 
+  it("keeps an out-of-range numeric entity as text instead of throwing", () => {
+    const parsed = parseBalanceSheet(
+      rFile(
+        ["Jun. 30, 2026"],
+        row("ro", "us-gaap_Cash", "Cash&#99999999; &#x110000;", "1.0"),
+      ),
+      "2026-06-30",
+    );
+    if (parsed.kind !== "parsed") throw new Error(parsed.reason);
+    expect(parsed.lines[0].label).toBe("Cash&#99999999; &#x110000;");
+  });
+
   it("is unavailable when no column has the balance-sheet date", () => {
     const parsed = parseBalanceSheet(
       rFile(["Dec. 31, 2025"], row("ro", "us-gaap_Cash", "Cash", "1.0")),

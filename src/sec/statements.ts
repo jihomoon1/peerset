@@ -122,12 +122,17 @@ const ENTITIES: Record<string, string> = {
   nbsp: " ",
 };
 
+// An out-of-range code point stays as its entity text, like an unknown named entity:
+// String.fromCodePoint would throw.
+const codePoint = (all: string, n: number) =>
+  n <= 0x10ffff ? String.fromCodePoint(n) : all;
+
 function cellText(html: string): string {
   return html
     .replace(/<[^>]*>/g, " ")
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) =>
-      String.fromCodePoint(parseInt(n, 16)),
+    .replace(/&#(\d+);/g, (all, n: string) => codePoint(all, Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (all, n: string) =>
+      codePoint(all, parseInt(n, 16)),
     )
     .replace(/&([a-z]+);/gi, (all, name: string) => ENTITIES[name] ?? all)
     .replace(/[\s ]+/g, " ")
