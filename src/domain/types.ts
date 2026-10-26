@@ -72,6 +72,13 @@ export interface CompanyIdentity {
     { supported: true } | { supported: false; reason: UnsupportedReason };
 }
 
+// Freshness of the latest periodic filing's facts (blueprint §8.3), set by the SEC
+// adapter and read by the domain.
+export type FreshnessStatus =
+  | "current" // companyfacts contains the latest periodic filing
+  | "filing-parsed" // it didn't; the filing's instance was parsed and merged
+  | "filing-missing"; // it didn't, and the filing's instance couldn't be found
+
 // ── Metrics (blueprint §11, §15) ────────────────────────────────────────────
 
 export type WarningCode =

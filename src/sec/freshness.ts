@@ -7,6 +7,7 @@
 import type {
   CompanyIdentity,
   FilingReference,
+  FreshnessStatus,
   ReportedFinancialFact,
   ReportedTextFact,
 } from "@/domain/types";
@@ -34,10 +35,7 @@ import {
 // one spare (M1a scope). Client retries on 5xx/timeout are not counted here.
 export const REQUEST_BUDGET = 5;
 
-export type FreshnessStatus =
-  | "current" // companyfacts contains the latest periodic filing
-  | "filing-parsed" // it didn't; the filing's instance was parsed and merged
-  | "filing-missing"; // it didn't, and the filing's instance couldn't be found
+export type { FreshnessStatus };
 
 export interface AdapterWarning {
   code:
