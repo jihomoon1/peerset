@@ -1,13 +1,13 @@
 # PeerSet methodology
 
-**Methodology version: 0.2.0** · Status: **approved by Jiho Moon, October 23, 2026** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.2.1** · Status: **approved by Jiho Moon, October 26, 2026** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
 ## 1. Core rules
 
 1. **Fact selection.** For each (concept, period start, period end), use the value from the most recently filed 10-K, 10-K/A, 10-Q or 10-Q/A that reports exactly that period. Only consolidated facts (no dimensions) count, except share classes (section 6). This one rule handles duplicates, restatements, amendments and split-restated comparatives.
-2. **Units.** Monetary facts must be in `USD`, EPS in `USD/shares`, share counts in `shares`. Anything else is Unsupported.
+2. **Units.** Monetary facts must be in `USD`, EPS in `USD/shares`, share counts in `shares`, and the split-ratio fact `StockholdersEquityNoteStockSplitConversionRatio1` in `pure`. Anything else is Unsupported.
 3. **Precision.** Full units internally (dollars, shares). Rounding happens only in display formatting and Excel number formats. SEC's `decimals` attribute is kept in provenance. No decimal library.
 4. **Missing is never zero.** A missing input makes every dependent value Missing or Unsupported.
 5. **One policy file.** Thresholds and concept priority lists live in `policy.ts` and in this document, under the methodology version above.
@@ -61,7 +61,8 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 
 - LTM diluted EPS = FY + current YTD − prior-year YTD, from reported EPS facts. Quarters are never summed.
 - Cross-check against LTM net income ÷ fiscal-year weighted-average diluted shares. A gap above 5% adds a warning, not a suppression.
-- A stock split since the last 10-K makes P/E Unsupported ("split since last 10-K"). Detection: split-ratio facts, or the 10-Q's restated prior-YTD EPS differing from the originally filed value by a split-like ratio.
+- A stock split since the last 10-K makes P/E Unsupported ("split since last 10-K"). Detection: a split-ratio fact (`StockholdersEquityNoteStockSplitConversionRatio1`, value other than 1) for a period ending after the last fiscal year end, or the 10-Q's restated prior-YTD EPS differing from the originally filed value by a split-like ratio.
+- **Split-like ratio.** With r = originally filed prior-YTD EPS ÷ restated prior-YTD EPS, the ratio is split-like when max(r, 1/r) ≥ 1.25 and it is within 2% of a fraction n/m with whole numbers n, m ≤ 10 (2-for-1, 3-for-2, 1-for-10, ...).
 - P/E = price ÷ LTM diluted EPS, single-class companies only. Multi-class P/E is Unsupported.
 
 ## 6. Shares and market capitalization
@@ -137,7 +138,7 @@ EV/Revenue = EV ÷ Revenue(LTM) · EV/EBITDA = EV ÷ EBITDA(LTM) · P/E = Price 
 
 Target LTM metric × peer 25th percentile, median and 75th percentile multiple gives implied EV. Subtract debt and add cash for implied equity value, then divide by shares for an implied price. Shown only when every target input is valid.
 
-## 14. Policy constants (v0.2.0)
+## 14. Policy constants (v0.2.1)
 
 | Constant                                            | Value                                    | Section            |
 | --------------------------------------------------- | ---------------------------------------- | ------------------ |
@@ -154,6 +155,7 @@ Target LTM metric × peer 25th percentile, median and 75th percentile multiple g
 | Peer revenue screen                                 | 0.2x–5x target screening revenue         | §10.2 of blueprint |
 | Peers selected                                      | 8 by default; user may keep 5–12; max 12 | §10.2 of blueprint |
 | Excluded SIC range                                  | 6000–6799                                | §3 of blueprint    |
+| Split-like EPS ratio                                | ≥ 1.25x, within 2% of n/m with n, m ≤ 10 | 5                  |
 | Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A               | 1                  |
 
 Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are approved as v1 starting values.
@@ -164,3 +166,4 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | ------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0.1.0   | October 23, 2026 | Blueprint §7 restated                                                                                                                                                                                                                                                          |
 | 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals" |
+| 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14); the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in the M1b plan                                                                                                                                               |

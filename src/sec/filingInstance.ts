@@ -7,7 +7,7 @@
 // (LII, WSO) or as <xbrli:context>, and may bind us-gaap to any prefix.
 
 import { XMLParser } from "fast-xml-parser";
-import { ACCEPTED_UNITS, CONCEPT_WHITELIST } from "@/domain/policy";
+import { CONCEPT_WHITELIST, isAcceptedUnit } from "@/domain/policy";
 import type {
   FilingReference,
   ReportedFinancialFact,
@@ -215,7 +215,7 @@ export function parseInstance(
       }
 
       const unit = units.get(unitRef);
-      if (!unit || !ACCEPTED_UNITS.has(unit)) continue;
+      if (!unit || !isAcceptedUnit(concept, unit)) continue;
       if (!DECIMAL.test(raw)) {
         warnings.push({
           code: "W_UNPARSEABLE_VALUE",
@@ -325,13 +325,14 @@ function readContexts(root: XmlNode, nsx: Namespaces): Map<string, Context> {
   return out;
 }
 
-// unit id → "USD" | "shares" | "USD/shares" | other (an unaccepted unit)
+// unit id → "USD" | "shares" | "USD/shares" | "pure" | other (an unaccepted unit)
 function readUnits(root: XmlNode, nsx: Namespaces): Map<string, string> {
   const measureName = (node: XmlNode | undefined): string => {
     const r = nsx.resolve(text(node));
     if (!r) return "?";
     if (r.ns === NS.iso4217 && r.local === "USD") return "USD";
     if (r.ns === NS.xbrli && r.local === "shares") return "shares";
+    if (r.ns === NS.xbrli && r.local === "pure") return "pure";
     return `${r.ns}#${r.local}`;
   };
   const out = new Map<string, string>();

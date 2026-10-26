@@ -25,7 +25,7 @@ export type FactSource = "companyfacts" | "filing";
 export interface ReportedFinancialFact {
   concept: string; // 'us-gaap:Revenues'
   value: number; // full units, never rounded
-  unit: "USD" | "USD/shares" | "shares";
+  unit: "USD" | "USD/shares" | "shares" | "pure"; // pure: split ratio only (§1.2)
   period: ReportingPeriod;
   decimals?: number; // precision as filed; absent when INF or not reported
   dimensions: Record<string, string>; // {} = consolidated

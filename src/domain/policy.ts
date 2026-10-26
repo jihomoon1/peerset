@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.2.0";
+export const METHODOLOGY_VERSION = "0.2.1";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
@@ -19,6 +19,13 @@ export const STALE_FILER_DAYS = 200; // blueprint §8.6: older → Unsupported
 export const PEER_REVENUE_SCREEN = { min: 0.2, max: 5 } as const; // blueprint §10.2
 export const PEERS = { default: 8, min: 5, max: 12 } as const; // blueprint §10.2
 export const EXCLUDED_SIC_RANGE = { min: 6000, max: 6799 } as const; // blueprint §3
+// §5: an EPS ratio r is split-like when max(r, 1/r) ≥ 1.25 and it is within 2% of a
+// fraction n/m with n, m ≤ 10 (2-for-1, 3-for-2, 1-for-10, ...).
+export const SPLIT_LIKE_RATIO = {
+  minRatio: 1.25,
+  tolerance: 0.02,
+  maxTerm: 10,
+} as const;
 
 export const PERIODIC_FORMS: ReadonlySet<string> = new Set([
   "10-K",
@@ -33,6 +40,18 @@ export const ACCEPTED_UNITS: ReadonlySet<string> = new Set([
   "USD/shares",
   "shares",
 ]);
+
+// §1.2: the one concept also accepted in unit "pure" (a ratio, used by §5).
+export const PURE_UNIT_CONCEPTS: ReadonlySet<string> = new Set([
+  "us-gaap:StockholdersEquityNoteStockSplitConversionRatio1",
+]);
+
+export function isAcceptedUnit(concept: string, unit: string): boolean {
+  return (
+    ACCEPTED_UNITS.has(unit) ||
+    (unit === "pure" && PURE_UNIT_CONCEPTS.has(concept))
+  );
+}
 
 // ── Concept lists ───────────────────────────────────────────────────────────
 // Concepts are written "prefix:LocalName" with the standard prefixes us-gaap and dei.
@@ -118,7 +137,7 @@ export const CONCEPTS = {
 
   // §5 EPS cross-check and split detection
   epsCrossCheck: ["us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding"],
-  // Unit "pure"; kept on the list for M1b, but the adapter's unit filter drops it today.
+  // Unit "pure", accepted through PURE_UNIT_CONCEPTS.
   stockSplit: ["us-gaap:StockholdersEquityNoteStockSplitConversionRatio1"],
 } as const satisfies Record<string, readonly string[]>;
 

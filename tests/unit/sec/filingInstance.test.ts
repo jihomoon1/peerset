@@ -314,6 +314,22 @@ describe("parser edge cases (synthetic)", () => {
     ).toBeUndefined(); // INF
   });
 
+  it("keeps the split-ratio fact in unit pure, and no other pure fact (§1.2)", () => {
+    const { facts } = parseInstance(
+      instance(`
+        <gaap:StockholdersEquityNoteStockSplitConversionRatio1 contextRef="d" unitRef="pure" decimals="INF">2</gaap:StockholdersEquityNoteStockSplitConversionRatio1>
+        <gaap:CommercialPaper contextRef="i" unitRef="pure">3</gaap:CommercialPaper>`),
+      FILING,
+    );
+    expect(facts).toEqual([
+      expect.objectContaining({
+        concept: "us-gaap:StockholdersEquityNoteStockSplitConversionRatio1",
+        value: 2,
+        unit: "pure",
+      }),
+    ]);
+  });
+
   it("skips nil facts", () => {
     const { facts, warnings } = parseInstance(
       instance(
@@ -371,10 +387,10 @@ describe("parser edge cases (synthetic)", () => {
     expect(textFacts).toEqual([]);
   });
 
-  it("drops units outside USD, shares and USD/shares", () => {
+  it("drops units outside USD, shares and USD/shares (pure only for the split ratio)", () => {
     const { facts } = parseInstance(
       instance(
-        '<gaap:StockholdersEquityNoteStockSplitConversionRatio1 contextRef="d" unitRef="pure" decimals="INF">2</gaap:StockholdersEquityNoteStockSplitConversionRatio1>',
+        '<gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="d" unitRef="pure" decimals="INF">2</gaap:WeightedAverageNumberOfDilutedSharesOutstanding>',
       ),
       FILING,
     );
