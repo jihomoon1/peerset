@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatMultiple,
+  formatPrice,
+  formatShares,
+  formatTimestamp,
   formatDate,
   formatMillions,
   formatPercent,
@@ -40,5 +44,34 @@ describe("formatDate", () => {
   it("writes an ISO date as Month D, YYYY", () => {
     expect(formatDate("2026-07-29")).toBe("July 29, 2026");
     expect(formatDate("2026-01-05")).toBe("January 5, 2026");
+  });
+});
+
+describe("formatMultiple", () => {
+  it("shows one decimal and an x (blueprint §6)", () => {
+    expect(formatMultiple(16.146911)).toBe("16.1x");
+    expect(formatMultiple(3.5475)).toBe("3.5x");
+    expect(formatMultiple(100)).toBe("100.0x");
+  });
+});
+
+describe("formatPrice", () => {
+  it("shows dollars with two decimals and thousands separators", () => {
+    expect(formatPrice(500)).toBe("500.00");
+    expect(formatPrice(1234.5)).toBe("1,234.50");
+  });
+});
+
+describe("formatShares", () => {
+  it("shows whole shares with separators", () => {
+    expect(formatShares(34_560_675)).toBe("34,560,675");
+  });
+});
+
+describe("formatTimestamp", () => {
+  it("writes an ISO timestamp as Month D, YYYY, HH:MM UTC", () => {
+    expect(formatTimestamp("2026-10-26T14:05:09.123Z")).toBe(
+      "October 26, 2026, 14:05 UTC",
+    );
   });
 });

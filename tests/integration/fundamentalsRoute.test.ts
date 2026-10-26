@@ -67,7 +67,11 @@ describe("GET /api/fundamentals", () => {
   ])(
     "returns %s's debt, cash and EV adjustments; cache entry under 2 MB",
     async (ticker, fixture, debt, cash) => {
-      const { deps: d, logs } = deps({ fixture, asOf: "2026-10-26" });
+      const { deps: d, logs } = deps({
+        fixture,
+        asOf: "2026-10-26",
+        now: () => new Date("2026-10-26T15:30:00.000Z"),
+      });
       const res = await get(
         createFundamentalsHandler(() => d, quiet),
         `?ticker=${ticker}`,
@@ -87,6 +91,7 @@ describe("GET /api/fundamentals", () => {
         "preferred",
       ]);
       expect(body.balanceSheet.statement.url).toMatch(/\/R\d+\.htm$/);
+      expect(body.pulledAt).toBe("2026-10-26T15:30:00.000Z");
       expect(
         body.shareClasses.classes.map((c: { ticker: string }) => c.ticker),
       ).toEqual(ticker === "WSO" ? ["WSO-B", "WSO"] : [ticker]);
