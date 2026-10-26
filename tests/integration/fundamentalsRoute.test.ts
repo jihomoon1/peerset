@@ -87,6 +87,9 @@ describe("GET /api/fundamentals", () => {
         "preferred",
       ]);
       expect(body.balanceSheet.statement.url).toMatch(/\/R\d+\.htm$/);
+      expect(
+        body.shareClasses.classes.map((c: { ticker: string }) => c.ticker),
+      ).toEqual(ticker === "WSO" ? ["WSO-B", "WSO"] : [ticker]);
       const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);
       expect(line.bytes).toBeLessThan(2 * 1024 * 1024);
     },

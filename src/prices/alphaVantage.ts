@@ -12,6 +12,9 @@ import type { QuoteProvider } from "./provider";
 export const ALPHA_VANTAGE_HOST = "www.alphavantage.co"; // CLAUDE.md allow-list
 const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
 const TIMEOUT_MS = 10_000;
+// The free tier answers a second request within the same second with a burst notice
+// (recorded 2026-10-26), so calls go one at a time, at least this far apart.
+export const MIN_INTERVAL_MS = 1_100;
 
 // SEC's ticker spelling → Alpha Vantage's. Plain tickers pass through; class shares
 // follow the spelling checked live in M2b (see docs/reconciliation/WSO.md).
@@ -90,9 +93,30 @@ export function createAlphaVantageProvider(options: {
   apiKey: string;
   fetch?: typeof fetch;
   now?: () => Date;
+  sleep?: (ms: number) => Promise<void>;
 }): QuoteProvider {
   const fetchFn = options.fetch ?? globalThis.fetch;
   const now = options.now ?? (() => new Date());
+  const sleep =
+    options.sleep ??
+    ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  let queue: Promise<unknown> = Promise.resolve();
+  let lastStart: number | null = null;
+
+  // Serializes requests and keeps MIN_INTERVAL_MS between their starts.
+  function paced<T>(task: () => Promise<T>): Promise<T> {
+    const run = queue.then(async () => {
+      if (lastStart !== null) {
+        const wait = lastStart + MIN_INTERVAL_MS - now().getTime();
+        if (wait > 0) await sleep(wait);
+      }
+      lastStart = now().getTime();
+      return task();
+    });
+    queue = run.catch(() => undefined);
+    return run;
+  }
+
   return {
     async getQuote(symbol) {
       if (!SYMBOL_PATTERN.test(symbol))
@@ -103,10 +127,12 @@ export function createAlphaVantageProvider(options: {
         throw new PriceUnavailableError("host not allowed");
       let res: Response;
       try {
-        res = await fetchFn(url, {
-          headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(TIMEOUT_MS),
-        });
+        res = await paced(() =>
+          fetchFn(url, {
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(TIMEOUT_MS),
+          }),
+        );
       } catch {
         // The thrown error may quote the URL, which holds the key: never keep it.
         throw new PriceUnavailableError(`${symbol}: request failed`);

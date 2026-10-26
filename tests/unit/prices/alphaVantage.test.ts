@@ -235,3 +235,30 @@ describe("priceProviderName", () => {
     [{ PRICE_PROVIDER: "other" }, "user"],
   ])("%j → %s", (env, name) => expect(priceProviderName(env)).toBe(name));
 });
+
+describe("pacing (Alpha Vantage free tier: about 1 request per second)", () => {
+  it("spaces calls at least 1.1 s apart and sends them one at a time", async () => {
+    let clock = 0;
+    const waits: number[] = [];
+    const starts: number[] = [];
+    const provider = createAlphaVantageProvider({
+      apiKey: KEY,
+      fetch: (async () => {
+        starts.push(clock);
+        return new Response(JSON.stringify(body("synthetic-ok.json")));
+      }) as typeof fetch,
+      now: () => new Date(clock),
+      sleep: async (ms) => {
+        waits.push(ms);
+        clock += ms;
+      },
+    });
+    await Promise.all([
+      provider.getQuote("SYN"),
+      provider.getQuote("SYN"),
+      provider.getQuote("SYN"),
+    ]);
+    expect(starts).toEqual([0, 1100, 2200]);
+    expect(waits).toEqual([1100, 1100]);
+  });
+});
