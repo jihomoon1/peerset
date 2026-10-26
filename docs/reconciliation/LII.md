@@ -71,3 +71,4 @@ Methodology 0.3.0 §7–§9 · golden file `tests/golden/LII-2026Q2-balance.json
 ## Golden change log
 
 - **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in `tests/golden/LII-2026Q2.json` and `LII-2026Q2-balance.json` moved from 0.3.0 to 0.3.1. Methodology 0.3.1 adds only the stale-price warning (§12). No value, period or concept in either golden changed.

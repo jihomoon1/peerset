@@ -2,12 +2,13 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.3.0";
+export const METHODOLOGY_VERSION = "0.3.1";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
 export const NM_MULTIPLE_CAP = 100; // §10: multiples above 100.0x are NM
 export const LAG_FLAG_DAYS = 75; // §12: LTM end > 75 days from peer median
+export const PRICE_STALE_DAYS = 7; // §12: price date > 7 calendar days before analysis warns
 export const EPS_CROSSCHECK_TOLERANCE = 0.05; // §5: > 5% gap warns
 export const NCI_MATERIALITY = 0.05; // §9: NCI > 5% of market cap warns
 export const FISCAL_YEAR_DAYS = { min: 350, max: 378 } as const; // §2

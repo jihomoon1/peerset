@@ -1,6 +1,6 @@
 # WSO reconciliation — EV inputs at June 30, 2026
 
-Watsco, Inc. · CIK 0000105016 · methodology 0.3.0 · golden file `tests/golden/WSO-2026Q2-balance.json`
+Watsco, Inc. · CIK 0000105016 · methodology 0.3.0 (0.3.1 changed no value here) · golden file `tests/golden/WSO-2026Q2-balance.json`
 
 **Document:** **10-Q** for the quarter ended June 30, 2026, filed August 7, 2026, accession 0001193125-26-340204: [document](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm) · [filing index](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/0001193125-26-340204-index.htm) · SEC's rendering of the balance sheet: [R4.htm](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/R4.htm)
 
@@ -35,3 +35,7 @@ Statement: "CONDENSED CONSOLIDATED UNAUDITED BALANCE SHEETS", June 30, 2026 colu
 5. Under equity, check "Preferred stock" (0) and "Non-controlling interest" (478,797).
 6. Optional: in the 10-Q's lease note, see how the current lease liability splits between operating and finance leases, to judge how much the exclusion leaves out.
 7. If a row matches, change its Status to **Confirmed** and commit (`docs: confirm WSO EV inputs`). If not, leave it and note the difference.
+
+## Golden change log
+
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in `tests/golden/WSO-2026Q2-balance.json` moved from 0.3.0 to 0.3.1. Methodology 0.3.1 adds only the stale-price warning (§12). No value or concept in the golden changed.

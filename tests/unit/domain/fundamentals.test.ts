@@ -154,7 +154,7 @@ describe("buildFundamentals", () => {
     expect(f.ltmEnd).toBe("2026-06-30");
     expect(f.freshness.status).toBe("filing-parsed");
     expect(f.warnings.map((w) => w.code)).toEqual(["W_FILING_PARSED"]);
-    expect(f.methodologyVersion).toBe("0.3.0");
+    expect(f.methodologyVersion).toBe("0.3.1");
   });
 
   it("keeps each metric's LTM calculation for the drawer", () => {
