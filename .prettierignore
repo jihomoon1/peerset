@@ -4,3 +4,5 @@ package-lock.json
 tests/fixtures
 docs/blueprint.md
 docs/prompts
+playwright-report
+test-results

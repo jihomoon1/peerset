@@ -24,3 +24,30 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+  # End-to-end in fixture mode (blueprint §18): the server reads tests/fixtures/sec,
+  # so this job never calls live SEC and needs no secrets.
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      # Needs the build: next start must refuse fixture mode in production.
+      - run: npx vitest run tests/integration/fixtureModeRefusal.test.ts
+      - run: npm run e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
