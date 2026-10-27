@@ -13,3 +13,18 @@ export type CacheFn = <T>(
 
 export const nextCache: CacheFn = (key, revalidateSeconds, fn) =>
   unstable_cache(fn, key, { revalidate: revalidateSeconds })();
+
+// Process-memory cache for fixture mode (M3): keeps e2e renders fast without
+// touching the persistent cache that holds live SEC data. Ignores revalidation.
+export function memoryCache(): CacheFn {
+  const entries = new Map<string, Promise<unknown>>();
+  return <T>(
+    key: string[],
+    _revalidateSeconds: number,
+    fn: () => Promise<T>,
+  ) => {
+    const k = JSON.stringify(key);
+    if (!entries.has(k)) entries.set(k, fn());
+    return entries.get(k) as Promise<T>;
+  };
+}
