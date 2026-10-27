@@ -1,0 +1,49 @@
+name: Smoke
+
+# Production smoke test (blueprint §14, §18): after each successful production
+# deploy, daily, and by hand. Checks presence and shape, never values, on one
+# company only, to keep the load on SEC minimal.
+on:
+  deployment_status:
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: smoke
+    # Vercel names the environment "Production" (or "Production – <project>").
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment.environment, 'Production'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # The production domain, a repo variable. Not the deployment's own URL, which
+      # Vercel's Standard Protection keeps behind a login.
+      PEERSET_URL: ${{ vars.PEERSET_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run smoke
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
