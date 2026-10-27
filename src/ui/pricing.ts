@@ -32,6 +32,16 @@ export function parsePastedPrices(
   return { prices, unmatched };
 }
 
+// The price-date input's starting value in Alpha Vantage mode: the earliest provider
+// date, the same date the as-of strip shows (methodology §6).
+export function providerPriceDate(
+  providerQuotes: readonly QuoteSnapshot[],
+): string | undefined {
+  return providerQuotes.length
+    ? providerQuotes.map((q) => q.asOfDate).reduce((a, b) => (a < b ? a : b))
+    : undefined;
+}
+
 export function quotesFromInputs(input: {
   inputs: Record<string, string>; // ticker → price text as typed
   priceDate: string;
@@ -58,6 +68,10 @@ export function quotesFromInputs(input: {
       dateError: `Price date can't be after the analysis date (${input.analysisDate})`,
     };
 
+  // While the date is still the pre-filled one, an unchanged price keeps its provider
+  // quote and that quote's own date; classes can close on different days.
+  const dateUntouched =
+    input.priceDate === providerPriceDate(input.providerQuotes);
   const quotes: QuoteSnapshot[] = [];
   const errors: Record<string, string> = {};
   for (const [ticker, text] of entered) {
@@ -66,7 +80,7 @@ export function quotesFromInputs(input: {
       (q) =>
         q.symbol === ticker &&
         q.close === close &&
-        q.asOfDate === input.priceDate,
+        (dateUntouched || q.asOfDate === input.priceDate),
     );
     if (provided) {
       quotes.push(provided);

@@ -131,3 +131,43 @@ describe("P/E follows the cover's classes, not the usable ones", () => {
     );
   });
 });
+
+describe("review follow-ups (after M2b)", () => {
+  it("a stale price warns on P/E even when a share-class blocker stops market cap", async () => {
+    const f = await fixtureFundamentals("LII");
+    const g = {
+      ...f,
+      shareClasses: {
+        ...f.shareClasses,
+        blocker: {
+          status: "unsupported" as const,
+          reason: {
+            code: "SHARE_CLASS_MISMATCH" as const,
+            message: "cover share counts have different dates",
+          },
+        },
+      },
+    };
+    const v = priceCompany(
+      g,
+      [{ ...quote("LII", 500), asOfDate: "2026-10-01" }],
+      "2026-10-26",
+    );
+    expect(v.price?.warnings.map((w) => w.code)).toEqual(["W_PRICE_STALE"]);
+    expect(v.multiples.pe.warnings.map((w) => w.code)).toContain(
+      "W_PRICE_STALE",
+    );
+  });
+
+  it("share-class warnings reach market cap (methodology §6)", async () => {
+    const f = await fixtureFundamentals("LII");
+    const v = priceCompany(f, [quote("LII", 500)], "2026-10-26");
+    expect(v.bridge.marketCap.warnings.map((w) => w.code)).toContain(
+      "W_SHARES_AFTER_BALANCE_SHEET",
+    );
+    const before = priceCompany(f, [], "2026-10-26");
+    expect(before.bridge.marketCap.warnings.map((w) => w.code)).toContain(
+      "W_SHARES_AFTER_BALANCE_SHEET",
+    );
+  });
+});
