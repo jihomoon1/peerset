@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import { formatDate } from "@/lib/format";
 import {
@@ -18,10 +18,12 @@ export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
   const [open, setOpen] = useState<BalanceSheetKey | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
 
-  const close = () => {
-    setOpen(null);
-    opener.current?.focus();
-  };
+  const close = () => setOpen(null);
+  // Return focus once the drawer has unmounted: while its modal dialog is open the
+  // rest of the page is inert and focus() is ignored.
+  useEffect(() => {
+    if (!open) opener.current?.focus();
+  }, [open]);
 
   return (
     <section aria-labelledby="balance-heading" className="flex flex-col gap-2">

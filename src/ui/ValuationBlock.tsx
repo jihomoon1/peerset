@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import type { Metric } from "@/domain/types";
 import type { Valuation } from "@/domain/valuation";
@@ -86,10 +86,12 @@ export function ValuationBlock({
   const opener = useRef<HTMLButtonElement | null>(null);
   const blocker = f.shareClasses.blocker;
 
-  const close = () => {
-    setOpen(false);
-    opener.current?.focus();
-  };
+  const close = () => setOpen(false);
+  // Return focus once the drawer has unmounted: while its modal dialog is open the
+  // rest of the page is inert and focus() is ignored.
+  useEffect(() => {
+    if (!open) opener.current?.focus();
+  }, [open]);
 
   return (
     <section
