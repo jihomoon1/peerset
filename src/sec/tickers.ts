@@ -2,6 +2,7 @@
 // match a listed ticker exactly: an unknown ticker is refused, never remapped (blueprint §3).
 
 import { TickerNotFoundError } from "@/lib/errors";
+import { TICKER_PATTERN } from "@/lib/ticker";
 import type { Listing } from "@/domain/types";
 import { CompanyTickersExchangeSchema, parseOrThrow } from "./schemas";
 import { padCik } from "./urls";
@@ -9,7 +10,7 @@ import { padCik } from "./urls";
 export const TICKER_LIST_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
 
-export const TICKER_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/; // blueprint §13
+export { TICKER_PATTERN }; // blueprint §13; defined in lib/ticker for the browser
 
 interface TickerRow {
   cik: string;
