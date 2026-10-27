@@ -1,6 +1,6 @@
 # WSO reconciliation — EV inputs, LTM and valuation at June 30, 2026
 
-Watsco, Inc. · CIK 0000105016 · methodology 0.3.1 (balance rows checked under 0.3.0; 0.3.1 changed no value) · golden files `tests/golden/WSO-2026Q2-balance.json`, `tests/golden/WSO-2026Q2.json`, `tests/golden/WSO-2026Q2-valuation.json`
+Watsco, Inc. · CIK 0000105016 · methodology 0.3.2 (balance rows checked under 0.3.0; 0.3.1 and 0.3.2 changed no value) · golden files `tests/golden/WSO-2026Q2-balance.json`, `tests/golden/WSO-2026Q2.json`, `tests/golden/WSO-2026Q2-valuation.json`
 
 **Document:** **10-Q** for the quarter ended June 30, 2026, filed August 7, 2026, accession 0001193125-26-340204: [document](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/wso-20260630.htm) · [filing index](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/0001193125-26-340204-index.htm) · SEC's rendering of the balance sheet: [R4.htm](https://www.sec.gov/Archives/edgar/data/105016/000119312526340204/R4.htm)
 
@@ -87,3 +87,4 @@ Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/WSO-2026Q2-valuati
 ## Golden change log
 
 - **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in `tests/golden/WSO-2026Q2-balance.json` moved from 0.3.0 to 0.3.1. Methodology 0.3.1 adds only the stale-price warning (§12). No value or concept in the golden changed.
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.1 to 0.3.2. Methodology 0.3.2 only writes down rules the code already applied (§6, §9, §10); no value changed.

@@ -1,6 +1,6 @@
 # LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.3.1 (LTM rows checked under 0.2.1; 0.3.0 and 0.3.1 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.3.2 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.2 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -91,3 +91,4 @@ Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/LII-2026Q2-valuati
 
 - **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.
 - **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in `tests/golden/LII-2026Q2.json` and `LII-2026Q2-balance.json` moved from 0.3.0 to 0.3.1. Methodology 0.3.1 adds only the stale-price warning (§12). No value, period or concept in either golden changed.
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.1 to 0.3.2. Methodology 0.3.2 only writes down rules the code already applied (§6, §9, §10); no value changed.

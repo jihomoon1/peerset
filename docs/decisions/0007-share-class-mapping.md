@@ -16,7 +16,7 @@ So cover symbols can't be used as they stand. Watsco's Class B is `WSOB` on the 
 
 ## Decision (`src/domain/capitalization.ts`)
 
-- **Source.** Use cover facts from the latest periodic filing's own instance only: same accession, source `filing`. companyfacts drops class detail, so it is never used here. When the cover shows more than one date, the latest one is the shares-as-of date.
+- **Source.** Use cover facts from the latest periodic filing's own instance only: same accession, source `filing`. companyfacts drops class detail, so it is never used here. Counts at more than one date make market cap Unsupported (`SHARE_CLASS_MISMATCH`), since they can't be summed and no class may drop out.
 - **Normalizing.** Before matching, uppercase each symbol and strip `.`, `-`, `/` and whitespace. `WSOB`, `WSO-B` and `WSO.B` all become `WSOB`. The ticker we store is SEC's spelling (`WSO-B`), because that's the form users search for and the form price inputs show. The cover's own spelling is kept as `coverSymbol`.
 - **SEC listings.** These are `identity.tickers`, built from the submissions file's `tickers` and `exchanges`. For both WSO and LII they are the same rows as `company_tickers_exchange.json` (checked 2026-10-26). Using them saves loading the 1 MB ticker file inside the domain.
 - **Count per class.** Each class member's ticker is the cover symbol for that same member. A class with no cover symbol is **unlisted**, which makes market cap Unsupported: "unlisted share class: <member>".
