@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextQuoteRefresh } from "@/lib/marketClock";
+import { isFinishedTradingDay, nextQuoteRefresh } from "@/lib/marketClock";
 
 // Blueprint §14: quotes are cached until 6 p.m. ET on the next trading day. Weekends
 // are skipped; market holidays are not modeled (one extra refresh at worst).
@@ -21,5 +21,17 @@ describe("nextQuoteRefresh", () => {
     expect(r.seconds).toBe(
       Math.ceil((Date.parse(cutoff) - Date.parse(now)) / 1000),
     );
+  });
+});
+
+describe("isFinishedTradingDay", () => {
+  it("an earlier ET date is finished; today is finished from 18:00 ET", () => {
+    const now = new Date("2026-10-23T21:59:00.000Z"); // 17:59 ET
+    expect(isFinishedTradingDay("2026-10-22", now)).toBe(true);
+    expect(isFinishedTradingDay("2026-10-23", now)).toBe(false);
+    expect(
+      isFinishedTradingDay("2026-10-23", new Date("2026-10-23T22:00:00.000Z")),
+    ).toBe(true);
+    expect(isFinishedTradingDay("2026-10-24", now)).toBe(false);
   });
 });

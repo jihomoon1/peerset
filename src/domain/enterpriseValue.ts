@@ -34,6 +34,26 @@ export interface MarketCapResult {
   priceDate?: string; // the earliest price date among the classes' quotes
 }
 
+// W_PRICE_STALE (§12), one per quote dated more than PRICE_STALE_DAYS before the
+// analysis date. Market cap and the single-class price for P/E both use it.
+export function priceStaleWarnings(
+  quotes: readonly QuoteSnapshot[],
+  analysisDate: string,
+): MetricWarning[] {
+  return quotes.flatMap((q) => {
+    const age = daysBetween(q.asOfDate, analysisDate);
+    return age > PRICE_STALE_DAYS
+      ? [
+          {
+            code: "W_PRICE_STALE" as const,
+            message: `price for ${q.symbol} is ${age} days old (${q.asOfDate})`,
+            severity: "caution" as const,
+          },
+        ]
+      : [];
+  });
+}
+
 export function computeMarketCap(
   shareClasses: ShareClasses,
   quotes: readonly QuoteSnapshot[],
@@ -79,13 +99,16 @@ export function computeMarketCap(
     ? priced.map((q) => q.asOfDate).reduce((a, b) => (a < b ? a : b))
     : undefined;
   const withDate = priceDate ? { priceDate } : {};
+  // §6's share-class notes (W_TICKER_NOT_IN_SEC_LIST, W_SHARES_AFTER_BALANCE_SHEET)
+  // describe the shares, so they ride on market cap whatever its status.
+  const classWarnings = shareClasses.warnings;
 
   if (shareClasses.blocker) {
     const b = shareClasses.blocker;
     const marketCap: Metric =
       b.status === "missing"
-        ? { status: "missing", reason: b.reason, warnings: [] }
-        : { status: "unsupported", reason: b.reason, warnings: [] };
+        ? { status: "missing", reason: b.reason, warnings: classWarnings }
+        : { status: "unsupported", reason: b.reason, warnings: classWarnings };
     return { classes, marketCap, ...withDate };
   }
   if (classes.length === 0)
@@ -94,7 +117,7 @@ export function computeMarketCap(
       marketCap: {
         status: "missing",
         reason: "no share classes to price",
-        warnings: [],
+        warnings: classWarnings,
       },
       ...withDate,
     };
@@ -105,26 +128,24 @@ export function computeMarketCap(
       marketCap: {
         status: "missing",
         reason: `price needed for ${unpriced.join(", ")}`,
-        warnings: [],
+        warnings: classWarnings,
       },
       ...withDate,
     };
 
-  const warnings: MetricWarning[] = [];
-  for (const q of priced) {
-    const age = daysBetween(q.asOfDate, analysisDate);
-    if (age > PRICE_STALE_DAYS)
-      warnings.push({
-        code: "W_PRICE_STALE",
-        message: `price for ${q.symbol} is ${age} days old (${q.asOfDate})`,
-        severity: "caution",
-      });
-  }
+  const warnings = mergeWarnings(
+    classWarnings,
+    priceStaleWarnings(priced, analysisDate),
+  );
   // Every class is listed and priced here; still, never add a class as zero.
   const values = classes.map((c) => c.equityValue);
   const unusable = values.find((m) => !isUsable(m));
   if (unusable)
-    return { classes, marketCap: { ...unusable, warnings: [] }, ...withDate };
+    return {
+      classes,
+      marketCap: { ...unusable, warnings: classWarnings },
+      ...withDate,
+    };
   const usable = values.filter(isUsable);
   const inputs: Provenance[] = usable.flatMap((m) => m.inputs);
   return {

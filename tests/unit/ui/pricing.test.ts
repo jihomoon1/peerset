@@ -3,6 +3,7 @@ import type { Metric, QuoteSnapshot } from "@/domain/types";
 import {
   displayValuationCell,
   parsePastedPrices,
+  providerPriceDate,
   quotesFromInputs,
 } from "@/ui/pricing";
 
@@ -161,5 +162,54 @@ describe("displayValuationCell", () => {
       kind: "nm",
       note: "NM: above 100x policy (188.1x)",
     });
+  });
+});
+
+describe("quotesFromInputs with provider quotes of different dates", () => {
+  const av = (
+    symbol: string,
+    close: number,
+    asOfDate: string,
+  ): QuoteSnapshot => ({
+    symbol,
+    close,
+    currency: "USD",
+    asOfDate,
+    source: "alpha_vantage",
+    retrievedAt: "2026-10-26T13:00:00.000Z",
+  });
+  const providerQuotes = [
+    av("WSO", 322.98, "2026-10-23"),
+    av("WSO-B", 287.5, "2026-10-21"),
+  ];
+
+  it("the default price date is the earliest provider date", () => {
+    expect(providerPriceDate(providerQuotes)).toBe("2026-10-21");
+    expect(providerPriceDate([])).toBeUndefined();
+  });
+
+  it("untouched pre-fills keep each class's own date and source", () => {
+    const r = quotesFromInputs({
+      priceDate: "2026-10-21",
+      analysisDate: "2026-10-26",
+      retrievedAt: "2026-10-26T14:00:00.000Z",
+      providerQuotes,
+      inputs: { WSO: "322.98", "WSO-B": "287.50" },
+    });
+    expect(r.quotes).toEqual(providerQuotes);
+  });
+
+  it("an edited date makes every price user-entered on that date", () => {
+    const r = quotesFromInputs({
+      priceDate: "2026-10-22",
+      analysisDate: "2026-10-26",
+      retrievedAt: "2026-10-26T14:00:00.000Z",
+      providerQuotes,
+      inputs: { WSO: "322.98", "WSO-B": "287.50" },
+    });
+    expect(r.quotes.map((q) => [q.source, q.asOfDate])).toEqual([
+      ["user_entered", "2026-10-22"],
+      ["user_entered", "2026-10-22"],
+    ]);
   });
 });

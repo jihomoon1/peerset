@@ -65,3 +65,12 @@ export function nextQuoteRefresh(now: Date): {
   }
   throw new RangeError("no weekday cutoff within a week");
 }
+
+// Whether a daily bar dated `date` (ET) is a finished close at `now`: an earlier ET
+// date, or today from 6 p.m. ET. A bar for today before then may still be trading.
+export function isFinishedTradingDay(date: string, now: Date): boolean {
+  const today = etParts(now);
+  return (
+    date < today.date || (date === today.date && today.hour >= REFRESH_HOUR_ET)
+  );
+}

@@ -239,13 +239,15 @@ describe("priceProviderName", () => {
 
 describe("pacing (Alpha Vantage free tier: about 1 request per second)", () => {
   it("spaces calls at least 1.1 s apart and sends them one at a time", async () => {
-    let clock = 0;
+    // A 2026 clock: the parser only takes rows whose trading day had finished.
+    const BASE = Date.parse(RETRIEVED);
+    let clock = BASE;
     const waits: number[] = [];
     const starts: number[] = [];
     const provider = createAlphaVantageProvider({
       apiKey: KEY,
       fetch: (async () => {
-        starts.push(clock);
+        starts.push(clock - BASE);
         return new Response(JSON.stringify(body("synthetic-ok.json")));
       }) as typeof fetch,
       now: () => new Date(clock),
@@ -275,6 +277,37 @@ describe("provider prices get the same limits as typed ones (blueprint §13)", (
         },
         "SYN",
         RETRIEVED,
+      ),
+    ).toThrow(PriceUnavailableError);
+  });
+});
+
+describe("parseDailySeries never takes a bar that may still be trading (methodology §12)", () => {
+  // synthetic-ok.json's latest row is Friday 2026-10-23.
+  it("during that day's session it takes the previous close", () => {
+    const q = parseDailySeries(
+      body("synthetic-ok.json"),
+      "SYN",
+      "2026-10-23T15:00:00.000Z", // 11:00 ET
+    );
+    expect([q.asOfDate, q.close]).toEqual(["2026-10-22", 100.99]);
+  });
+
+  it("from 6 p.m. ET that day's close counts", () => {
+    const q = parseDailySeries(
+      body("synthetic-ok.json"),
+      "SYN",
+      "2026-10-23T22:00:00.000Z", // 18:00 ET
+    );
+    expect([q.asOfDate, q.close]).toEqual(["2026-10-23", 102.75]);
+  });
+
+  it("no finished day at all is PRICE_UNAVAILABLE", () => {
+    expect(() =>
+      parseDailySeries(
+        body("synthetic-ok.json"),
+        "SYN",
+        "2026-10-20T15:00:00.000Z",
       ),
     ).toThrow(PriceUnavailableError);
   });

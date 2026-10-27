@@ -7,6 +7,7 @@ import * as z from "zod";
 import { isIsoDate } from "@/domain/dates";
 import type { QuoteSnapshot } from "@/domain/types";
 import { PriceRateLimitedError, PriceUnavailableError } from "@/lib/errors";
+import { isFinishedTradingDay } from "@/lib/marketClock";
 import type { QuoteProvider } from "./provider";
 import { PRICE_LIMIT } from "./userEntered";
 
@@ -46,7 +47,9 @@ const MessageSchema = z.union([
   z.object({ Note: z.string() }),
 ]);
 
-// `symbol` is the ticker the caller asked for; the snapshot carries it unchanged.
+// `symbol` is the ticker the caller asked for; the snapshot carries it unchanged. The
+// latest row whose trading day had finished at `retrievedAt` is used, so a bar for a
+// session still trading is never shown as a close (methodology §12).
 export function parseDailySeries(
   body: unknown,
   symbol: string,
@@ -73,7 +76,11 @@ export function parseDailySeries(
     throw new PriceUnavailableError(`${symbol}: no daily rows`);
   if (!dates.every(isIsoDate))
     throw new PriceUnavailableError(`${symbol}: row key is not an ISO date`);
-  const latest = dates.reduce((a, b) => (a > b ? a : b));
+  const now = new Date(retrievedAt);
+  const finished = dates.filter((d) => isFinishedTradingDay(d, now));
+  if (finished.length === 0)
+    throw new PriceUnavailableError(`${symbol}: no finished trading day yet`);
+  const latest = finished.reduce((a, b) => (a > b ? a : b));
   const raw = parsed.data["Time Series (Daily)"][latest]["4. close"];
   const close = Number(raw);
   if (!/^\d+(\.\d+)?$/.test(raw) || !(close > 0) || close >= PRICE_LIMIT)

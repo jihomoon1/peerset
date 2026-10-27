@@ -8,7 +8,12 @@ import type { QuoteError } from "@/lib/quotes";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
 import { OperatingBlock } from "./OperatingBlock";
-import { byListingOrder, parsePastedPrices, quotesFromInputs } from "./pricing";
+import {
+  byListingOrder,
+  parsePastedPrices,
+  providerPriceDate,
+  quotesFromInputs,
+} from "./pricing";
 import { ValuationBlock } from "./ValuationBlock";
 
 // Holds the page's price inputs, so the as-of strip and the valuation block read the
@@ -42,7 +47,7 @@ export function CompanyWorkspace({
     ),
   );
   const [priceDate, setPriceDate] = useState(
-    providerQuotes[0]?.asOfDate ?? analysisDate,
+    providerPriceDate(providerQuotes) ?? analysisDate,
   );
   const [retrievedAt, setRetrievedAt] = useState(pulledAt);
 

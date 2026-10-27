@@ -6,6 +6,7 @@
 import {
   computeEnterpriseValue,
   computeMarketCap,
+  priceStaleWarnings,
   type EnterpriseValueBridge,
   type ShareClassCapitalization,
 } from "./enterpriseValue";
@@ -53,7 +54,8 @@ export function priceCompany(
         period: { kind: "instant", end: single.quote.asOfDate },
         formula: `close (${single.quote.source})`,
         inputs: [],
-        warnings: marketCap.warnings.filter((w) => w.code === "W_PRICE_STALE"),
+        // From the quote itself: a share-class blocker leaves market cap without it.
+        warnings: priceStaleWarnings([single.quote], analysisDate),
       }
     : undefined;
 
