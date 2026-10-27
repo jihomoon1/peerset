@@ -40,7 +40,12 @@ export interface LoadDeps {
   cache: CacheFn;
   asOf: string; // today, ISO; the domain never reads the clock
   logger: Logger;
+  now?: () => Date; // stamps when SEC data was pulled; defaults to the clock
 }
+
+// Fundamentals plus when their SEC data was pulled (the as-of strip's "data pulled
+// at", blueprint §6). Stamped inside the cache, so a cached copy keeps its pull time.
+export type LoadedFundamentals = CompanyFundamentals & { pulledAt: string };
 
 export function defaultDeps(): LoadDeps {
   return {
@@ -65,7 +70,7 @@ export function normalizeTicker(raw: string | null | undefined): string {
 export async function loadFundamentals(
   rawTicker: string | null | undefined,
   deps: LoadDeps,
-): Promise<CompanyFundamentals> {
+): Promise<LoadedFundamentals> {
   const started = Date.now();
   const ticker = normalizeTicker(rawTicker);
   const { client, asOf } = deps;
@@ -96,7 +101,7 @@ export async function loadFundamentals(
 
   let hit = true;
   let secRequests = 2;
-  const fundamentals = await deps.cache(
+  const fundamentals = await deps.cache<LoadedFundamentals>(
     ["fundamentals", cik, accession, METHODOLOGY_VERSION],
     CACHE_SECONDS.fundamentals,
     async () => {
@@ -107,7 +112,10 @@ export async function loadFundamentals(
         submissionsRevalidate: CACHE_SECONDS.submissions,
       });
       secRequests += facts.requestsMade;
-      return buildFundamentals(facts);
+      return {
+        ...buildFundamentals(facts),
+        pulledAt: (deps.now ?? (() => new Date()))().toISOString(),
+      };
     },
   );
 

@@ -1,6 +1,6 @@
-# LII reconciliation — LTM through June 30, 2026
+# LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.2.1 (LTM rows below; 0.3.0 changed no LTM value) · golden file `tests/golden/LII-2026Q2.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.3.2 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.2 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -68,6 +68,27 @@ Methodology 0.3.0 §7–§9 · golden file `tests/golden/LII-2026Q2-balance.json
 4. Check that the operating lease lines are **not** in total debt, that "Preferred stock" shows no shares issued, and that there is no noncontrolling-interest line.
 5. If a row matches, change its Status to **Confirmed** and commit (`docs: confirm LII EV inputs`). If not, leave it and note the difference.
 
+## Valuation at test price
+
+Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/LII-2026Q2-valuation.json`. **The price is a test input, not market data:** 500.00 USD as of October 23, 2026. Alpha Vantage's actual close that day was 376.01, and it is not used here. Analysis date: October 26, 2026. Amounts in USD, written out in full so each row ties to the dollar. Multiples are shown to 0.01x; the page shows one decimal.
+
+| Row                                   | PeerSet        | Filing input or manual calc                                                 | Source                                                                                     | Status    |
+| ------------------------------------- | -------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------- |
+| Shares outstanding (one class, `LII`) | 34,560,675     | 34,560,675 as of July 22, 2026                                              | 10-Q **cover page**, the shares-outstanding line, `dei:EntityCommonStockSharesOutstanding` | Confirmed |
+| Market cap                            | 17,280,337,500 | 500.00 × 34,560,675 = 17,280,337,500                                        | Test price × cover shares                                                                  | Confirmed |
+| Total debt                            | 1,581,300,000  | from "EV inputs" above                                                      | Confirmed row                                                                              | Confirmed |
+| Cash and short-term investments       | 52,100,000     | from "EV inputs" above                                                      | Confirmed row                                                                              | Confirmed |
+| **Enterprise value**                  | 18,809,537,500 | 17,280,337,500 + 1,581,300,000 − 52,100,000 = 18,809,537,500                | §9                                                                                         | Confirmed |
+| Not in EV                             | no warning     | preferred 0; no noncontrolling interest line                                | §9                                                                                         | Confirmed |
+| EV / Revenue (LTM)                    | 3.55x          | 18,809,537,500 ÷ 5,302,200,000 = 3.5475                                     | Revenue row above (Confirmed)                                                              | Confirmed |
+| EV / EBITDA (LTM)                     | 16.15x         | 18,809,537,500 ÷ 1,164,900,000 = 16.1469                                    | EBITDA row above (Confirmed)                                                               | Confirmed |
+| P / E (LTM diluted)                   | 22.21x         | 500.00 ÷ 22.51 = 22.2124                                                    | Diluted EPS row above (Confirmed); single class, no split since the 10-K                   | Confirmed |
+| Dates shown                           |                | price October 23, 2026 · balance sheet June 30, 2026 · shares July 22, 2026 | As-of strip and EV drawer                                                                  | Confirmed |
+
+**How to check (about 5 minutes).** Open the 10-Q link at the top of this file. On the cover page, find the line saying how many shares of common stock were outstanding as of July 22, 2026, and compare it with 34,560,675. Then redo the multiplications and divisions above on a calculator. If a row matches, change its Status to **Confirmed**.
+
 ## Golden change log
 
 - **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in `tests/golden/LII-2026Q2.json` and `LII-2026Q2-balance.json` moved from 0.3.0 to 0.3.1. Methodology 0.3.1 adds only the stale-price warning (§12). No value, period or concept in either golden changed.
+- **October 26, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.1 to 0.3.2. Methodology 0.3.2 only writes down rules the code already applied (§6, §9, §10); no value changed.

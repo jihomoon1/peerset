@@ -5,6 +5,8 @@ import {
   InternalError,
   InvalidInputError,
   PeerSetError,
+  PriceRateLimitedError,
+  PriceUnavailableError,
   SecRateLimitedError,
   SecSchemaChangedError,
   SecUnavailableError,
@@ -28,6 +30,16 @@ describe("error classes (blueprint §15)", () => {
       false,
     ],
     [new InternalError("bug"), "INTERNAL", false],
+    [
+      new PriceUnavailableError("Error Message: invalid call"),
+      "PRICE_UNAVAILABLE",
+      true,
+    ],
+    [
+      new PriceRateLimitedError("Information: rate limit"),
+      "PRICE_RATE_LIMITED",
+      true,
+    ],
   ] as const)("%s has code, user message, detail", (err, code, retryable) => {
     expect(err).toBeInstanceOf(PeerSetError);
     expect(err).toBeInstanceOf(Error);
@@ -65,8 +77,19 @@ describe("HTTP mapping (blueprint §15)", () => {
     [new SecSchemaChangedError("x"), 502],
     [new SecUnavailableError("503"), 503],
     [new InternalError("bug"), 500],
+    [new PriceUnavailableError("x"), 502],
+    [new PriceRateLimitedError("x"), 429],
   ] as const)("%s → %i", (err, status) => {
     expect(httpStatusFor(err)).toBe(status);
+  });
+
+  it("price errors tell the user to enter the price by hand", () => {
+    expect(new PriceUnavailableError("x").userMessage).toBe(
+      "The price provider didn't return a price; enter it by hand",
+    );
+    expect(new PriceRateLimitedError("x").userMessage).toBe(
+      "The price provider's daily limit is reached; enter the price by hand or try tomorrow",
+    );
   });
 
   it("an invalid input says what is wrong and is not retryable", () => {

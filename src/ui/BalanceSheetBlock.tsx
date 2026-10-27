@@ -13,7 +13,7 @@ import { displayMetric, STATUS_WORDS } from "./metricDisplay";
 const ITEMS: BalanceSheetKey[] = ["debt", "cash"];
 
 // Total debt and cash at the balance-sheet date (methodology §7–§8), the EV inputs
-// that need no price. Market cap and EV arrive in M2b.
+// that need no price. Market cap and EV are in the valuation block.
 export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
   const [open, setOpen] = useState<BalanceSheetKey | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);

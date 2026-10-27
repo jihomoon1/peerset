@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, daysBetween } from "@/domain/dates";
+import { addDays, daysBetween, isIsoDate } from "@/domain/dates";
 
 describe("daysBetween", () => {
   it("counts whole days, signed", () => {
@@ -19,4 +19,16 @@ describe("addDays", () => {
     expect(addDays("2024-02-28", 1)).toBe("2024-02-29");
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
   });
+});
+
+describe("isIsoDate", () => {
+  it.each([
+    ["2026-10-23", true],
+    ["2024-02-29", true],
+    ["2026-02-29", false],
+    ["2026-04-31", false],
+    ["2026-00-10", false],
+    ["2026-10-23T00:00", false],
+    ["20261023", false],
+  ])("%s → %s", (s, ok) => expect(isIsoDate(s)).toBe(ok));
 });

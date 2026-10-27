@@ -8,6 +8,8 @@ export type ErrorCode =
   | "SEC_UNAVAILABLE"
   | "SEC_RATE_LIMITED"
   | "SEC_SCHEMA_CHANGED"
+  | "PRICE_UNAVAILABLE"
+  | "PRICE_RATE_LIMITED"
   | "INTERNAL";
 
 export abstract class PeerSetError extends Error {
@@ -75,6 +77,27 @@ export class SecSchemaChangedError extends PeerSetError {
   }
 }
 
+// The price provider failed or returned no usable price (blueprint §15): the page
+// shows the price input instead. Detail never holds the API key or the request URL.
+export class PriceUnavailableError extends PeerSetError {
+  readonly code = "PRICE_UNAVAILABLE";
+  readonly retryable = true;
+  constructor(detail: string) {
+    super("The price provider didn't return a price; enter it by hand", detail);
+  }
+}
+
+export class PriceRateLimitedError extends PeerSetError {
+  readonly code = "PRICE_RATE_LIMITED";
+  readonly retryable = true;
+  constructor(detail: string) {
+    super(
+      "The price provider's daily limit is reached; enter the price by hand or try tomorrow",
+      detail,
+    );
+  }
+}
+
 export class InternalError extends PeerSetError {
   readonly code = "INTERNAL";
   readonly retryable = false;
@@ -92,6 +115,8 @@ const HTTP_STATUS: Record<ErrorCode, number> = {
   SEC_RATE_LIMITED: 429,
   SEC_SCHEMA_CHANGED: 502,
   SEC_UNAVAILABLE: 503,
+  PRICE_UNAVAILABLE: 502,
+  PRICE_RATE_LIMITED: 429,
   INTERNAL: 500,
 };
 

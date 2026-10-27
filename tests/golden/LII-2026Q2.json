@@ -13,7 +13,7 @@
     "end": "2026-06-30"
   },
   "freshness": "filing-parsed",
-  "methodologyVersion": "0.3.0",
+  "methodologyVersion": "0.3.2",
   "note": "Values are read from the rendered filings, not from the engine. The filings show USD millions to one decimal; the XBRL facts carry decimals=-5, so each value times 1,000,000 is exact to the dollar. The FY2025 10-K changed inventory from LIFO to FIFO in Q4 2025 and restated prior periods; the 10-Q's prior-year columns are on the restated basis.",
   "metrics": {
     "revenue": {

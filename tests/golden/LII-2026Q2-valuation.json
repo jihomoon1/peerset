@@ -1,0 +1,56 @@
+{
+  "ticker": "LII",
+  "fixture": "LII",
+  "methodologyVersion": "0.3.2",
+  "analysisDate": "2026-10-26",
+  "note": "Prices are test inputs, not market data (M2b prompt). Shares come from the 10-Q cover page; total debt, cash, revenue, EBITDA and EPS are the confirmed reconciliation values in tests/golden/LII-2026Q2.json and LII-2026Q2-balance.json. Arithmetic in full dollars; multiples asserted to 0.01x.",
+  "prices": [
+    {
+      "symbol": "LII",
+      "close": 500.0,
+      "asOfDate": "2026-10-23"
+    }
+  ],
+  "shareClasses": [
+    {
+      "classMember": "single",
+      "ticker": "LII",
+      "shares": 34560675,
+      "sharesAsOf": "2026-07-22",
+      "source": "10-Q cover page, dei:EntityCommonStockSharesOutstanding, accession 0001069202-26-000087"
+    }
+  ],
+  "marketCap": {
+    "value": 17280337500,
+    "math": "500.00 × 34,560,675 = 17,280,337,500"
+  },
+  "totalDebt": 1581300000,
+  "cash": 52100000,
+  "enterpriseValue": {
+    "value": 18809537500,
+    "math": "17,280,337,500 + 1,581,300,000 − 52,100,000 = 18,809,537,500"
+  },
+  "dates": {
+    "price": "2026-10-23",
+    "balanceSheet": "2026-06-30",
+    "sharesAsOf": "2026-07-22"
+  },
+  "notInEvWarning": false,
+  "multiples": {
+    "evRevenue": {
+      "status": "derived",
+      "value": 3.55,
+      "math": "18,809,537,500 ÷ 5,302,200,000 = 3.5475 → 3.55x"
+    },
+    "evEbitda": {
+      "status": "derived",
+      "value": 16.15,
+      "math": "18,809,537,500 ÷ 1,164,900,000 = 16.1469 → 16.15x"
+    },
+    "pe": {
+      "status": "derived",
+      "value": 22.21,
+      "math": "500.00 ÷ 22.51 = 22.2124 → 22.21x"
+    }
+  }
+}

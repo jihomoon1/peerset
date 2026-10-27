@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.3.0** · Status: **approved by Jiho Moon, October 26, 2026 (0.3.0 approved in M2a planning)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.3.2** · Status: **approved by Jiho Moon, October 26, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -71,6 +71,11 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 - The cover date is recorded; it is usually weeks after the balance-sheet date.
 - Several classes are summed only when every class has its own listed ticker and price. An unlisted class is Unsupported.
 - Shares are basic, not diluted by the treasury stock method (a disclosed limitation).
+- **Class → ticker** (`docs/decisions/0007-share-class-mapping.md`). Cover facts come from the latest periodic filing only. A class's ticker is the cover `dei:TradingSymbol` for the same class member, matched to SEC's listings for the CIK after normalizing (uppercase; strip `.`, `-`, `/` and spaces). SEC's spelling is stored (`WSO-B`, not the cover's `WSOB`).
+- **Market cap is Unsupported** when a class has no cover symbol (unlisted), when one consolidated count comes with several listed symbols ("share counts by class are needed"), when cover counts have different dates, sit on another axis or conflict. No cover count at all → Missing.
+- A cover symbol SEC doesn't list for the CIK is kept as the ticker, with the caution `W_TICKER_NOT_IN_SEC_LIST`. A cover date after the balance-sheet date adds the information note `W_SHARES_AFTER_BALANCE_SHEET`.
+- When class prices carry different dates, the earliest one is shown as the price date.
+- P/E uses the single class's own price, never market cap.
 
 **Market cap = Σ over classes of (price of class × shares of class)**
 
@@ -136,7 +141,7 @@ Evidence (SEC data, checked 2026-10-23):
 
 **EV = Market cap + Total debt − Cash and short-term investments**
 
-Preferred stock, noncontrolling interests and equity-method investments are left out. Warning "material item not in EV" when `PreferredStockValue` > 0, or noncontrolling interest (`MinorityInterest`, `RedeemableNoncontrollingInterestEquityCarryingAmount`) exceeds 5% of market cap. Preferred stock and noncontrolling interest (in equity or temporary equity) are read from the balance-sheet face (§7 rule 1) the same way; if the face is unavailable, the tags above are used. No such line → Missing. A face line whose label looks like preferred stock or noncontrolling interest (not a "Total …" row) but whose concept is not classified makes that item Unsupported. Temporary-equity preferred stock is not classified yet, so it is Unsupported until a real filing is checked. Balance-sheet items are as of the LTM end date, prices as of the price date, shares as of the cover date; all three are shown.
+Preferred stock, noncontrolling interests and equity-method investments are left out. Warning "material item not in EV" when `PreferredStockValue` > 0, or noncontrolling interest (`MinorityInterest`, `RedeemableNoncontrollingInterestEquityCarryingAmount`) exceeds 5% of market cap. Preferred stock and noncontrolling interest (in equity or temporary equity) are read from the balance-sheet face (§7 rule 1) the same way; if the face is unavailable, the tags above are used. No such line → Missing. A face line whose label looks like preferred stock or noncontrolling interest (not a "Total …" row) but whose concept is not classified makes that item Unsupported. Temporary-equity preferred stock is not classified yet, so it is Unsupported until a real filing is checked. Balance-sheet items are as of the LTM end date, prices as of the price date, shares as of the cover date; all three are shown. The "material item not in EV" warning is attached only when EV is computed.
 
 ## 10. Multiples and the NM policy
 
@@ -152,6 +157,8 @@ EV/Revenue = EV ÷ Revenue(LTM) · EV/EBITDA = EV ÷ EBITDA(LTM) · P/E = Price 
 | An input is missing       | "—" (unavailable), never NM                                 |
 | The method cannot apply   | "Unsupported", with the reason                              |
 
+Missing and Unsupported inputs are settled first. Then the NM checks run in this order, and the first that applies gives the reason: EV ≤ 0 (EV multiples only), then a denominator ≤ 0, then above 100.0x. "EV ≤ 0" is shown with status NM and that reason.
+
 ## 11. Summary statistics
 
 - Computed over peers only; the target is excluded by default.
@@ -164,32 +171,34 @@ EV/Revenue = EV ÷ Revenue(LTM) · EV/EBITDA = EV ÷ EBITDA(LTM) · P/E = Price 
 - A company is flagged as lagging when its LTM end is more than 75 days from the peer-set median LTM end.
 - USD only, so currencies are never mixed.
 - Prices are end-of-day closes and are never called real-time.
+- A price dated more than 7 calendar days before the analysis date carries the caution `W_PRICE_STALE` ("price is <n> days old"). It is a warning only: the price is still used.
 
 ## 13. Implied valuation (stretch)
 
 Target LTM metric × peer 25th percentile, median and 75th percentile multiple gives implied EV. Subtract debt and add cash for implied equity value, then divide by shares for an implied price. Shown only when every target input is valid.
 
-## 14. Policy constants (v0.3.0)
+## 14. Policy constants (v0.3.2)
 
-| Constant                                            | Value                                    | Section            |
-| --------------------------------------------------- | ---------------------------------------- | ------------------ |
-| NM cap on multiples                                 | 100.0x                                   | 10                 |
-| Lag flag vs. peer median LTM end                    | > 75 days                                | 12                 |
-| EPS cross-check warning                             | > 5% gap                                 | 5                  |
-| NCI materiality for "not in EV" warning             | > 5% of market cap                       | 9                  |
-| Fiscal-year duration window                         | 350–378 days                             | 2                  |
-| Current YTD start tolerance after FY end            | ±7 days                                  | 2                  |
-| Prior-YTD duration tolerance                        | ±7 days                                  | 2                  |
-| Prior-YTD start offset tolerance (≈ 1 year earlier) | ±10 days                                 | 2                  |
-| Debt build vs. total-tag cross-check tolerance      | 0.1M USD                                 | 7                  |
-| Rendered statements cached per accession            | 30 days                                  | 7                  |
-| SEC requests per company (budget)                   | 7                                        | 7                  |
-| Stale-filer cutoff (latest periodic filing age)     | > 200 days → Unsupported                 | §8.6 of blueprint  |
-| Peer revenue screen                                 | 0.2x–5x target screening revenue         | §10.2 of blueprint |
-| Peers selected                                      | 8 by default; user may keep 5–12; max 12 | §10.2 of blueprint |
-| Excluded SIC range                                  | 6000–6799                                | §3 of blueprint    |
-| Split-like EPS ratio                                | within 2% of 1.5 or a whole number 2–50  | 5                  |
-| Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A               | 1                  |
+| Constant                                            | Value                                      | Section            |
+| --------------------------------------------------- | ------------------------------------------ | ------------------ |
+| NM cap on multiples                                 | 100.0x                                     | 10                 |
+| Lag flag vs. peer median LTM end                    | > 75 days                                  | 12                 |
+| Price staleness warning (`W_PRICE_STALE`)           | > 7 calendar days before the analysis date | 12                 |
+| EPS cross-check warning                             | > 5% gap                                   | 5                  |
+| NCI materiality for "not in EV" warning             | > 5% of market cap                         | 9                  |
+| Fiscal-year duration window                         | 350–378 days                               | 2                  |
+| Current YTD start tolerance after FY end            | ±7 days                                    | 2                  |
+| Prior-YTD duration tolerance                        | ±7 days                                    | 2                  |
+| Prior-YTD start offset tolerance (≈ 1 year earlier) | ±10 days                                   | 2                  |
+| Debt build vs. total-tag cross-check tolerance      | 0.1M USD                                   | 7                  |
+| Rendered statements cached per accession            | 30 days                                    | 7                  |
+| SEC requests per company (budget)                   | 7                                          | 7                  |
+| Stale-filer cutoff (latest periodic filing age)     | > 200 days → Unsupported                   | §8.6 of blueprint  |
+| Peer revenue screen                                 | 0.2x–5x target screening revenue           | §10.2 of blueprint |
+| Peers selected                                      | 8 by default; user may keep 5–12; max 12   | §10.2 of blueprint |
+| Excluded SIC range                                  | 6000–6799                                  | §3 of blueprint    |
+| Split-like EPS ratio                                | within 2% of 1.5 or a whole number 2–50    | 5                  |
+| Accepted periodic forms                             | 10-K, 10-K/A, 10-Q, 10-Q/A                 | 1                  |
 
 Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) are approved as v1 starting values.
 
@@ -201,3 +210,5 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | 0.2.0   | October 23, 2026 | Debt built from balance-sheet lines, total tags as cross-check (`W_DEBT_TOTAL_TAG_DIFFERS`); disposal-group cash fallback; priority list means highest-priority concept with every LTM component; JCI consequence noted. Supersedes blueprint §7.7's "prefer inclusive totals"                                                                                                                                                          |
 | 0.2.1   | October 26, 2026 | Split-like EPS ratio defined (§5, §14): within 2% of 1.5 or a whole number 2–50; the split-ratio fact is accepted in unit `pure` (§1.2). Approved by Jiho in M1b                                                                                                                                                                                                                                                                        |
 | 0.3.0   | October 26, 2026 | Debt, cash, preferred and NCI built from balance-sheet face lines (FilingSummary + rendered R file; values from the XBRL instance); unrecognized debt or cash line → Unsupported; lease-only debt-tagged lines excluded unless labeled finance or capital lease (`W_LEASE_LINE_EXCLUDED`); no debt lines → Reported 0 (`W_NO_DEBT_LINES`); 0.2.1 tag rules kept as fallback with `W_FACE_UNAVAILABLE`. Approved by Jiho in M2a planning |
+| 0.3.1   | October 26, 2026 | `W_PRICE_STALE` (caution) when the price date is more than 7 calendar days before the analysis date (§12, §14). A warning only; no value changes. Approved by Jiho in M2b planning                                                                                                                                                                                                                                                      |
+| 0.3.2   | October 26, 2026 | Writes down rules M2b already applies (no value changes): share-class to ticker mapping, `W_TICKER_NOT_IN_SEC_LIST`, `W_SHARES_AFTER_BALANCE_SHEET`, the cases where market cap is Unsupported, earliest class price date shown, P/E never priced off market cap (§6); not-in-EV warning only when EV is computed (§9); NM check order and "EV ≤ 0" as NM (§10). Added by Claude at Jiho's request in M2b review                        |

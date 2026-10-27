@@ -16,7 +16,7 @@
     "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/R4.htm",
     "scale": "Thousands"
   },
-  "methodologyVersion": "0.3.0",
+  "methodologyVersion": "0.3.2",
   "note": "Every value is read from the filing's rendered balance sheet ('Consolidated Balance Sheets (Unaudited)', column 2026-09-25), USD thousands as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 \u00a77-\u00a79.",
   "debt": {
     "lines": [

@@ -67,7 +67,11 @@ describe("GET /api/fundamentals", () => {
   ])(
     "returns %s's debt, cash and EV adjustments; cache entry under 2 MB",
     async (ticker, fixture, debt, cash) => {
-      const { deps: d, logs } = deps({ fixture, asOf: "2026-10-26" });
+      const { deps: d, logs } = deps({
+        fixture,
+        asOf: "2026-10-26",
+        now: () => new Date("2026-10-26T15:30:00.000Z"),
+      });
       const res = await get(
         createFundamentalsHandler(() => d, quiet),
         `?ticker=${ticker}`,
@@ -87,6 +91,10 @@ describe("GET /api/fundamentals", () => {
         "preferred",
       ]);
       expect(body.balanceSheet.statement.url).toMatch(/\/R\d+\.htm$/);
+      expect(body.pulledAt).toBe("2026-10-26T15:30:00.000Z");
+      expect(
+        body.shareClasses.classes.map((c: { ticker: string }) => c.ticker),
+      ).toEqual(ticker === "WSO" ? ["WSO-B", "WSO"] : [ticker]);
       const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);
       expect(line.bytes).toBeLessThan(2 * 1024 * 1024);
     },
@@ -110,7 +118,7 @@ describe("GET /api/fundamentals", () => {
     expect(companyFactsCalls()).toBe(1); // second request served from the cache
 
     expect(calls[0]).toEqual({
-      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.3.0"],
+      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.3.2"],
       revalidate: 86_400,
     });
     const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);

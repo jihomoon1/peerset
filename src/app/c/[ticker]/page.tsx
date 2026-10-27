@@ -1,17 +1,20 @@
-// /c/[ticker]: the minimal M1 analysis page (blueprint §5 step 4, §6). Identity,
-// financials strip, the operating block and the balance-sheet block (debt and cash),
-// each with its provenance drawer, and the disclaimer. Not the M4 workbench.
+// /c/[ticker]: the single-company analysis page (blueprint §5 step 4, §6). Identity,
+// the as-of strip, the operating block, the balance-sheet block (debt and cash), the
+// valuation block (prices, market cap, EV, multiples) with their drawers, and the
+// disclaimer. Not the M4 workbench.
 
 import Link from "next/link";
-import type { CompanyFundamentals } from "@/domain/fundamentals";
 import { errorResponseBody, PeerSetError } from "@/lib/errors";
-import { defaultDeps, loadFundamentals } from "@/lib/fundamentals";
+import {
+  defaultDeps,
+  loadFundamentals,
+  type LoadedFundamentals,
+} from "@/lib/fundamentals";
 import { log } from "@/lib/log";
-import { BalanceSheetBlock } from "@/ui/BalanceSheetBlock";
+import { defaultQuoteDeps, loadQuotes, type QuotesResult } from "@/lib/quotes";
+import { CompanyWorkspace } from "@/ui/CompanyWorkspace";
 import { ErrorState } from "@/ui/ErrorState";
-import { FinancialsStrip } from "@/ui/FinancialsStrip";
 import { IdentityLine } from "@/ui/IdentityLine";
-import { OperatingBlock } from "@/ui/OperatingBlock";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,10 +30,11 @@ export default async function CompanyPage({
   params,
 }: PageProps<"/c/[ticker]">) {
   const { ticker } = await params;
-  let f: CompanyFundamentals | null = null;
+  const deps = defaultDeps();
+  let f: LoadedFundamentals | null = null;
   let error = null;
   try {
-    f = await loadFundamentals(decodeURIComponent(ticker), defaultDeps());
+    f = await loadFundamentals(decodeURIComponent(ticker), deps);
   } catch (err) {
     const requestId = crypto.randomUUID();
     log("page_error", {
@@ -44,6 +48,17 @@ export default async function CompanyPage({
     error = errorResponseBody(err, requestId);
   }
 
+  // Alpha Vantage mode only (never production until approval is filed): pre-fill
+  // the price inputs. A provider failure leaves them empty with a note.
+  const quoteDeps = defaultQuoteDeps();
+  let quotes: QuotesResult = { quotes: [], errors: [] };
+  if (f && quoteDeps.provider) {
+    const tickers = f.shareClasses.classes.flatMap((c) =>
+      c.ticker ? [c.ticker] : [],
+    );
+    if (tickers.length > 0) quotes = await loadQuotes(tickers, quoteDeps);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-4">
       <nav className="border-b border-rule pb-2">
@@ -55,9 +70,14 @@ export default async function CompanyPage({
         {f ? (
           <>
             <IdentityLine identity={f.identity} />
-            <FinancialsStrip f={f} />
-            <OperatingBlock f={f} />
-            <BalanceSheetBlock f={f} />
+            <CompanyWorkspace
+              f={f}
+              pulledAt={f.pulledAt}
+              analysisDate={deps.asOf}
+              providerQuotes={quotes.quotes}
+              providerErrors={quotes.errors}
+              providerOn={quoteDeps.provider !== null}
+            />
           </>
         ) : (
           error && <ErrorState error={error} />
