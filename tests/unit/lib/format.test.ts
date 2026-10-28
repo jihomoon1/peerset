@@ -8,6 +8,7 @@ import {
   formatMillions,
   formatPercent,
   formatPerShare,
+  formatExactAmount,
 } from "@/lib/format";
 
 describe("formatMillions", () => {
@@ -22,6 +23,21 @@ describe("formatMillions", () => {
 
   it("can show more decimals", () => {
     expect(formatMillions(34_560_675, 3)).toBe("34.561");
+  });
+
+  it("shows <0.1 for a nonzero value that would round to 0.0 (AAON cash, $13,000)", () => {
+    expect(formatMillions(13_000)).toBe("<0.1");
+    expect(formatMillions(-13_000)).toBe("(<0.1)");
+    expect(formatMillions(1)).toBe("<0.1");
+  });
+
+  it("keeps exact zero as 0.0, and 0.1 once the value rounds up to it", () => {
+    expect(formatMillions(0)).toBe("0.0");
+    expect(formatMillions(50_000)).toBe("0.1");
+  });
+
+  it("applies the same rule at more decimals", () => {
+    expect(formatMillions(400, 3)).toBe("<0.001");
   });
 });
 
@@ -73,5 +89,13 @@ describe("formatTimestamp", () => {
     expect(formatTimestamp("2026-10-26T14:05:09.123Z")).toBe(
       "October 26, 2026, 14:05 UTC",
     );
+  });
+});
+
+describe("formatExactAmount", () => {
+  it("shows dollars and shares in full units", () => {
+    expect(formatExactAmount(13_000, "USD")).toBe("$13,000");
+    expect(formatExactAmount(-13_000, "USD")).toBe("($13,000)");
+    expect(formatExactAmount(42_000, "shares")).toBe("42,000 shares");
   });
 });

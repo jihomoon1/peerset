@@ -20,6 +20,21 @@ const value = (v: number, unit: "USD" | "USD/shares" | "ratio"): Metric => ({
 });
 
 describe("displayMetric (blueprint §6 cell states)", () => {
+  it("a tiny nonzero value shows <0.1 with the exact amount", () => {
+    expect(displayMetric(value(13_000, "USD"))).toEqual({
+      text: "<0.1",
+      kind: "value",
+      exact: "$13,000",
+    });
+  });
+
+  it("exact zero shows 0.0 without an exact amount", () => {
+    expect(displayMetric(value(0, "USD"))).toEqual({
+      text: "0.0",
+      kind: "value",
+    });
+  });
+
   it("USD in millions to one decimal", () => {
     expect(displayMetric(value(5_302_200_000, "USD"))).toEqual({
       text: "5,302.2",

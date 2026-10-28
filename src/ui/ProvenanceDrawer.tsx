@@ -13,6 +13,7 @@ import {
   displayMetric,
   factUnitLabel,
   formatFactValue,
+  formatFactValueWithExact,
   formatPeriod,
   METRIC_LABELS,
   METRIC_UNITS,
@@ -65,7 +66,7 @@ export function ProvenanceDrawer({
   return (
     <Drawer
       title={METRIC_LABELS[metricKey]}
-      headline={d.text}
+      headline={d.exact ? `${d.text} (${d.exact})` : d.text}
       subtitle={`${METRIC_UNITS[metricKey]} · LTM through ${formatDate(f.ltmEnd)}`}
       methodologyVersion={f.methodologyVersion}
       onClose={onClose}
@@ -107,7 +108,7 @@ export function ProvenanceDrawer({
                 <div className="tabular-nums">
                   {formatPeriod(x)}:{" "}
                   <span className="font-medium">
-                    {formatFactValue(x.value, x.unit)}
+                    {formatFactValueWithExact(x.value, x.unit)}
                   </span>{" "}
                   <span className="text-muted">{factUnitLabel(x.unit)}</span>
                 </div>
@@ -198,7 +199,7 @@ function Bridge({ label, calc }: { label: string; calc: LTMCalculation }) {
               </th>
               <td className="py-1 pr-2">{formatPeriod(fact)}</td>
               <td className="py-1 text-right">
-                {formatFactValue(fact.value, fact.unit)}
+                {formatFactValueWithExact(fact.value, fact.unit)}
               </td>
             </tr>
           ))}
@@ -210,7 +211,7 @@ function Bridge({ label, calc }: { label: string; calc: LTMCalculation }) {
             <td className="py-1 text-right">
               {calc.value === undefined
                 ? "—"
-                : formatFactValue(calc.value, calc.fy.unit)}
+                : formatFactValueWithExact(calc.value, calc.fy.unit)}
             </td>
           </tr>
         </tbody>

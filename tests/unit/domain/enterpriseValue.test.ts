@@ -313,7 +313,7 @@ describe("computeEnterpriseValue rules", () => {
     expect(b.enterpriseValue.warnings).toEqual([
       {
         code: "W_NOT_IN_EV",
-        message: "material item not in EV: preferred stock 0.0M",
+        message: "material item not in EV: preferred stock <0.1M",
         severity: "caution",
       },
     ]);

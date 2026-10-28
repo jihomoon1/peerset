@@ -71,3 +71,14 @@ test("an unknown ticker answers 404 and shows the error state", async ({
     alert.getByRole("heading", { name: "Unknown ticker" }),
   ).toBeVisible();
 });
+
+test("AAON's $13,000 cash shows <0.1 with the exact amount", async ({
+  page,
+}) => {
+  await page.goto("/c/AAON");
+  const cell = page.getByRole("button", { name: /^Cash and short-term/ });
+  await expect(cell).toHaveText("<0.1");
+  await expect(cell).toHaveAttribute("title", "$13,000");
+  await cell.click();
+  await expect(page.getByRole("dialog")).toContainText("<0.1 ($13,000)");
+});
