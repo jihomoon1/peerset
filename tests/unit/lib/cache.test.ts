@@ -7,8 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 const store = new Map<string, unknown>();
 vi.mock("next/cache", () => ({
   unstable_cache:
-    (cb: () => Promise<unknown>, keyParts: string[]) =>
-    async () => {
+    (cb: () => Promise<unknown>, keyParts: string[]) => async () => {
       const key = `${cb.toString()}-${keyParts.join(",")}`;
       if (!store.has(key)) store.set(key, await cb());
       return store.get(key);

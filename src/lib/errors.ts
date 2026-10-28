@@ -10,6 +10,7 @@ export type ErrorCode =
   | "SEC_SCHEMA_CHANGED"
   | "PRICE_UNAVAILABLE"
   | "PRICE_RATE_LIMITED"
+  | "PEER_INDEX_UNAVAILABLE"
   | "INTERNAL";
 
 export abstract class PeerSetError extends Error {
@@ -98,6 +99,16 @@ export class PriceRateLimitedError extends PeerSetError {
   }
 }
 
+// The committed peer index is missing, empty or unreadable (M4a): peers can't be
+// screened until the monthly refresh PR is merged.
+export class PeerIndexUnavailableError extends PeerSetError {
+  readonly code = "PEER_INDEX_UNAVAILABLE";
+  readonly retryable = true;
+  constructor(detail: string) {
+    super("The peer list isn't available yet; try again later", detail);
+  }
+}
+
 export class InternalError extends PeerSetError {
   readonly code = "INTERNAL";
   readonly retryable = false;
@@ -117,6 +128,7 @@ const HTTP_STATUS: Record<ErrorCode, number> = {
   SEC_UNAVAILABLE: 503,
   PRICE_UNAVAILABLE: 502,
   PRICE_RATE_LIMITED: 429,
+  PEER_INDEX_UNAVAILABLE: 503,
   INTERNAL: 500,
 };
 

@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Fixture mode reads tests/fixtures from disk; keep them out of deployed functions,
   // so production has no frozen data to serve even if the flag were set (M3).
   outputFileTracingExcludes: { "*": ["tests/**"] },
+  // /api/peers reads the committed peer index from disk at runtime (M4a).
+  outputFileTracingIncludes: { "/api/peers": ["./data/peer-index.json"] },
   turbopack: {
     rules: {
       "*.css": {

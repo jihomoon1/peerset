@@ -6,3 +6,4 @@ docs/blueprint.md
 docs/prompts
 playwright-report
 test-results
+data/peer-index.json

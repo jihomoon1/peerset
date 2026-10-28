@@ -18,7 +18,11 @@ export function fixtureText(
   file: string,
   root = FIXTURE_ROOT,
 ): string {
-  return gunzipSync(readFileSync(path.join(root, dir, file))).toString("utf8");
+  // turbopackIgnore: fixture files are test-only and excluded from deployed functions
+  // (next.config.ts), so don't trace these dynamic paths.
+  return gunzipSync(
+    readFileSync(path.join(/*turbopackIgnore: true*/ root, dir, file)),
+  ).toString("utf8");
 }
 
 interface Manifest {
@@ -38,7 +42,7 @@ export function allFixtureDirs(
   const dirs = ["_shared"];
   for (const ticker of visible(root)) {
     if (ticker === "_shared") continue;
-    const asOfs = visible(path.join(root, ticker));
+    const asOfs = visible(path.join(/*turbopackIgnore: true*/ root, ticker));
     for (const asOf of asOfs)
       if (!AS_OF_SHAPE.test(asOf))
         throw new Error(
@@ -57,7 +61,7 @@ export function allFixtureDirs(
 
 // Directory names in order, without hidden files such as macOS's .DS_Store.
 function visible(dir: string): string[] {
-  return readdirSync(dir)
+  return readdirSync(/*turbopackIgnore: true*/ dir)
     .filter((name) => !name.startsWith("."))
     .sort();
 }
@@ -84,7 +88,10 @@ export function fixtureFetch(dirs: string[], root = FIXTURE_ROOT) {
   const byUrl = new Map<string, { dir: string; file: string }>();
   for (const dir of dirs) {
     const manifest = JSON.parse(
-      readFileSync(path.join(root, dir, "manifest.json"), "utf8"),
+      readFileSync(
+        path.join(/*turbopackIgnore: true*/ root, dir, "manifest.json"),
+        "utf8",
+      ),
     ) as Manifest;
     for (const f of manifest.files) {
       const prior = byUrl.get(f.url);
