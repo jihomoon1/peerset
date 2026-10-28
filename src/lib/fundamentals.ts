@@ -10,20 +10,18 @@ import { METHODOLOGY_VERSION } from "@/domain/policy";
 import { createSecClient, type SecClient } from "@/sec/client";
 import { getCompanyFacts } from "@/sec/freshness";
 import { identityFromSubmissions, parseSubmissions } from "@/sec/submissions";
-import {
-  lookupTicker,
-  parseTickerTable,
-  TICKER_LIST_URL,
-  TICKER_PATTERN,
-} from "@/sec/tickers";
+import { fixtureFetch, allFixtureDirs } from "@/sec/fixtureFetch";
+import { lookupTicker, parseTickerTable, TICKER_LIST_URL } from "@/sec/tickers";
 import { submissionsUrl } from "@/sec/urls";
-import { nextCache, type CacheFn } from "./cache";
+import { memoryCache, nextCache, type CacheFn } from "./cache";
 import {
   InvalidInputError,
   SecUnavailableError,
   UnsupportedIssuerError,
 } from "./errors";
+import { FIXTURE_AS_OF, fixtureModeOn } from "./fixtureMode";
 import { log, type Logger } from "./log";
+import { TICKER_PATTERN, TICKER_SHAPE_MESSAGE } from "./ticker";
 
 // Blueprint §14 lifetimes, in seconds.
 export const CACHE_SECONDS = {
@@ -47,9 +45,26 @@ export interface LoadDeps {
 // at", blueprint §6). Stamped inside the cache, so a cached copy keeps its pull time.
 export type LoadedFundamentals = CompanyFundamentals & { pulledAt: string };
 
-export function defaultDeps(): LoadDeps {
+const fixtureCache = memoryCache();
+
+export function defaultDeps(
+  env: Record<string, string | undefined> = process.env,
+): LoadDeps {
+  // Fixture mode (e2e only, refused in production): frozen SEC responses, a dummy
+  // User-Agent, an in-memory cache (never the persistent one) and the goldens'
+  // analysis date.
+  if (fixtureModeOn(env))
+    return {
+      client: createSecClient({
+        fetch: fixtureFetch(allFixtureDirs()).fetch,
+        env: { SEC_USER_AGENT: "PeerSet-Fixtures fixtures@example.invalid" },
+      }),
+      cache: fixtureCache,
+      asOf: FIXTURE_AS_OF,
+      logger: log,
+    };
   return {
-    client: createSecClient(),
+    client: createSecClient({ env }),
     cache: nextCache,
     asOf: new Date().toISOString().slice(0, 10),
     logger: log,
@@ -61,7 +76,7 @@ export function normalizeTicker(raw: string | null | undefined): string {
   if (!ticker) throw new InvalidInputError("Enter a ticker, for example LII");
   if (!TICKER_PATTERN.test(ticker))
     throw new InvalidInputError(
-      "A ticker is 1–10 letters, digits, dots or dashes, starting with a letter",
+      TICKER_SHAPE_MESSAGE,
       `malformed ticker (${ticker.length} chars)`,
     );
   return ticker;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   METRIC_KEYS,
   type CompanyFundamentals,
@@ -21,10 +21,12 @@ export function OperatingBlock({ f }: { f: CompanyFundamentals }) {
   const [open, setOpen] = useState<MetricKey | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
 
-  const close = () => {
-    setOpen(null);
-    opener.current?.focus();
-  };
+  const close = () => setOpen(null);
+  // Return focus once the drawer has unmounted: while its modal dialog is open the
+  // rest of the page is inert and focus() is ignored.
+  useEffect(() => {
+    if (!open) opener.current?.focus();
+  }, [open]);
 
   return (
     <section

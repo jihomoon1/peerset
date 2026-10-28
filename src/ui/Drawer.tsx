@@ -7,7 +7,7 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 // The provenance drawer's shell (blueprint §6): a modal dialog on the right. Focus
-// stays inside, Esc closes, focus returns to the opening button (the caller's job).
+// stays inside, Esc closes; the caller returns focus to the opening button after unmount.
 export function Drawer({
   title,
   headline,

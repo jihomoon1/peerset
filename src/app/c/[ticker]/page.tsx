@@ -1,9 +1,8 @@
 // /c/[ticker]: the single-company analysis page (blueprint §5 step 4, §6). Identity,
 // the as-of strip, the operating block, the balance-sheet block (debt and cash), the
-// valuation block (prices, market cap, EV, multiples) with their drawers, and the
-// disclaimer. Not the M4 workbench.
+// valuation block (prices, market cap, EV, multiples) with their drawers. The header
+// and the footer (disclaimer, versions) come from the root layout. Not the M4 workbench.
 
-import Link from "next/link";
 import { errorResponseBody, PeerSetError } from "@/lib/errors";
 import {
   defaultDeps,
@@ -22,7 +21,7 @@ export const maxDuration = 60;
 export async function generateMetadata({ params }: PageProps<"/c/[ticker]">) {
   const { ticker } = await params;
   return {
-    title: `${decodeURIComponent(ticker).toUpperCase().slice(0, 12)} · PeerSet`,
+    title: decodeURIComponent(ticker).toUpperCase().slice(0, 12),
   };
 }
 
@@ -61,11 +60,6 @@ export default async function CompanyPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-4">
-      <nav className="border-b border-rule pb-2">
-        <Link href="/" className="font-semibold text-accent">
-          PeerSet
-        </Link>
-      </nav>
       <main className="flex flex-1 flex-col gap-5">
         {f ? (
           <>
@@ -83,11 +77,6 @@ export default async function CompanyPage({
           error && <ErrorState error={error} />
         )}
       </main>
-      <footer className="border-t border-rule pt-2 text-xs text-muted">
-        Automated first-pass comps from SEC filings. Unadjusted. Not a
-        substitute for analyst review.
-        {f && <> · Methodology {f.methodologyVersion}</>}
-      </footer>
     </div>
   );
 }
