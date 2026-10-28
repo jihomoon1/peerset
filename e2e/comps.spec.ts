@@ -61,8 +61,11 @@ test("WSO has two price inputs and an Unsupported P/E", async ({ page }) => {
   await expect(pe).toContainText(/class/i);
 });
 
-test("an unknown ticker shows the error state", async ({ page }) => {
-  await page.goto("/c/ZZZZZ");
+test("an unknown ticker answers 404 and shows the error state", async ({
+  page,
+}) => {
+  const res = await page.goto("/c/ZZZZZ");
+  expect(res?.status()).toBe(404);
   const alert = page.getByRole("alert");
   await expect(
     alert.getByRole("heading", { name: "Unknown ticker" }),

@@ -3,7 +3,8 @@
 // valuation block (prices, market cap, EV, multiples) with their drawers. The header
 // and the footer (disclaimer, versions) come from the root layout. Not the M4 workbench.
 
-import { errorResponseBody, PeerSetError } from "@/lib/errors";
+import { notFound } from "next/navigation";
+import { PeerSetError } from "@/lib/errors";
 import {
   defaultDeps,
   loadFundamentals,
@@ -14,6 +15,7 @@ import { defaultQuoteDeps, loadQuotes, type QuotesResult } from "@/lib/quotes";
 import { CompanyWorkspace } from "@/ui/CompanyWorkspace";
 import { ErrorState } from "@/ui/ErrorState";
 import { IdentityLine } from "@/ui/IdentityLine";
+import { pageErrorOutcome } from "./pageError";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -44,7 +46,9 @@ export default async function CompanyPage({
           ? err.detail
           : String(err instanceof Error ? err.name : typeof err),
     });
-    error = errorResponseBody(err, requestId);
+    const outcome = pageErrorOutcome(err, requestId);
+    if (outcome.notFound) notFound();
+    error = outcome.body;
   }
 
   // Alpha Vantage mode only (never production until approval is filed): pre-fill
