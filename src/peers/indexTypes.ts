@@ -58,6 +58,8 @@ export interface PeerIndexMeta {
     withRevenue: number;
     // Listed companies a screen on the generation date would exclude, by reason.
     byExclusionReason: Record<string, number>;
+    // Bulk entries that failed SEC schema validation (kept, without that data).
+    unreadable: { submissions: number; companyfacts: number };
   };
 }
 
