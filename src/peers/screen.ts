@@ -11,6 +11,7 @@ import {
   STALE_FILER_DAYS,
 } from "@/domain/policy";
 import type { ExclusionCode, PeerSelectionResult } from "@/domain/types";
+import { formatRatioX } from "@/lib/format";
 import {
   InvalidInputError,
   TickerNotFoundError,
@@ -30,7 +31,8 @@ const TIERS: { tier: Tier; digits: number }[] = [
 
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 
-const ratioText = (r: number) => `${r.toFixed(1)}×`;
+// Plain code-point order, so ranking never depends on the server's locale.
+const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 // Blueprint §10.2 step 2, apart from "not the target" and the size band: why this
 // company can't be a peer on the analysis date, or null when it can.
@@ -161,7 +163,7 @@ export function screenPeers(
           cik: company.cik,
           ticker: company.ticker,
           code: "OUTSIDE_SIZE_RANGE",
-          detail: `revenue ${ratioText(ratio)} the target's (allowed ${PEER_REVENUE_SCREEN.min}×–${PEER_REVENUE_SCREEN.max}×)`,
+          detail: `revenue ${formatRatioX(ratio)} the target's (allowed ${PEER_REVENUE_SCREEN.min}x–${PEER_REVENUE_SCREEN.max}x)`,
         });
         continue;
       }
@@ -174,8 +176,7 @@ export function screenPeers(
   // Steps 4–5: closest scale first, ties by ticker A–Z.
   qualified.sort(
     (a, b) =>
-      a.distance - b.distance ||
-      a.company.ticker.localeCompare(b.company.ticker),
+      a.distance - b.distance || byText(a.company.ticker, b.company.ticker),
   );
   const kept = qualified.slice(0, count);
   qualified.slice(count).forEach((q, i) =>
@@ -187,9 +188,7 @@ export function screenPeers(
     }),
   );
 
-  excluded.sort(
-    (a, b) => a.code.localeCompare(b.code) || a.ticker.localeCompare(b.ticker),
-  );
+  excluded.sort((a, b) => byText(a.code, b.code) || byText(a.ticker, b.ticker));
   return {
     tier,
     selected: kept.map((q) => ({
@@ -202,7 +201,7 @@ export function screenPeers(
   };
 }
 
-// "SIC 3585 exact · revenue 0.6× · Dec FYE · 10-Q filed 2026-07-29" (blueprint §10.2).
+// "SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29" (blueprint §10.2).
 function reasonFor(q: Candidate, target: PeerIndexCompany, tier: Tier): string {
   const c = q.company;
   const sic =
@@ -214,5 +213,5 @@ function reasonFor(q: Candidate, target: PeerIndexCompany, tier: Tier): string {
   const month = MONTHS[Number(c.fiscalYearEnd.slice(0, 2)) - 1];
   const fye = month ? `${month} FYE` : "FYE not reported";
   const latest = c.latest!;
-  return `${sic} · revenue ${ratioText(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
+  return `${sic} · revenue ${formatRatioX(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
 }

@@ -171,7 +171,7 @@ describe("screenPeers", () => {
     expect(r.tier).toBe("sic4");
     expect(tickers(r.selected)).not.toContain("NEAR");
     expect(r.selected.find((p) => p.ticker === "AAA")?.reason).toBe(
-      "SIC 3585 exact · revenue 0.6× · Dec FYE · 10-Q filed 2026-07-29",
+      "SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29",
     );
     expect(r.indexGeneratedAt).toBe("2026-11-01T06:30:00Z");
   });
@@ -211,7 +211,7 @@ describe("screenPeers", () => {
     const out = r.excluded.filter((e) => e.code === "OUTSIDE_SIZE_RANGE");
     expect(tickers(out).sort()).toEqual(["TOOHIGH", "TOOLOW"]);
     expect(out.find((e) => e.ticker === "TOOHIGH")?.detail).toBe(
-      "revenue 5.0× the target's (allowed 0.2×–5×)",
+      "revenue 5.0x the target's (allowed 0.2x–5x)",
     );
   });
 
@@ -326,6 +326,34 @@ describe("screenPeers", () => {
       "TGT",
     );
     expect(new Set(r.selected.map((p) => p.cik)).size).toBe(r.selected.length);
+  });
+});
+
+describe("screenPeers ordering and wording", () => {
+  it("breaks ties by plain character order, independent of locale", () => {
+    const target = co("TGT", "3585", 1_000);
+    // Same revenue, so the same distance: "." (46) sorts before "A" (65).
+    const peers = ["BFA", "BF.B", "P1", "P2", "P3"].map((t) =>
+      co(t, "3585", 1_000),
+    );
+    const r = screenPeers(index([target, ...peers]), target, {
+      analysisDate: DAY,
+    });
+    expect(tickers(r.selected)).toEqual(["BF.B", "BFA", "P1", "P2", "P3"]);
+  });
+
+  it("shows a tiny nonzero ratio as <0.1x, never 0.0x", () => {
+    const target = co("TGT", "3585", 1_000);
+    const peers = [
+      co("TINY", "3585", 30),
+      ...["P1", "P2", "P3", "P4", "P5"].map((t) => co(t, "3585", 1_000)),
+    ];
+    const r = screenPeers(index([target, ...peers]), target, {
+      analysisDate: DAY,
+    });
+    expect(r.excluded.find((e) => e.ticker === "TINY")?.detail).toBe(
+      "revenue <0.1x the target's (allowed 0.2x–5x)",
+    );
   });
 });
 

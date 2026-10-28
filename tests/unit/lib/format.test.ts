@@ -9,6 +9,7 @@ import {
   formatPercent,
   formatPerShare,
   formatExactAmount,
+  formatRatioX,
 } from "@/lib/format";
 
 describe("formatMillions", () => {
@@ -97,5 +98,14 @@ describe("formatExactAmount", () => {
     expect(formatExactAmount(13_000, "USD")).toBe("$13,000");
     expect(formatExactAmount(-13_000, "USD")).toBe("($13,000)");
     expect(formatExactAmount(42_000, "shares")).toBe("42,000 shares");
+  });
+});
+
+describe("formatRatioX", () => {
+  it("shows a size ratio with one decimal and an x", () => {
+    expect(formatRatioX(0.6)).toBe("0.6x");
+    expect(formatRatioX(5.0001)).toBe("5.0x");
+    expect(formatRatioX(0.03)).toBe("<0.1x");
+    expect(formatRatioX(0)).toBe("0.0x");
   });
 });

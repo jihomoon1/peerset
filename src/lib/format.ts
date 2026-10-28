@@ -32,6 +32,13 @@ export function formatExactAmount(
   return value < 0 ? `(${text})` : text;
 }
 
+// A size ratio for peer reasons, "0.6x" (blueprint §10.2). A nonzero ratio too small
+// for one decimal reads "<0.1x", never "0.0x".
+export function formatRatioX(ratio: number): string {
+  if (ratio !== 0 && Math.abs(ratio) < 0.05) return "<0.1x";
+  return `${ratio.toFixed(1)}x`;
+}
+
 function withParens(value: number, text: string): string {
   return value < 0 ? `(${text})` : text;
 }
