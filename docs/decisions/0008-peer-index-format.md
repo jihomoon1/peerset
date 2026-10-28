@@ -13,7 +13,7 @@ Blueprint §10.1 builds `data/peer-index.json` monthly from SEC bulk data, estim
 3. **Primary ticker** is the first major-exchange ticker in SEC's ticker file order.
 4. **Raw facts, not eligibility.** The index stores the latest report's form and dates; staleness (200 days) is judged at screening time against the analysis date. `meta.counts.byExclusionReason` applies the same rules on the data date, for information.
 5. **Determinism.** `generatedAt` is the newest of the three sources' `Last-Modified`, not the clock, so the same SEC files give byte-identical output and an unchanged month opens no PR.
-6. **Screening revenue** reuses `computeRevenue` on the latest fiscal year reported in a 10-K or 10-K/A (`src/domain/screeningRevenue.ts`): same priority list, latest-filed rule and 350–378-day check as the app. No fallback to an older year: if the latest year fails a check, the company has no screening revenue, with the reason in `revenueNote`.
+6. **Screening revenue** (methodology §13A) reuses `computeRevenue` on the latest fiscal year reported in a 10-K or 10-K/A (`src/domain/screeningRevenue.ts`): same priority list, latest-filed rule and 350–378-day check as the app. No fallback to an older year: if the latest year fails a check, the company has no screening revenue, with the reason in `revenueNote`.
 7. **Bulk entries that fail SEC schema validation** are kept without that data and counted in `meta.counts.unreadable`, rather than failing the whole run.
 
 ## Revisit when

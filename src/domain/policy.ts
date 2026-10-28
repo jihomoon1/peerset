@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.3.2";
+export const METHODOLOGY_VERSION = "0.3.3";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
@@ -19,6 +19,7 @@ export const DEBT_TOTAL_TAG_TOLERANCE_USD = 100_000; // §7: 0.1M USD, full unit
 export const STATEMENT_CACHE_SECONDS = 30 * 24 * 3600; // §14: per accession, filings never change
 export const SEC_REQUESTS_PER_COMPANY = 7; // §14
 export const STALE_FILER_DAYS = 200; // blueprint §8.6: older → Unsupported
+export const SCREENING_REVENUE_MAX_AGE_MONTHS = 15; // §13A: FY end vs latest report
 export const PEER_REVENUE_SCREEN = { min: 0.2, max: 5 } as const; // blueprint §10.2
 export const PEERS = { default: 8, min: 5, max: 12 } as const; // blueprint §10.2
 export const EXCLUDED_SIC_RANGE = { min: 6000, max: 6799 } as const; // blueprint §3

@@ -2,12 +2,13 @@
 // size, rank, select, explain. Pure: the analysis date is injected and nothing is
 // fetched, so a whole screen runs without a single SEC or price call.
 
-import { daysBetween } from "@/domain/dates";
+import { addMonths, daysBetween } from "@/domain/dates";
 import {
   EXCLUDED_SIC_RANGE,
   PEER_REVENUE_SCREEN,
   PEERS,
   PERIODIC_FORMS,
+  SCREENING_REVENUE_MAX_AGE_MONTHS,
   STALE_FILER_DAYS,
 } from "@/domain/policy";
 import type { ExclusionCode, PeerSelectionResult } from "@/domain/types";
@@ -72,6 +73,13 @@ export function exclusionFor(
     return {
       code: "NO_SCREENING_REVENUE",
       detail: c.revenueNote ?? "no screening revenue",
+    };
+  // Methodology §13A: sizing on a year long before the latest report would mislead.
+  const limit = addMonths(latest.reportDate, -SCREENING_REVENUE_MAX_AGE_MONTHS);
+  if (c.revenue.periodEnd < limit)
+    return {
+      code: "NO_SCREENING_REVENUE",
+      detail: `screening revenue is for the fiscal year ended ${c.revenue.periodEnd}, more than ${SCREENING_REVENUE_MAX_AGE_MONTHS} months before the latest report (${latest.reportDate})`,
     };
   return null;
 }

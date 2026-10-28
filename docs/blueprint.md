@@ -443,9 +443,9 @@ A monthly GitHub Action builds a static peer index from SEC bulk data. Each anal
 ### 10.1 Index build
 
 1. Download `company_tickers_exchange.json`, `submissions.zip` (1.57 GB) and `companyfacts.zip` (1.41 GB): three SEC requests a month \[obs sizes\].
-2. Keep companies listed on NYSE, Nasdaq, NYSE American or Cboe; drop OTC.
-3. Record per company: CIK, name, tickers and exchanges, SIC and description, fiscal year-end, incorporation, latest periodic form with filing date and accession, and whether it files 20-F/40-F.
-4. Compute **screening revenue**: latest fiscal-year revenue, using the same TypeScript selection code as the app. It is labeled "screening revenue (latest FY)" and never shown as LTM.
+2. Keep companies listed on NYSE, Nasdaq, NYSE American or Cboe; drop OTC. SEC labels NYSE American listings "NYSE"; TXSE (Texas Stock Exchange) and blank exchanges are dropped too (methodology §13A, decision 0008).
+3. Record per company: CIK, name, tickers and exchanges, SIC and description, fiscal year-end, incorporation, latest periodic form with filing date and accession, and whether its latest report is a 20-F/40-F.
+4. Compute **screening revenue**: latest fiscal-year revenue from a 10-K or 10-K/A, using the same TypeScript selection code as the app, with no fallback to an earlier year, and only if that year ends within 15 months of the latest report (methodology §13A). It is labeled "screening revenue (latest FY)" and never shown as LTM.
 5. Write `data/peer-index.json` with generation time, source dates, methodology version and counts. Size is estimated at 1–1.5 MB for \~6,000 companies; measured in M4.
 6. Open a pull request, "data: refresh peer index", summarizing added, removed and reclassified companies. Merging it redeploys the site.
 
@@ -455,10 +455,10 @@ GitHub disables scheduled workflows on public repos after 60 days without activi
 
 | Step | Rule |
 | --- | --- |
-| 1. Candidates | Same 4-digit SIC as the target. Fewer than 5 eligible: widen to the 3-digit group, then the 2-digit major group. Each peer's reason names its tier |
+| 1. Candidates | Same 4-digit SIC as the target. Fewer than 5 companies passing steps 2 and 3: widen to the 3-digit group, then the 2-digit major group (which may return fewer than 5). Each peer's reason names its tier |
 | 2. Eligibility | Major exchange; latest periodic form is 10-K or 10-Q; not SIC 6000–6799; latest periodic filing at most 200 days old; screening revenue in USD; not the target; one row per company (primary listed class) |
-| 3. Size | Screening revenue between 0.2x and 5x the target's |
-| 4. Rank | Closest scale first: absolute value of ln(peer revenue ÷ target revenue); ties by ticker, A–Z |
+| 3. Size | Screening revenue between 0.2x and 5x the target's, inclusive. The target itself must pass step 2 and have positive screening revenue, or screening is Unsupported |
+| 4. Rank | Closest scale first: absolute value of ln(peer revenue ÷ target revenue); ties by ticker, A–Z (plain character order) |
 | 5. Select | Top 8 by default; the user can keep 5–12 |
 | 6. Explain | Each peer gets a reason, e.g. "SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29"; each exclusion gets a reason code |
 

@@ -12,7 +12,7 @@
     "start": "2025-07-01",
     "end": "2026-06-30"
   },
-  "methodologyVersion": "0.3.2",
+  "methodologyVersion": "0.3.3",
   "note": "Transcribed from the filings' XBRL facts (10-K FY2025 via companyfacts; 10-Q six-month columns from the filing instance), read directly from the frozen fixture files, not from the engine. Values are tagged in USD thousands (decimals=-3), so each is exact to the dollar. Each source names the XBRL concept; Jiho confirms the caption and value against the rendered filings (docs/reconciliation/WSO.md). Status: Awaiting Jiho.",
   "metrics": {
     "revenue": {

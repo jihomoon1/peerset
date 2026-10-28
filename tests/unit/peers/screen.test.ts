@@ -129,6 +129,24 @@ describe("exclusionFor (blueprint §10.2 step 2)", () => {
     expect(r?.detail).toBeTruthy();
   });
 
+  it("screening revenue must end within 15 months of the latest report", () => {
+    const withFy = (periodEnd: string) =>
+      co("R", "3585", 1_000, {
+        revenue: {
+          value: 1e9,
+          periodEnd,
+          concept: "us-gaap:Revenues",
+          accession: "a",
+        },
+      }); // latest report 2026-06-30, so the limit is 2025-03-30
+    expect(exclusionFor(withFy("2025-03-30"), DAY)).toBeNull();
+    expect(exclusionFor(withFy("2025-03-29"), DAY)).toEqual({
+      code: "NO_SCREENING_REVENUE",
+      detail:
+        "screening revenue is for the fiscal year ended 2025-03-29, more than 15 months before the latest report (2026-06-30)",
+    });
+  });
+
   it("financial SICs run 6000 to 6799 inclusive", () => {
     expect(exclusionFor(co("A", "5999", 1), DAY)).toBeNull();
     expect(exclusionFor(co("B", "6000", 1), DAY)?.code).toBe("FINANCIAL_SIC");

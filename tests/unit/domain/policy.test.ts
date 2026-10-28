@@ -3,12 +3,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import * as policy from "@/domain/policy";
 
-// Expected values are copied by hand from docs/methodology.md (0.3.2). If one of these
+// Expected values are copied by hand from docs/methodology.md (0.3.3). If one of these
 // fails, either policy.ts drifted from the methodology or the methodology changed
 // without a version bump.
-describe("policy matches methodology §14 (v0.3.2)", () => {
+describe("policy matches methodology §14 (v0.3.3)", () => {
   it("has the approved methodology version", () => {
-    expect(policy.METHODOLOGY_VERSION).toBe("0.3.2");
+    expect(policy.METHODOLOGY_VERSION).toBe("0.3.3");
   });
 
   it("matches the version written in docs/methodology.md", () => {
@@ -35,6 +35,7 @@ describe("policy matches methodology §14 (v0.3.2)", () => {
     expect(policy.STATEMENT_CACHE_SECONDS).toBe(30 * 24 * 3600); // §14: 30 days
     expect(policy.SEC_REQUESTS_PER_COMPANY).toBe(7); // §14
     expect(policy.STALE_FILER_DAYS).toBe(200); // blueprint §8.6
+    expect(policy.SCREENING_REVENUE_MAX_AGE_MONTHS).toBe(15); // §13A
     expect(policy.PEER_REVENUE_SCREEN).toEqual({ min: 0.2, max: 5 }); // blueprint §10.2
     expect(policy.PEERS).toEqual({ default: 8, min: 5, max: 12 }); // blueprint §10.2
     expect(policy.EXCLUDED_SIC_RANGE).toEqual({ min: 6000, max: 6799 }); // blueprint §3

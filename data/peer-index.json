@@ -1,6 +1,6 @@
 {
 "format": "peerset-peer-index/1",
-"meta": {"generatedAt":"1970-01-01T00:00:00.000Z","methodologyVersion":"0.3.2","sources":{"tickers":{"url":"https://www.sec.gov/files/company_tickers_exchange.json","lastModified":"not built yet"},"submissions":{"url":"https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip","lastModified":"not built yet"},"companyfacts":{"url":"https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip","lastModified":"not built yet"}},"counts":{"total":0,"listed":0,"withRevenue":0,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
+"meta": {"generatedAt":"1970-01-01T00:00:00.000Z","methodologyVersion":"0.3.3","sources":{"tickers":{"url":"https://www.sec.gov/files/company_tickers_exchange.json","lastModified":"not built yet"},"submissions":{"url":"https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip","lastModified":"not built yet"},"companyfacts":{"url":"https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip","lastModified":"not built yet"}},"counts":{"total":0,"listed":0,"withRevenue":0,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
 "sicDescriptions": {},
 "concepts": [],
 "fields": ["cik","name","listings","sic","fiscalYearEnd","incorporation","latest","revenue","revenueNote"],
