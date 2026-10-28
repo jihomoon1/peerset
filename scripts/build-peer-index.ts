@@ -2,7 +2,8 @@
 // monthly by .github/workflows/refresh-peer-index.yml.
 //
 // Usage:
-//   npx tsx scripts/build-peer-index.ts [--work-dir DIR] [--out FILE] [--summary FILE] [--skip-download]
+//   npx tsx scripts/build-peer-index.ts [--work-dir DIR] [--out FILE] [--summary FILE]
+//                                       [--min-listed N] [--skip-download]
 //
 // Exactly three SEC requests (the ticker list and two zips, about 3 GB), each streamed
 // to disk with the project User-Agent and never retried. --skip-download rebuilds from
@@ -108,6 +109,8 @@ async function main() {
       "work-dir": { type: "string", default: path.join(".peer-index-work") },
       out: { type: "string", default: path.join("data", "peer-index.json") },
       summary: { type: "string" },
+      // Refuse to write an index with fewer listed companies (a truncated download).
+      "min-listed": { type: "string", default: "0" },
       "skip-download": { type: "boolean", default: false },
     },
   });
@@ -145,6 +148,12 @@ async function main() {
     log: (m) => console.log(m),
   });
   console.log(`built in ${((Date.now() - buildStarted) / 1000).toFixed(0)} s`);
+
+  const minListed = Number(values["min-listed"]);
+  if (index.meta.counts.listed < minListed)
+    fail(
+      `only ${index.meta.counts.listed} listed companies (expected at least ${minListed}); not writing ${out}`,
+    );
 
   const previous = readPrevious(out);
   const text = encodeIndex(index);
