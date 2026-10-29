@@ -1,0 +1,450 @@
+{
+  "target": "LII",
+  "peers": ["CARR", "AAON", "TT", "WSO", "JCI"],
+  "analysisDate": "2026-10-26",
+  "methodologyVersion": "0.3.4",
+  "prices": {
+    "asOfDate": "2026-10-23",
+    "source": "user_entered",
+    "close": {
+      "LII": 500,
+      "CARR": 60,
+      "AAON": 100,
+      "TT": 400,
+      "WSO": 450,
+      "WSO-B": 450,
+      "JCI": 80
+    }
+  },
+  "note": "Comps golden (M4b). The prices are test inputs, not market data. Market cap, EV, multiples and statistics are computed here from the inputs listed per row (scratch script, independent of the engine); the test asserts the engine matches to the dollar (market cap, EV) and to 1e-9 relative (ratios and statistics). LII, WSO and JCI LTM inputs cite their filing-sourced goldens; CARR, AAON and TT LTM revenue, EBITDA and EPS, and JCI's debt, cash and shares, are engine output from the frozen fixtures, not separately reconciled. So this golden proves the comps and statistics arithmetic, not those LTM figures. Statistics are over the five peers only; LII is excluded (methodology §11). Percentiles are Excel PERCENTILE.INC. No value here is NM: every multiple is positive and under 100x. All five companies' LTM ends 2026-06-30, so the peer median LTM end is 2026-06-30 and no row is lagging.",
+  "peerMedianLtmEnd": "2026-06-30",
+  "rows": {
+    "LII": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "LII",
+            "shares": 34560675,
+            "sharesAsOf": "2026-07-22",
+            "price": 500
+          }
+        ],
+        "sharesSource": "tests/golden/LII-2026Q2-valuation.json (cover page)",
+        "totalDebt": 1581300000,
+        "cash": 52100000,
+        "balanceSheetSource": "tests/golden/LII-2026Q2-balance.json",
+        "revenue": 5302200000,
+        "revenueSource": "tests/golden/LII-2026Q2.json",
+        "ebitda": 1164900000,
+        "ebitdaSource": "tests/golden/LII-2026Q2.json",
+        "dilutedEps": 22.51,
+        "epsSource": "tests/golden/LII-2026Q2.json"
+      },
+      "marketCap": 17280337500,
+      "marketCapMath": "500 × 34,560,675 = 17,280,337,500",
+      "ev": 18809537500,
+      "evMath": "17,280,337,500 + 1,581,300,000 − 52,100,000 = 18,809,537,500",
+      "revenue": 5302200000,
+      "ebitda": 1164900000,
+      "ebitdaMargin": 0.2197012560823809,
+      "evRevenue": 3.5474967937837123,
+      "evEbitda": 16.146911752081724,
+      "pe": 22.21235006663705,
+      "multiplesMath": {
+        "evRevenue": "18,809,537,500 ÷ 5,302,200,000 = 3.5475x",
+        "evEbitda": "18,809,537,500 ÷ 1,164,900,000 = 16.1469x",
+        "pe": "500 ÷ 22.51 = 22.2124x",
+        "ebitdaMargin": "1,164,900,000 ÷ 5,302,200,000 = 21.97%"
+      }
+    },
+    "CARR": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "CARR",
+            "shares": 824325057,
+            "sharesAsOf": "2026-07-15",
+            "price": 60
+          }
+        ],
+        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "totalDebt": 11952000000,
+        "cash": 1344000000,
+        "balanceSheetSource": "tests/golden/CARR-2026Q2-balance.json",
+        "revenue": 22108000000,
+        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitda": 3006000000,
+        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "dilutedEps": 1.4500000000000002,
+        "epsSource": "engine output from the frozen fixture, not separately reconciled"
+      },
+      "marketCap": 49459503420,
+      "marketCapMath": "60 × 824,325,057 = 49,459,503,420",
+      "ev": 60067503420,
+      "evMath": "49,459,503,420 + 11,952,000,000 − 1,344,000,000 = 60,067,503,420",
+      "revenue": 22108000000,
+      "ebitda": 3006000000,
+      "ebitdaMargin": 0.1359688800434232,
+      "evRevenue": 2.7170030495748145,
+      "evEbitda": 19.98253606786427,
+      "pe": 41.37931034482758,
+      "multiplesMath": {
+        "evRevenue": "60,067,503,420 ÷ 22,108,000,000 = 2.7170x",
+        "evEbitda": "60,067,503,420 ÷ 3,006,000,000 = 19.9825x",
+        "pe": "60 ÷ 1.4500000000000002 = 41.3793x",
+        "ebitdaMargin": "3,006,000,000 ÷ 22,108,000,000 = 13.60%"
+      }
+    },
+    "AAON": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "AAON",
+            "shares": 82453639,
+            "sharesAsOf": "2026-08-06",
+            "price": 100
+          }
+        ],
+        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "totalDebt": 435000000,
+        "cash": 13000,
+        "balanceSheetSource": "tests/golden/AAON-2026Q2-balance.json",
+        "revenue": 1932367000,
+        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitda": 298526000,
+        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "dilutedEps": 1.9,
+        "epsSource": "engine output from the frozen fixture, not separately reconciled"
+      },
+      "marketCap": 8245363900,
+      "marketCapMath": "100 × 82,453,639 = 8,245,363,900",
+      "ev": 8680350900,
+      "evMath": "8,245,363,900 + 435,000,000 − 13,000 = 8,680,350,900",
+      "revenue": 1932367000,
+      "ebitda": 298526000,
+      "ebitdaMargin": 0.15448721697275933,
+      "evRevenue": 4.492081938886351,
+      "evEbitda": 29.07736981033478,
+      "pe": 52.631578947368425,
+      "multiplesMath": {
+        "evRevenue": "8,680,350,900 ÷ 1,932,367,000 = 4.4921x",
+        "evEbitda": "8,680,350,900 ÷ 298,526,000 = 29.0774x",
+        "pe": "100 ÷ 1.9 = 52.6316x",
+        "ebitdaMargin": "298,526,000 ÷ 1,932,367,000 = 15.45%"
+      }
+    },
+    "TT": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "TT",
+            "shares": 220023177,
+            "sharesAsOf": "2026-07-24",
+            "price": 400
+          }
+        ],
+        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "totalDebt": 4616800000,
+        "cash": 1318300000,
+        "balanceSheetSource": "tests/golden/TT-2026Q2-balance.json",
+        "revenue": 22209900000,
+        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitda": 4374900000,
+        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "dilutedEps": 13.21,
+        "epsSource": "engine output from the frozen fixture, not separately reconciled"
+      },
+      "marketCap": 88009270800,
+      "marketCapMath": "400 × 220,023,177 = 88,009,270,800",
+      "ev": 91307770800,
+      "evMath": "88,009,270,800 + 4,616,800,000 − 1,318,300,000 = 91,307,770,800",
+      "revenue": 22209900000,
+      "ebitda": 4374900000,
+      "ebitdaMargin": 0.19697972525765536,
+      "evRevenue": 4.111129307200843,
+      "evEbitda": 20.870824658849344,
+      "pe": 30.280090840272518,
+      "multiplesMath": {
+        "evRevenue": "91,307,770,800 ÷ 22,209,900,000 = 4.1111x",
+        "evEbitda": "91,307,770,800 ÷ 4,374,900,000 = 20.8708x",
+        "pe": "400 ÷ 13.21 = 30.2801x",
+        "ebitdaMargin": "4,374,900,000 ÷ 22,209,900,000 = 19.70%"
+      }
+    },
+    "WSO": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "WSO-B",
+            "shares": 5663438,
+            "sharesAsOf": "2026-08-04",
+            "price": 450
+          },
+          {
+            "ticker": "WSO",
+            "shares": 35588756,
+            "sharesAsOf": "2026-08-04",
+            "price": 450
+          }
+        ],
+        "sharesSource": "tests/golden/WSO-2026Q2-valuation.json (cover page)",
+        "totalDebt": 9068000,
+        "cash": 464189000,
+        "balanceSheetSource": "tests/golden/WSO-2026Q2-balance.json",
+        "revenue": 7283631000,
+        "revenueSource": "tests/golden/WSO-2026Q2.json",
+        "ebitda": 728854000,
+        "ebitdaSource": "tests/golden/WSO-2026Q2.json",
+        "dilutedEps": null,
+        "epsSource": "multi-class: P/E Unsupported"
+      },
+      "marketCap": 18563487300,
+      "marketCapMath": "450 × 5,663,438 + 450 × 35,588,756 = 18,563,487,300",
+      "ev": 18108366300,
+      "evMath": "18,563,487,300 + 9,068,000 − 464,189,000 = 18,108,366,300",
+      "revenue": 7283631000,
+      "ebitda": 728854000,
+      "ebitdaMargin": 0.10006739770315108,
+      "evRevenue": 2.4861729403919557,
+      "evEbitda": 24.84498445504861,
+      "pe": null,
+      "multiplesMath": {
+        "evRevenue": "18,108,366,300 ÷ 7,283,631,000 = 2.4862x",
+        "evEbitda": "18,108,366,300 ÷ 728,854,000 = 24.8450x",
+        "pe": "Unsupported (multi-class)",
+        "ebitdaMargin": "728,854,000 ÷ 7,283,631,000 = 10.01%"
+      }
+    },
+    "JCI": {
+      "inputs": {
+        "shareClasses": [
+          {
+            "ticker": "JCI",
+            "shares": 605741470,
+            "sharesAsOf": "2026-06-30",
+            "price": 80
+          }
+        ],
+        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "totalDebt": 9475000000,
+        "cash": 641000000,
+        "balanceSheetSource": "balance-sheet face in the fixture's 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "revenue": 24995000000,
+        "revenueSource": "tests/golden/JCI-2026Q2.json",
+        "ebitda": null,
+        "ebitdaSource": "tests/golden/JCI-2026Q2.json (Unsupported: no OperatingIncomeLoss)",
+        "dilutedEps": 5.69,
+        "epsSource": "tests/golden/JCI-2026Q2.json"
+      },
+      "marketCap": 48459317600,
+      "marketCapMath": "80 × 605,741,470 = 48,459,317,600",
+      "ev": 57293317600,
+      "evMath": "48,459,317,600 + 9,475,000,000 − 641,000,000 = 57,293,317,600",
+      "revenue": 24995000000,
+      "ebitda": null,
+      "ebitdaMargin": null,
+      "evRevenue": 2.2921911422284458,
+      "evEbitda": null,
+      "pe": 14.0597539543058,
+      "multiplesMath": {
+        "evRevenue": "57,293,317,600 ÷ 24,995,000,000 = 2.2922x",
+        "evEbitda": "Unsupported (EBITDA needs operating income)",
+        "pe": "80 ÷ 5.69 = 14.0598x",
+        "ebitdaMargin": "Unsupported"
+      }
+    }
+  },
+  "stats": {
+    "marketCap": {
+      "nValid": 5,
+      "nExcluded": 0,
+      "excluded": [],
+      "used": ["CARR", "AAON", "TT", "WSO", "JCI"],
+      "mean": 42547388604.0,
+      "median": 48459317600,
+      "high": 88009270800,
+      "low": 8245363900,
+      "p25": 18563487300.0,
+      "p75": 49459503420.0,
+      "math": {
+        "sorted": [
+          "8,245,363,900",
+          "18,563,487,300",
+          "48,459,317,600",
+          "49,459,503,420",
+          "88,009,270,800"
+        ],
+        "mean": "(8,245,363,900 + 18,563,487,300 + 48,459,317,600 + 49,459,503,420 + 88,009,270,800) ÷ 5 = 42,547,388,604",
+        "median": "middle of 5 = 48,459,317,600",
+        "p25": "rank (n − 1) × 0.25 = 1.0; 18,563,487,300",
+        "p75": "rank (n − 1) × 0.75 = 3.0; 49,459,503,420"
+      }
+    },
+    "ev": {
+      "nValid": 5,
+      "nExcluded": 0,
+      "excluded": [],
+      "used": ["CARR", "AAON", "TT", "WSO", "JCI"],
+      "mean": 47091461804.0,
+      "median": 57293317600,
+      "high": 91307770800,
+      "low": 8680350900,
+      "p25": 18108366300.0,
+      "p75": 60067503420.0,
+      "math": {
+        "sorted": [
+          "8,680,350,900",
+          "18,108,366,300",
+          "57,293,317,600",
+          "60,067,503,420",
+          "91,307,770,800"
+        ],
+        "mean": "(8,680,350,900 + 18,108,366,300 + 57,293,317,600 + 60,067,503,420 + 91,307,770,800) ÷ 5 = 47,091,461,804",
+        "median": "middle of 5 = 57,293,317,600",
+        "p25": "rank (n − 1) × 0.25 = 1.0; 18,108,366,300",
+        "p75": "rank (n − 1) × 0.75 = 3.0; 60,067,503,420"
+      }
+    },
+    "revenue": {
+      "nValid": 5,
+      "nExcluded": 0,
+      "excluded": [],
+      "used": ["CARR", "AAON", "TT", "WSO", "JCI"],
+      "mean": 15705779600.0,
+      "median": 22108000000,
+      "high": 24995000000,
+      "low": 1932367000,
+      "p25": 7283631000.0,
+      "p75": 22209900000.0,
+      "math": {
+        "sorted": [
+          "1,932,367,000",
+          "7,283,631,000",
+          "22,108,000,000",
+          "22,209,900,000",
+          "24,995,000,000"
+        ],
+        "mean": "(1,932,367,000 + 7,283,631,000 + 22,108,000,000 + 22,209,900,000 + 24,995,000,000) ÷ 5 = 15,705,779,600",
+        "median": "middle of 5 = 22,108,000,000",
+        "p25": "rank (n − 1) × 0.25 = 1.0; 7,283,631,000",
+        "p75": "rank (n − 1) × 0.75 = 3.0; 22,209,900,000"
+      }
+    },
+    "ebitda": {
+      "nValid": 4,
+      "nExcluded": 1,
+      "excluded": ["JCI"],
+      "used": ["CARR", "AAON", "TT", "WSO"],
+      "mean": 2102070000.0,
+      "median": 1867427000.0,
+      "high": 4374900000,
+      "low": 298526000,
+      "p25": 621272000.0,
+      "p75": 3348225000.0,
+      "math": {
+        "sorted": [
+          "298,526,000",
+          "728,854,000",
+          "3,006,000,000",
+          "4,374,900,000"
+        ],
+        "mean": "(298,526,000 + 728,854,000 + 3,006,000,000 + 4,374,900,000) ÷ 4 = 2,102,070,000",
+        "median": "(728,854,000 + 3,006,000,000) ÷ 2 = 1,867,427,000",
+        "p25": "rank (n − 1) × 0.25 = 0.75; 621,272,000",
+        "p75": "rank (n − 1) × 0.75 = 2.25; 3,348,225,000"
+      }
+    },
+    "ebitdaMargin": {
+      "nValid": 4,
+      "nExcluded": 1,
+      "excluded": ["JCI"],
+      "used": ["CARR", "AAON", "TT", "WSO"],
+      "mean": 0.14687580499424724,
+      "median": 0.14522804850809126,
+      "high": 0.19697972525765536,
+      "low": 0.10006739770315108,
+      "p25": 0.12699350945835516,
+      "p75": 0.16511034404398334,
+      "math": {
+        "sorted": ["0.1001", "0.1360", "0.1545", "0.1970"],
+        "mean": "(0.1001 + 0.1360 + 0.1545 + 0.1970) ÷ 4 = 0.1469",
+        "median": "(0.1360 + 0.1545) ÷ 2 = 0.1452",
+        "p25": "rank (n − 1) × 0.25 = 0.75; 0.1270",
+        "p75": "rank (n − 1) × 0.75 = 2.25; 0.1651"
+      }
+    },
+    "evRevenue": {
+      "nValid": 5,
+      "nExcluded": 0,
+      "excluded": [],
+      "used": ["CARR", "AAON", "TT", "WSO", "JCI"],
+      "mean": 3.2197156756564818,
+      "median": 2.7170030495748145,
+      "high": 4.492081938886351,
+      "low": 2.2921911422284458,
+      "p25": 2.4861729403919557,
+      "p75": 4.111129307200843,
+      "math": {
+        "sorted": ["2.2922", "2.4862", "2.7170", "4.1111", "4.4921"],
+        "mean": "(2.2922 + 2.4862 + 2.7170 + 4.1111 + 4.4921) ÷ 5 = 3.2197",
+        "median": "middle of 5 = 2.7170",
+        "p25": "rank (n − 1) × 0.25 = 1.0; 2.4862",
+        "p75": "rank (n − 1) × 0.75 = 3.0; 4.1111"
+      }
+    },
+    "evEbitda": {
+      "nValid": 4,
+      "nExcluded": 1,
+      "excluded": ["JCI"],
+      "used": ["CARR", "AAON", "TT", "WSO"],
+      "mean": 23.69392874802425,
+      "median": 22.857904556948977,
+      "high": 29.07736981033478,
+      "low": 19.98253606786427,
+      "p25": 20.648752511103076,
+      "p75": 25.903080793870153,
+      "math": {
+        "sorted": ["19.9825", "20.8708", "24.8450", "29.0774"],
+        "mean": "(19.9825 + 20.8708 + 24.8450 + 29.0774) ÷ 4 = 23.6939",
+        "median": "(20.8708 + 24.8450) ÷ 2 = 22.8579",
+        "p25": "rank (n − 1) × 0.25 = 0.75; 20.6488",
+        "p75": "rank (n − 1) × 0.75 = 2.25; 25.9031"
+      }
+    },
+    "pe": {
+      "nValid": 4,
+      "nExcluded": 1,
+      "excluded": ["WSO"],
+      "used": ["CARR", "AAON", "TT", "JCI"],
+      "mean": 34.58768352169358,
+      "median": 35.82970059255005,
+      "high": 52.631578947368425,
+      "low": 14.0597539543058,
+      "p25": 26.22500661878084,
+      "p75": 44.19237749546279,
+      "math": {
+        "sorted": ["14.0598", "30.2801", "41.3793", "52.6316"],
+        "mean": "(14.0598 + 30.2801 + 41.3793 + 52.6316) ÷ 4 = 34.5877",
+        "median": "(30.2801 + 41.3793) ÷ 2 = 35.8297",
+        "p25": "rank (n − 1) × 0.25 = 0.75; 26.2250",
+        "p75": "rank (n − 1) × 0.75 = 2.25; 44.1924"
+      }
+    }
+  },
+  "exclusions": [
+    {
+      "ticker": "JCI",
+      "columns": ["ebitda", "ebitdaMargin", "evEbitda"],
+      "status": "unsupported",
+      "code": "INPUT_UNSUPPORTED",
+      "why": "JCI tags no OperatingIncomeLoss, so EBITDA is Unsupported (methodology §3)"
+    },
+    {
+      "ticker": "WSO",
+      "columns": ["pe"],
+      "status": "unsupported",
+      "code": "MULTI_CLASS",
+      "why": "Watsco has two listed classes (WSO, WSO-B); P/E is single-class only (methodology §5)"
+    }
+  ]
+}
