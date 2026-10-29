@@ -46,3 +46,6 @@ next-env.d.ts
 /test-results/
 /blob-report/
 /playwright/.cache/
+
+# peer-index build downloads (about 3 GB)
+/.peer-index-work/

@@ -114,24 +114,10 @@ export async function loadFundamentals(
     );
   const accession = identity.latestPeriodic?.accession ?? "none";
 
-  let hit = true;
-  let secRequests = 2;
-  const fundamentals = await deps.cache<LoadedFundamentals>(
-    ["fundamentals", cik, accession, METHODOLOGY_VERSION],
-    CACHE_SECONDS.fundamentals,
-    async () => {
-      hit = false;
-      const facts = await getCompanyFacts(cik, {
-        asOf,
-        client,
-        submissionsRevalidate: CACHE_SECONDS.submissions,
-      });
-      secRequests += facts.requestsMade;
-      return {
-        ...buildFundamentals(facts),
-        pulledAt: (deps.now ?? (() => new Date()))().toISOString(),
-      };
-    },
+  const { fundamentals, cacheHit, secRequests } = await getFundamentals(
+    cik,
+    accession,
+    deps,
   );
 
   const bytes = Buffer.byteLength(JSON.stringify(fundamentals));
@@ -139,11 +125,48 @@ export async function loadFundamentals(
     ticker,
     cik,
     accession,
-    cacheHit: hit,
-    secRequests,
+    cacheHit,
+    // The ticker list and submissions go through Next's fetch cache (24 h, 6 h), so
+    // these two may not have reached SEC; the rest did, and only on a miss.
+    secRequestsMax: 2 + secRequests,
     bytes,
     overCacheLimit: bytes > CACHE_ITEM_LIMIT_BYTES,
     ms: Date.now() - started,
   });
   return fundamentals;
+}
+
+// The one cached step the page and the API share (blueprint §14): keyed by CIK +
+// latest accession + methodology version, so a new filing or methodology change
+// gets a fresh entry. `secRequests` counts the requests made on a miss.
+export async function getFundamentals(
+  cik: string,
+  accession: string,
+  deps: LoadDeps,
+): Promise<{
+  fundamentals: LoadedFundamentals;
+  cacheHit: boolean;
+  secRequests: number;
+}> {
+  const { client, asOf } = deps;
+  let cacheHit = true;
+  let secRequests = 0;
+  const fundamentals = await deps.cache<LoadedFundamentals>(
+    ["fundamentals", cik, accession, METHODOLOGY_VERSION],
+    CACHE_SECONDS.fundamentals,
+    async () => {
+      cacheHit = false;
+      const facts = await getCompanyFacts(cik, {
+        asOf,
+        client,
+        submissionsRevalidate: CACHE_SECONDS.submissions,
+      });
+      secRequests = facts.requestsMade;
+      return {
+        ...buildFundamentals(facts),
+        pulledAt: (deps.now ?? (() => new Date()))().toISOString(),
+      };
+    },
+  );
+  return { fundamentals, cacheHit, secRequests };
 }

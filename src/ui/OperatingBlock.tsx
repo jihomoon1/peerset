@@ -69,7 +69,8 @@ export function OperatingBlock({ f }: { f: CompanyFundamentals }) {
                   <button
                     type="button"
                     aria-haspopup="dialog"
-                    aria-label={`${METRIC_LABELS[key]}: ${d.text}. Show calculation`}
+                    aria-label={`${METRIC_LABELS[key]}: ${d.text}${d.exact ? ` (${d.exact})` : ""}. Show calculation`}
+                    title={d.exact}
                     onClick={(e) => {
                       opener.current = e.currentTarget;
                       setOpen(key);

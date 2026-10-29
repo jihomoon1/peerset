@@ -1,9 +1,9 @@
 "use client";
 
 import type { CompanyFundamentals } from "@/domain/fundamentals";
-import { formatDate, formatMillions } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { Drawer, Section, WarningList } from "./Drawer";
-import { displayMetric } from "./metricDisplay";
+import { displayMetric, formatFactValueWithExact } from "./metricDisplay";
 
 export type BalanceSheetKey = "debt" | "cash";
 
@@ -30,7 +30,7 @@ export function BalanceSheetDrawer({
   return (
     <Drawer
       title={BALANCE_SHEET_LABELS[item]}
-      headline={d.text}
+      headline={d.exact ? `${d.text} (${d.exact})` : d.text}
       subtitle={`USD m · at ${formatDate(date)}`}
       methodologyVersion={f.methodologyVersion}
       onClose={onClose}
@@ -101,7 +101,9 @@ export function BalanceSheetDrawer({
                     </div>
                   </th>
                   <td className="py-1 pr-2 text-right">
-                    {l.value === null ? "—" : formatMillions(l.value)}
+                    {l.value === null
+                      ? "—"
+                      : formatFactValueWithExact(l.value, "USD")}
                   </td>
                   <td className="py-1">
                     <span className={l.included ? "font-medium" : "text-muted"}>

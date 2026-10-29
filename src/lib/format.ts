@@ -1,12 +1,42 @@
 // Display formatting. The only place (with the workbook writer) where full units are
 // turned into millions or rounded (CLAUDE.md invariant 2).
 
+// A nonzero value too small to show at this precision reads "<0.1", never "0.0",
+// which would look like zero (AAON's $13,000 cash, M4a). Exact zero stays "0.0".
 export function formatMillions(value: number, decimals = 1): string {
-  const text = (Math.abs(value) / 1_000_000).toLocaleString("en-US", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  const millions = Math.abs(value) / 1_000_000;
+  const text =
+    value !== 0 && millions < 0.5 / 10 ** decimals
+      ? `<${(1 / 10 ** decimals).toFixed(decimals)}`
+      : millions.toLocaleString("en-US", {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
   return value < 0 ? `(${text})` : text;
+}
+
+// True when formatMillions would show "<0.1": the exact amount should be shown too.
+export function isBelowDisplayPrecision(value: number, decimals = 1): boolean {
+  return formatMillions(value, decimals).includes("<");
+}
+
+// Full units, for the drawer and tooltip next to a "<0.1": "$13,000", "42,000 shares".
+export function formatExactAmount(
+  value: number,
+  unit: "USD" | "shares",
+): string {
+  const digits = Math.abs(value).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  });
+  const text = unit === "USD" ? `$${digits}` : `${digits} shares`;
+  return value < 0 ? `(${text})` : text;
+}
+
+// A size ratio for peer reasons, "0.6x" (blueprint §10.2). A nonzero ratio too small
+// for one decimal reads "<0.1x", never "0.0x".
+export function formatRatioX(ratio: number): string {
+  if (ratio !== 0 && Math.abs(ratio) < 0.05) return "<0.1x";
+  return `${ratio.toFixed(1)}x`;
 }
 
 function withParens(value: number, text: string): string {

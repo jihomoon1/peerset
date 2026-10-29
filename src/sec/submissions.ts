@@ -16,16 +16,27 @@ import type {
 import { parseOrThrow, SubmissionsSchema, type Submissions } from "./schemas";
 import { filingIndexPageUrl, padCik } from "./urls";
 
-const FOREIGN_FORMS = new Set(["20-F", "20-F/A", "40-F", "40-F/A"]);
-const TRANSITION_FORMS = new Set(["10-KT", "10-KT/A", "10-QT", "10-QT/A"]);
+export const FOREIGN_FORMS: ReadonlySet<string> = new Set([
+  "20-F",
+  "20-F/A",
+  "40-F",
+  "40-F/A",
+]);
+export const TRANSITION_FORMS: ReadonlySet<string> = new Set([
+  "10-KT",
+  "10-KT/A",
+  "10-QT",
+  "10-QT/A",
+]);
 
-interface Row {
+export interface LatestReport {
   accession: string;
   form: string;
   filedDate: string;
   reportDate: string;
   primaryDocument: string;
 }
+type Row = LatestReport;
 
 export function buildIdentity(
   raw: unknown,
@@ -48,15 +59,11 @@ export function reportDatesByAccession(s: Submissions): Map<string, string> {
   return out;
 }
 
-export function identityFromSubmissions(
-  s: Submissions,
-  { asOf }: { asOf: string },
-): CompanyIdentity {
-  const cik = padCik(s.cik);
+// The newest report that could be "the latest periodic", including the forms that
+// make a company unsupported (20-F/40-F, transition periods). Rows without a report
+// date can't be ordered and are skipped. Newest by report date, then filing date.
+export function latestReport(s: Submissions): LatestReport | undefined {
   const recent = s.filings.recent;
-
-  // Every report that could be "the latest periodic", including the forms that make a
-  // company unsupported. Rows without a report date can't be ordered and are skipped.
   const candidates: Row[] = [];
   for (let i = 0; i < recent.accessionNumber.length; i++) {
     const form = recent.form[i];
@@ -73,13 +80,21 @@ export function identityFromSubmissions(
       primaryDocument: recent.primaryDocument[i],
     });
   }
-  // Newest by report date, then filing date (ISO strings sort as dates).
+  // ISO strings sort as dates.
   candidates.sort(
     (a, b) =>
       b.reportDate.localeCompare(a.reportDate) ||
       b.filedDate.localeCompare(a.filedDate),
   );
-  const latest = candidates[0];
+  return candidates[0];
+}
+
+export function identityFromSubmissions(
+  s: Submissions,
+  { asOf }: { asOf: string },
+): CompanyIdentity {
+  const cik = padCik(s.cik);
+  const latest = latestReport(s);
 
   const latestPeriodic =
     latest && PERIODIC_FORMS.has(latest.form)

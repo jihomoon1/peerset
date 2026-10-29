@@ -11,6 +11,7 @@ import {
   formatShares,
 } from "@/lib/format";
 import { Drawer, Section, WarningList } from "./Drawer";
+import { formatFactValueWithExact } from "./metricDisplay";
 import { byListingOrder, displayValuationCell } from "./pricing";
 
 const NOT_IN_EV_LABELS = {
@@ -44,7 +45,9 @@ function Lines({ caption, lines }: { caption: string; lines: BridgeLine[] }) {
               <div className="font-mono text-xs text-muted">{l.concept}</div>
             </th>
             <td className="py-1 pr-2 text-right">
-              {l.value === null ? "—" : formatMillions(l.value)}
+              {l.value === null
+                ? "—"
+                : formatFactValueWithExact(l.value, "USD")}
             </td>
             <td className="py-1">
               <span className={l.included ? "font-medium" : "text-muted"}>

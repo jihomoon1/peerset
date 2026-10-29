@@ -63,7 +63,8 @@ export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
                   <button
                     type="button"
                     aria-haspopup="dialog"
-                    aria-label={`${BALANCE_SHEET_LABELS[key]}: ${d.text}. Show balance-sheet lines`}
+                    aria-label={`${BALANCE_SHEET_LABELS[key]}: ${d.text}${d.exact ? ` (${d.exact})` : ""}. Show balance-sheet lines`}
+                    title={d.exact}
                     onClick={(e) => {
                       opener.current = e.currentTarget;
                       setOpen(key);

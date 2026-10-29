@@ -89,6 +89,25 @@ function candidatePeriods(
   return [...byKey.values()];
 }
 
+// The end of the latest fiscal year any of the concepts reports in a 10-K or 10-K/A
+// (a period of at least MIN_ANNUAL_DAYS, as findComponents counts it). Used for
+// screening revenue (blueprint §10.1 step 4); the §2 checks still run afterwards.
+export function latestFiscalYearEnd(
+  facts: readonly ReportedFinancialFact[],
+  concepts: readonly string[],
+): string | undefined {
+  let latest: string | undefined;
+  for (const concept of concepts)
+    for (const c of candidatePeriods(facts, concept))
+      if (
+        c.annualFiling &&
+        lengthDays(c.start, c.end) >= MIN_ANNUAL_DAYS &&
+        (latest === undefined || c.end > latest)
+      )
+        latest = c.end;
+  return latest;
+}
+
 type Component =
   | { kind: "found"; fact: ReportedFinancialFact }
   | { kind: "missing"; what: string }

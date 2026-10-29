@@ -236,3 +236,29 @@ export interface FaceLineProvenance {
   reason: string;
   fact?: ReportedFinancialFact;
 }
+
+// ── Peers (blueprint §10.2, §11) ────────────────────────────────────────────
+
+// Why a company in the screened SIC tier is not a selected peer (blueprint §15 style:
+// a code plus a plain detail).
+export type ExclusionCode =
+  | "NO_PERIODIC_FILING" // no 10-K or 10-Q in SEC's recent filings
+  | "FOREIGN_FILER" // latest report is a 20-F or 40-F
+  | "TRANSITION_PERIOD" // latest report is a 10-KT or 10-QT
+  | "FINANCIAL_SIC" // SIC 6000–6799
+  | "STALE_FILING" // latest 10-K/10-Q filed more than 200 days before the analysis date
+  | "NO_SCREENING_REVENUE" // no usable latest fiscal-year revenue
+  | "OUTSIDE_SIZE_RANGE" // screening revenue outside 0.2x–5x the target's
+  | "NOT_IN_TOP_N"; // passed every rule but ranked below the number kept
+
+export interface PeerSelectionResult {
+  tier: "sic4" | "sic3" | "sic2";
+  selected: { cik: string; ticker: string; reason: string }[];
+  excluded: {
+    cik: string;
+    ticker: string;
+    code: ExclusionCode;
+    detail: string;
+  }[];
+  indexGeneratedAt: string;
+}

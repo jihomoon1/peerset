@@ -5,7 +5,9 @@ import type { MetricKey } from "@/domain/fundamentals";
 import type { Metric, ReportedFinancialFact } from "@/domain/types";
 import {
   formatDate,
+  formatExactAmount,
   formatMillions,
+  isBelowDisplayPrecision,
   MONTH_NAMES,
   formatPercent,
   formatPerShare,
@@ -44,6 +46,7 @@ export interface Display {
   text: string;
   kind: "value" | "nm" | "missing" | "unsupported";
   note?: string;
+  exact?: string; // full-unit amount when text reads "<0.1" (tooltip, drawer)
 }
 
 function formatByUnit(value: number, unit: string): string {
@@ -53,11 +56,32 @@ function formatByUnit(value: number, unit: string): string {
   return String(value);
 }
 
+function exactFor(value: number, unit: string): { exact?: string } {
+  return (unit === "USD" || unit === "shares") && isBelowDisplayPrecision(value)
+    ? { exact: formatExactAmount(value, unit) }
+    : {};
+}
+
+// A value as formatFactValue shows it, plus the exact amount when that reads "<0.1".
+export function formatFactValueWithExact(
+  value: number,
+  unit: ReportedFinancialFact["unit"],
+): string {
+  const { exact } = exactFor(value, unit);
+  return exact
+    ? `${formatByUnit(value, unit)} (${exact})`
+    : formatByUnit(value, unit);
+}
+
 export function displayMetric(m: Metric): Display {
   switch (m.status) {
     case "reported":
     case "derived":
-      return { text: formatByUnit(m.value, m.unit), kind: "value" };
+      return {
+        text: formatByUnit(m.value, m.unit),
+        kind: "value",
+        ...exactFor(m.value, m.unit),
+      };
     case "nm":
       return { text: "NM", kind: "nm", note: m.reason };
     case "missing":

@@ -18,6 +18,20 @@ export function addDays(iso: string, n: number): string {
   return new Date(toUtcMs(iso) + n * DAY_MS).toISOString().slice(0, 10);
 }
 
+// The ISO date n calendar months after (or before) the given one, clamped to the
+// target month's last day (2025-05-31 − 3 months = 2025-02-28).
+export function addMonths(iso: string, n: number): string {
+  toUtcMs(iso); // validates
+  const [y, m, d] = iso.split("-").map(Number);
+  const months = y * 12 + (m - 1) + n;
+  const year = Math.floor(months / 12);
+  const month = months - year * 12; // 0-based
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(d, lastDay)))
+    .toISOString()
+    .slice(0, 10);
+}
+
 // A real calendar date written YYYY-MM-DD ('2026-02-30' is not).
 export function isIsoDate(s: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
