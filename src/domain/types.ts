@@ -252,8 +252,20 @@ export type ExclusionCode =
   | "OUTSIDE_SIZE_RANGE" // screening revenue outside 0.2x–5x the target's
   | "NOT_IN_TOP_N"; // passed every rule but ranked below the number kept
 
+// One SIC tier tried, for the "No peers passed the screen" state (blueprint §6):
+// companies in the group (target excluded), how many each filter dropped, and how
+// many passed eligibility and the size band.
+export interface ScreeningFunnelStep {
+  tier: "sic4" | "sic3" | "sic2";
+  group: string; // the SIC prefix: "3585", "358", "35"
+  companies: number;
+  dropped: Partial<Record<ExclusionCode, number>>;
+  qualified: number;
+}
+
 export interface PeerSelectionResult {
   tier: "sic4" | "sic3" | "sic2";
+  funnel: ScreeningFunnelStep[]; // every tier tried, narrowest first
   selected: { cik: string; ticker: string; reason: string }[];
   excluded: {
     cik: string;

@@ -229,7 +229,10 @@ describe("screenPeers", () => {
     const out = r.excluded.filter((e) => e.code === "OUTSIDE_SIZE_RANGE");
     expect(tickers(out).sort()).toEqual(["TOOHIGH", "TOOLOW"]);
     expect(out.find((e) => e.ticker === "TOOHIGH")?.detail).toBe(
-      "revenue 5.0x the target's (allowed 0.2x–5x)",
+      "revenue >5.00x the target's (allowed 0.2x–5x)",
+    );
+    expect(out.find((e) => e.ticker === "TOOLOW")?.detail).toBe(
+      "revenue <0.20x the target's (allowed 0.2x–5x)",
     );
   });
 
@@ -372,6 +375,59 @@ describe("screenPeers ordering and wording", () => {
     expect(r.excluded.find((e) => e.ticker === "TINY")?.detail).toBe(
       "revenue <0.1x the target's (allowed 0.2x–5x)",
     );
+  });
+});
+
+describe("screenPeers funnel (the 'all peers filtered out' state)", () => {
+  it("counts, per tier tried, the companies in the group, those dropped by each filter and those that qualified", () => {
+    const target = co("TGT", "3585", 1_000);
+    const r = screenPeers(
+      index([
+        target,
+        co("A4", "3585", 900),
+        co("BIG", "3585", 9_000),
+        co("BANKISH", "3585", null),
+        co("A3", "3580", 950),
+        co("FAR", "3714", 50),
+      ]),
+      target,
+      { analysisDate: DAY },
+    );
+    expect(r.tier).toBe("sic2");
+    expect(r.funnel).toEqual([
+      {
+        tier: "sic4",
+        group: "3585",
+        companies: 3,
+        dropped: { OUTSIDE_SIZE_RANGE: 1, NO_SCREENING_REVENUE: 1 },
+        qualified: 1,
+      },
+      {
+        tier: "sic3",
+        group: "358",
+        companies: 4,
+        dropped: { OUTSIDE_SIZE_RANGE: 1, NO_SCREENING_REVENUE: 1 },
+        qualified: 2,
+      },
+      {
+        tier: "sic2",
+        group: "35",
+        companies: 4,
+        dropped: { OUTSIDE_SIZE_RANGE: 1, NO_SCREENING_REVENUE: 1 },
+        qualified: 2,
+      },
+    ]);
+  });
+
+  it("an empty group still appears, with zero companies", () => {
+    const target = co("TGT", "3585", 1_000);
+    const r = screenPeers(index([target]), target, { analysisDate: DAY });
+    expect(r.selected).toEqual([]);
+    expect(r.funnel.map((f) => [f.tier, f.companies, f.qualified])).toEqual([
+      ["sic4", 0, 0],
+      ["sic3", 0, 0],
+      ["sic2", 0, 0],
+    ]);
   });
 });
 
