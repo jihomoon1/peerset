@@ -58,7 +58,8 @@ export type Submissions = z.infer<typeof SubmissionsSchema>;
 // Top level only: concepts we don't use are not validated, so a change in one of
 // them can't break us. Whitelisted concepts are checked with ConceptFactsSchema.
 export const CompanyFactsSchema = z.object({
-  cik: z.number().int(),
+  // A number for most companies, a zero-padded string for others ("0001144879").
+  cik: z.union([z.number().int(), z.string().regex(/^\d{1,10}$/)]),
   entityName: z.string(),
   facts: z.record(z.string(), z.record(z.string(), z.unknown())),
 });

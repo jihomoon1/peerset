@@ -146,4 +146,41 @@ describe("companyfacts trimming", () => {
     };
     expect(trimCompanyFacts(raw).facts).toEqual([]);
   });
+
+  // SEC serves cik as a number for most companies but as a zero-padded string for
+  // others (Applied Digital, CIK 1144879, on 2026-10-29: "cik":"0001144879").
+  it("accepts cik as a zero-padded string", () => {
+    const facts = {
+      "us-gaap": {
+        Revenues: {
+          units: {
+            USD: [
+              {
+                start: "2025-01-01",
+                end: "2025-12-31",
+                val: 5,
+                accn: "0001144879-26-000001",
+                form: "10-K",
+                filed: "2026-02-20",
+              },
+            ],
+          },
+        },
+      },
+    };
+    const asString = trimCompanyFacts({
+      cik: "0001144879",
+      entityName: "X",
+      facts,
+    });
+    const asNumber = trimCompanyFacts({ cik: 1144879, entityName: "X", facts });
+    expect(asString).toEqual(asNumber);
+    expect(asString.facts).toHaveLength(1);
+  });
+
+  it("still rejects a cik that isn't digits", () => {
+    expect(() =>
+      trimCompanyFacts({ cik: "LII", entityName: "X", facts: {} }),
+    ).toThrow(SecSchemaChangedError);
+  });
 });
