@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import type { QuoteSnapshot } from "@/domain/types";
 import { priceCompany } from "@/domain/valuation";
-import { CompanyWorkspace } from "@/ui/CompanyWorkspace";
+import { Workbench } from "@/ui/Workbench";
 import { EvBridgeDrawer } from "@/ui/EvBridgeDrawer";
 import { ValuationBlock } from "@/ui/ValuationBlock";
 import { fixtureFundamentals } from "../../helpers/fundamentals";
@@ -30,13 +30,19 @@ const workspace = (
   providerOn = false,
 ) =>
   renderToStaticMarkup(
-    <CompanyWorkspace
+    <Workbench
       f={f}
       pulledAt={PULLED}
       analysisDate="2026-10-26"
       providerQuotes={providerQuotes}
       providerErrors={[]}
       providerOn={providerOn}
+      selection={{
+        ok: false,
+        code: "TEST",
+        message: "not screened in this test",
+      }}
+      initial={{ add: [], remove: [], prices: {} }}
     />,
   );
 
@@ -68,7 +74,20 @@ describe("before any price", () => {
     expect(html).toContain("LII price (USD)");
     expect(html).toContain('<label for="price-date"');
     expect(html).toContain('<label for="price-paste"');
-    expect(html.match(/>Needs price</g)).toHaveLength(5);
+    // The valuation block's five cells (the comps table below repeats them).
+    const block = html.slice(
+      html.indexOf('id="valuation-heading"'),
+      html.indexOf('id="comps-heading"'),
+    );
+    expect(block.match(/>Needs price</g)).toHaveLength(5);
+  });
+
+  it("the comps table's target row needs a price in its price and valuation columns", () => {
+    const html = workspace(lii);
+    const table = html.slice(html.indexOf('id="comps-heading"'));
+    expect(table).toContain(">Target<");
+    // Price, market cap, EV, EV/Revenue, EV/EBITDA, P/E.
+    expect(table.match(/>Needs price</g)).toHaveLength(6);
   });
 
   it("the as-of strip shows prices needed, LTM end, cover date and pull time", () => {
