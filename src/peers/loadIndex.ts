@@ -7,15 +7,30 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { PeerIndexUnavailableError } from "@/lib/errors";
+import { fixtureModeOn } from "@/lib/fixtureMode";
 import { decodeIndex } from "./indexFormat";
 import type { PeerIndex } from "./indexTypes";
 
 let loaded: PeerIndex | null = null;
 
+// Fixture mode (e2e only, refused in production) screens from a small index over the
+// frozen SEC fixtures instead (tests/fixtures/peer-index/build-fixture-index.ts).
+export function peerIndexPath(
+  env: Record<string, string | undefined> = process.env,
+): string {
+  return fixtureModeOn(env)
+    ? path.join(
+        process.cwd(),
+        "tests",
+        "fixtures",
+        "peer-index",
+        "fixture-peer-index.json",
+      )
+    : path.join(process.cwd(), "data", "peer-index.json");
+}
+
 export function loadPeerIndex(): PeerIndex {
-  loaded ??= indexFromText(() =>
-    readFileSync(path.join(process.cwd(), "data", "peer-index.json"), "utf8"),
-  );
+  loaded ??= indexFromText(() => readFileSync(peerIndexPath(), "utf8"));
   return loaded;
 }
 
