@@ -20,7 +20,14 @@ export default defineConfig({
   webServer: {
     command: "npm run start",
     url: "http://localhost:3000",
-    env: { PEERSET_SEC_FIXTURES: "1", PRICE_PROVIDER: "user" },
+    env: {
+      PEERSET_SEC_FIXTURES: "1",
+      PRICE_PROVIDER: "user",
+      // One frozen filing per ticker, pinned so saving a newer fixture (LII Q3) never
+      // changes what the e2e suite sees (M4a note).
+      PEERSET_FIXTURE_ASOF:
+        "AAON:2026Q2,CARR:2026Q2,GGG:2026Q3,JCI:2026Q2,LII:2026Q2,TT:2026Q2,WSO:2026Q2",
+    },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

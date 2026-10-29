@@ -7,7 +7,7 @@ import {
   type CompanyFundamentals,
 } from "@/domain/fundamentals";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
-import { createSecClient, type SecClient } from "@/sec/client";
+import { createLimiter, createSecClient, type SecClient } from "@/sec/client";
 import { getCompanyFacts } from "@/sec/freshness";
 import { identityFromSubmissions, parseSubmissions } from "@/sec/submissions";
 import { fixtureFetch, allFixtureDirs } from "@/sec/fixtureFetch";
@@ -77,18 +77,20 @@ const liveTickerTable = tickerTableMemo(CACHE_SECONDS.tickerList * 1000);
 export type LoadedFundamentals = CompanyFundamentals & { pulledAt: string };
 
 const fixtureCache = memoryCache();
+const fixtureLimiter = createLimiter(0);
 
 export function defaultDeps(
   env: Record<string, string | undefined> = process.env,
 ): LoadDeps {
   // Fixture mode (e2e only, refused in production): frozen SEC responses, a dummy
   // User-Agent, an in-memory cache (never the persistent one) and the goldens'
-  // analysis date.
+  // analysis date. No pacing: nothing reaches SEC.
   if (fixtureModeOn(env))
     return {
       client: createSecClient({
         fetch: fixtureFetch(allFixtureDirs()).fetch,
         env: { SEC_USER_AGENT: "PeerSet-Fixtures fixtures@example.invalid" },
+        limiter: fixtureLimiter,
       }),
       cache: fixtureCache,
       asOf: FIXTURE_AS_OF,
