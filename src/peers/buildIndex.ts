@@ -91,8 +91,8 @@ export function companyRecord(
 }
 
 // The index with its metadata. generatedAt is the newest source Last-Modified, so the
-// same SEC files always give the same bytes (no clock read) and an unchanged month
-// opens no PR.
+// same SEC files always give the same bytes (no clock read). SEC re-dates its bulk files
+// nightly, so a monthly run still changes the meta lines and opens a PR.
 export function assembleIndex(
   universe: Universe,
   companies: PeerIndexCompany[],
