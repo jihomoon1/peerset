@@ -109,7 +109,8 @@ export type WarningCode =
   | "W_SHARES_AFTER_BALANCE_SHEET" // §6: cover date after the balance sheet (info)
   | "W_TICKER_NOT_IN_SEC_LIST" // §6: cover symbol SEC doesn't list for the CIK
   | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
-  | "W_PRICE_STALE"; // §12: price date > 7 days before the analysis date
+  | "W_PRICE_STALE" // §12: price date > 7 days before the analysis date
+  | "W_PERIOD_LAG"; // §12: LTM end > 75 days from the peers' median LTM end
 
 export interface MetricWarning {
   code: WarningCode;

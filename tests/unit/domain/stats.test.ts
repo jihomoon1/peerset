@@ -10,7 +10,7 @@ const value = (v: number): Metric => ({
   status: "derived",
   value: v,
   unit: "multiple",
-  period: { kind: "instant", date: "2026-06-30" },
+  period: { kind: "instant", end: "2026-06-30" },
   formula: "test",
   inputs: [],
   warnings: [],
