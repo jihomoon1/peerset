@@ -11,7 +11,12 @@ import { createSecClient, type SecClient } from "@/sec/client";
 import { getCompanyFacts } from "@/sec/freshness";
 import { identityFromSubmissions, parseSubmissions } from "@/sec/submissions";
 import { fixtureFetch, allFixtureDirs } from "@/sec/fixtureFetch";
-import { lookupTicker, parseTickerTable, TICKER_LIST_URL } from "@/sec/tickers";
+import {
+  lookupTicker,
+  parseTickerTable,
+  TICKER_LIST_URL,
+  type TickerTable,
+} from "@/sec/tickers";
 import { submissionsUrl } from "@/sec/urls";
 import { memoryCache, nextCache, type CacheFn } from "./cache";
 import {
@@ -39,7 +44,33 @@ export interface LoadDeps {
   asOf: string; // today, ISO; the domain never reads the clock
   logger: Logger;
   now?: () => Date; // stamps when SEC data was pulled; defaults to the clock
+  tickerTable?: TickerTableMemo; // per-instance memo of the parsed ticker list
 }
+
+// Best-effort, per-instance memo of the parsed ticker list (ADR 0009). It saves a
+// limiter slot and a 0.5 MB parse on every company load; the list changes rarely
+// and its fetch cache already lasts 24 h. Submissions is never memoized here: it is
+// how a new filing is discovered.
+export interface TickerTableMemo {
+  get(load: () => Promise<TickerTable>): Promise<TickerTable>;
+}
+
+export function tickerTableMemo(
+  ttlMs: number,
+  clock: () => number = Date.now,
+): TickerTableMemo {
+  let held: { table: TickerTable; at: number } | null = null;
+  return {
+    async get(load) {
+      if (held && clock() - held.at <= ttlMs) return held.table;
+      const table = await load();
+      held = { table, at: clock() };
+      return table;
+    },
+  };
+}
+
+const liveTickerTable = tickerTableMemo(CACHE_SECONDS.tickerList * 1000);
 
 // Fundamentals plus when their SEC data was pulled (the as-of strip's "data pulled
 // at", blueprint §6). Stamped inside the cache, so a cached copy keeps its pull time.
@@ -68,6 +99,7 @@ export function defaultDeps(
     cache: nextCache,
     asOf: new Date().toISOString().slice(0, 10),
     logger: log,
+    tickerTable: liveTickerTable,
   };
 }
 
@@ -90,12 +122,20 @@ export async function loadFundamentals(
   const ticker = normalizeTicker(rawTicker);
   const { client, asOf } = deps;
 
-  const list = await client.getJson(TICKER_LIST_URL, {
-    revalidate: CACHE_SECONDS.tickerList,
-  });
-  if (list.kind === "not-found")
-    throw new SecUnavailableError("ticker list returned 404");
-  const { cik } = lookupTicker(parseTickerTable(list.data), ticker);
+  let tickerListRequested = false;
+  const readTickerTable = async () => {
+    tickerListRequested = true;
+    const list = await client.getJson(TICKER_LIST_URL, {
+      revalidate: CACHE_SECONDS.tickerList,
+    });
+    if (list.kind === "not-found")
+      throw new SecUnavailableError("ticker list returned 404");
+    return parseTickerTable(list.data);
+  };
+  const table = deps.tickerTable
+    ? await deps.tickerTable.get(readTickerTable)
+    : await readTickerTable();
+  const { cik } = lookupTicker(table, ticker);
 
   // The latest accession is part of the cache key, so a new filing is picked up as
   // soon as submissions (6 h) shows it.
@@ -127,8 +167,9 @@ export async function loadFundamentals(
     accession,
     cacheHit,
     // The ticker list and submissions go through Next's fetch cache (24 h, 6 h), so
-    // these two may not have reached SEC; the rest did, and only on a miss.
-    secRequestsMax: 2 + secRequests,
+    // these may not have reached SEC; the rest did, and only on a miss. The ticker
+    // list is skipped entirely when the instance memo holds it.
+    secRequestsMax: (tickerListRequested ? 2 : 1) + secRequests,
     bytes,
     overCacheLimit: bytes > CACHE_ITEM_LIMIT_BYTES,
     ms: Date.now() - started,
