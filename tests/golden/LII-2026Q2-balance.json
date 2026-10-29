@@ -16,7 +16,7 @@
     "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000087/R2.htm",
     "scale": "Millions"
   },
-  "methodologyVersion": "0.3.3",
+  "methodologyVersion": "0.3.4",
   "note": "Every value is read from the filing's rendered balance sheet ('Consolidated Balance Sheets', column 2026-06-30), USD millions as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 \u00a77-\u00a79.",
   "debt": {
     "lines": [
