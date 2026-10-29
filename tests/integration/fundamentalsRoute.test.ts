@@ -206,7 +206,7 @@ describe("ticker-list memo (ADR 0009)", () => {
   const TICKERS = "https://www.sec.gov/files/company_tickers_exchange.json";
 
   it("a second load within the TTL doesn't request the ticker list again", async () => {
-    let clock = 0;
+    const clock = 0;
     const memo = tickerTableMemo(24 * 3600 * 1000, () => clock);
     const { deps: d, requested } = deps({ tickerTable: memo });
     const handler = createFundamentalsHandler(() => d, quiet);
