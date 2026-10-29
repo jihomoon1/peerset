@@ -153,3 +153,21 @@ test("7. axe: the full workbench has no serious or critical issues", async ({
     serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(" | ")}`),
   ).toEqual([]);
 });
+
+test("mobile: regions stack and only the table scrolls sideways", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openLii(page);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  // Screen-reader-only text in cells is absolutely positioned; the table's scroll box
+  // must be its containing block, or it widens the page (found by this test).
+  expect(overflow).toBeLessThanOrEqual(0);
+  const scroller = table(page).locator("xpath=..");
+  const inner = await scroller.evaluate(
+    (el) => el.scrollWidth > el.clientWidth,
+  );
+  expect(inner).toBe(true);
+});

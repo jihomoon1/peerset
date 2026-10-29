@@ -341,7 +341,7 @@ export function CompsTable({
 
   return (
     <div
-      className="max-h-[75vh] w-full overflow-auto rounded-sm border border-rule"
+      className="relative max-h-[75vh] w-full overflow-auto rounded-sm border border-rule"
       aria-busy={busy ? true : undefined}
     >
       <table className="w-full min-w-[1180px] border-collapse text-[13px] tabular-nums">
