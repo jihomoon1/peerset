@@ -7,8 +7,9 @@
 import { NM_REASON_TEXT } from "./nm";
 import type { Metric } from "./types";
 
+// "failed": the peer's fundamentals did not load.
 export type StatInput =
-  { kind: "metric"; metric: Metric } | { kind: "failed"; reason: string }; // the peer's fundamentals did not load
+  { kind: "metric"; metric: Metric } | { kind: "failed"; reason: string };
 
 export interface StatEntry {
   ticker: string;
