@@ -168,6 +168,19 @@ function listLines<T>(items: T[], line: (t: T) => string): string[] {
   return shown;
 }
 
+// The monthly build refuses to write the index when more than 1% of listed companies'
+// companyfacts entries fail SEC's schema: a format change at SEC would otherwise ship
+// an index where those companies silently lose their screening revenue.
+export const UNREADABLE_SHARE_LIMIT = 0.01;
+
+export function companyfactsUnreadableShare(
+  counts: Pick<PeerIndexMeta["counts"], "listed" | "unreadable">,
+): number {
+  return counts.listed === 0
+    ? 0
+    : counts.unreadable.companyfacts / counts.listed;
+}
+
 // The refresh PR body (Markdown): counts, then added, removed and reclassified.
 export function summaryMarkdown(next: PeerIndex, diff: IndexDiff): string {
   const { counts, sources, generatedAt, methodologyVersion } = next.meta;
@@ -184,7 +197,7 @@ export function summaryMarkdown(next: PeerIndex, diff: IndexDiff): string {
         .map(([k, v]) => `${k} ${v}`)
         .join(", ") || "none"
     }`,
-    `- Unreadable bulk entries: submissions ${counts.unreadable.submissions}, companyfacts ${counts.unreadable.companyfacts}`,
+    `- Unreadable bulk entries: submissions ${counts.unreadable.submissions}, companyfacts ${counts.unreadable.companyfacts} (${(100 * companyfactsUnreadableShare(counts)).toFixed(2)}% of listed companies; the build stops above ${100 * UNREADABLE_SHARE_LIMIT}%)`,
     "",
     `### Added (${diff.added.length})`,
     ...listLines(diff.added, who),

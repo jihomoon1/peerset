@@ -22,7 +22,12 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { parseArgs } from "node:util";
-import { diffIndexes, summaryMarkdown } from "../src/peers/buildIndex";
+import {
+  companyfactsUnreadableShare,
+  diffIndexes,
+  summaryMarkdown,
+  UNREADABLE_SHARE_LIMIT,
+} from "../src/peers/buildIndex";
 import { decodeIndex, encodeIndex } from "../src/peers/indexFormat";
 import type { PeerIndex, PeerIndexMeta } from "../src/peers/indexTypes";
 import { buildFromFiles } from "./peer-index/build";
@@ -153,6 +158,12 @@ async function main() {
   if (index.meta.counts.listed < minListed)
     fail(
       `only ${index.meta.counts.listed} listed companies (expected at least ${minListed}); not writing ${out}`,
+    );
+
+  const share = companyfactsUnreadableShare(index.meta.counts);
+  if (share > UNREADABLE_SHARE_LIMIT)
+    fail(
+      `${index.meta.counts.unreadable.companyfacts} of ${index.meta.counts.listed} listed companies' companyfacts entries are unreadable (${(100 * share).toFixed(2)}%, limit ${100 * UNREADABLE_SHARE_LIMIT}%); SEC's format may have changed. Not writing ${out}`,
     );
 
   const previous = readPrevious(out);

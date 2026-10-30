@@ -2,6 +2,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildFromFiles } from "../../scripts/peer-index/build";
 import { decodeIndex, encodeIndex } from "@/peers/indexFormat";
+import {
+  companyfactsUnreadableShare,
+  UNREADABLE_SHARE_LIMIT,
+} from "@/peers/buildIndex";
 import type { PeerIndex } from "@/peers/indexTypes";
 
 // The builder on tiny synthetic copies of SEC's bulk files (generate.ts in that
@@ -131,6 +135,12 @@ describe("buildFromFiles on the synthetic bulk files", async () => {
         unreadable: { submissions: 0, companyfacts: 0 },
       },
     });
+  });
+
+  it("passes the unreadable-entry guard: 0 of 6 listed companies", () => {
+    const share = companyfactsUnreadableShare(index.meta.counts);
+    expect(share).toBe(0);
+    expect(share).toBeLessThanOrEqual(UNREADABLE_SHARE_LIMIT);
   });
 
   it("is deterministic: the same inputs give byte-identical output", async () => {
