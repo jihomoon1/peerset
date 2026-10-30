@@ -100,10 +100,10 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
                 <li key={`${spec.key}-${p}`}>
                   {spec.label}, {POINT_LABEL[p].toLowerCase()} of {r.nPeers}{" "}
                   peers: {formatMillions(r.metricValue)} ×{" "}
-                  {formatMultiple(x.multiple, 4)} = {formatMillions(x.impliedEv)}{" "}
-                  EV; − {formatMillions(r.totalDebt)} debt +{" "}
-                  {formatMillions(r.cash)} cash ={" "}
-                  {formatMillions(x.impliedEquity)} equity; ÷{" "}
+                  {formatMultiple(x.multiple, 4)} ={" "}
+                  {formatMillions(x.impliedEv)} EV; −{" "}
+                  {formatMillions(r.totalDebt)} debt + {formatMillions(r.cash)}{" "}
+                  cash = {formatMillions(x.impliedEquity)} equity; ÷{" "}
                   {r.shares.toLocaleString("en-US")} shares ={" "}
                   {formatPrice(x.impliedPrice)} (USD m except shares and price)
                 </li>
