@@ -90,8 +90,8 @@ describe("GET /api/quotes", () => {
     ]);
     expect(body.errors).toEqual([]);
     expect(d.keys).toEqual([
-      ["quote", "LII", "2026-10-26", "0.3.4"],
-      ["quote", "WSO", "2026-10-26", "0.3.4"],
+      ["quote", "LII", "2026-10-26", "0.3.5"],
+      ["quote", "WSO", "2026-10-26", "0.3.5"],
     ]);
   });
 

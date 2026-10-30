@@ -1,7 +1,7 @@
 {
   "ticker": "WSO",
   "fixture": "WSO",
-  "methodologyVersion": "0.3.4",
+  "methodologyVersion": "0.3.5",
   "analysisDate": "2026-10-26",
   "note": "Prices are test inputs, not market data (M2b prompt). Shares come from the 10-Q cover page; total debt and cash are the confirmed EV inputs in tests/golden/WSO-2026Q2-balance.json; revenue and EBITDA are from tests/golden/WSO-2026Q2.json (Awaiting Jiho). Arithmetic in full dollars; multiples asserted to 0.01x.",
   "prices": [

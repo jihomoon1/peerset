@@ -1,6 +1,6 @@
 # GGG reconciliation — LTM at September 25, 2026
 
-Graco Inc. · CIK 0000042888 · methodology 0.3.4 · golden file `tests/golden/GGG-2026Q3.json` · test `tests/golden/peers-ltm.test.ts`
+Graco Inc. · CIK 0000042888 · methodology 0.3.5 · golden file `tests/golden/GGG-2026Q3.json` · test `tests/golden/peers-ltm.test.ts`
 
 LTM = FY2025 + nine months ended September 25, 2026 − nine months ended September 26, 2025 (methodology §2). Graco reports in **USD thousands**, so every amount below is in USD thousands except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-26). "Filing input or manual calc" is read from the documents below.
 
