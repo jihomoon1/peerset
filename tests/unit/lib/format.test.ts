@@ -10,6 +10,7 @@ import {
   formatPerShare,
   formatExactAmount,
   formatRatioX,
+  formatBandRatio,
 } from "@/lib/format";
 
 describe("formatMillions", () => {
@@ -70,6 +71,10 @@ describe("formatMultiple", () => {
     expect(formatMultiple(3.5475)).toBe("3.5x");
     expect(formatMultiple(100)).toBe("100.0x");
   });
+
+  it("takes more decimals for the implied-valuation math", () => {
+    expect(formatMultiple(24.529952939, 4)).toBe("24.5300x");
+  });
 });
 
 describe("formatPrice", () => {
@@ -107,5 +112,23 @@ describe("formatRatioX", () => {
     expect(formatRatioX(5.0001)).toBe("5.0x");
     expect(formatRatioX(0.03)).toBe("<0.1x");
     expect(formatRatioX(0)).toBe("0.0x");
+  });
+});
+
+describe("formatBandRatio (size-band text, M4a note: no '0.2x' for an excluded 0.19x)", () => {
+  it.each([
+    [0.6, "0.6x"],
+    [2.04, "2.0x"],
+    [0.2, "0.2x"], // exactly on the edge: inside the band
+    [5, "5.0x"],
+    [0.19, "0.19x"], // one decimal would say 0.2x
+    [0.2049, "0.20x"],
+    [4.96, "4.96x"],
+    [5.04, "5.04x"],
+    [0.199, "<0.20x"], // even two decimals land on the edge
+    [5.001, ">5.00x"],
+    [0.03, "<0.1x"],
+  ])("%d → %s", (ratio, text) => {
+    expect(formatBandRatio(ratio)).toBe(text);
   });
 });

@@ -1,6 +1,8 @@
 // Display formatting. The only place (with the workbook writer) where full units are
 // turned into millions or rounded (CLAUDE.md invariant 2).
 
+import { PEER_REVENUE_SCREEN } from "@/domain/policy";
+
 // A nonzero value too small to show at this precision reads "<0.1", never "0.0",
 // which would look like zero (AAON's $13,000 cash, M4a). Exact zero stays "0.0".
 export function formatMillions(value: number, decimals = 1): string {
@@ -37,6 +39,24 @@ export function formatExactAmount(
 export function formatRatioX(ratio: number): string {
   if (ratio !== 0 && Math.abs(ratio) < 0.05) return "<0.1x";
   return `${ratio.toFixed(1)}x`;
+}
+
+// A size ratio in screening text (methodology §13A). One decimal, except where one
+// decimal would land on a band edge (0.2x, 5.0x) for a ratio that isn't exactly the
+// edge: then two decimals, and "<0.20x" / ">5.00x" when even two land on the edge.
+// So an excluded company never reads "0.2x … allowed 0.2x–5x".
+export function formatBandRatio(
+  ratio: number,
+  band: { min: number; max: number } = PEER_REVENUE_SCREEN,
+): string {
+  const one = formatRatioX(ratio);
+  const edges = [band.min, band.max];
+  if (!edges.some((e) => one === `${e.toFixed(1)}x`) || edges.includes(ratio))
+    return one;
+  const two = ratio.toFixed(2);
+  if (ratio < band.min && two === band.min.toFixed(2)) return `<${two}x`;
+  if (ratio > band.max && two === band.max.toFixed(2)) return `>${two}x`;
+  return `${two}x`;
 }
 
 function withParens(value: number, text: string): string {
@@ -82,8 +102,9 @@ export function formatDate(iso: string): string {
 
 // A multiple to one decimal ("16.1x", blueprint §6). NM and negatives never reach
 // here: the NM policy withholds them.
-export function formatMultiple(value: number): string {
-  return withParens(value, `${fixed(value, 1)}x`);
+// The implied-valuation math shows four decimals so the arithmetic can be redone.
+export function formatMultiple(value: number, decimals = 1): string {
+  return withParens(value, `${fixed(value, decimals)}x`);
 }
 
 // A share price in dollars, two decimals ("1,234.50").

@@ -351,8 +351,8 @@ data.sec.gov paths use the CIK zero-padded to 10 digits. Archive paths use the u
 - **Identify.** Every request sends `User-Agent: PeerSet (Jiho Moon) <project email>` and `Accept-Encoding: gzip, deflate` \[doc\]. A missing User-Agent gets a 403 "Undeclared Automated Tool" page \[obs\].
 - **Limit.** 10 requests per second in total, however many machines \[doc\]. Above that, the IP is limited until the rate stays under the threshold for 10 minutes \[doc\]. A community report says the response is a 403 "Request Rate Threshold Exceeded", not a 429 \[unverified\].
 - **PeerSet policy \[call\].**
-  - Per-instance limiter: at most 4 requests per second and 3 in flight.
-  - Per-analysis budget: 40 SEC requests; at most 12 peers.
+  - Per-instance limiter: at most 2.5 requests per second and 3 in flight; the browser loads at most 3 peers at a time, so the worst case across instances is 7.5 requests per second (decision 0009).
+  - Per-analysis load: at most 12 peers and about 8 SEC requests per cold company (about 104 in the worst case, spread over roughly 16 s). Amended in M4b: the earlier "40 SEC requests per analysis" could not hold for 8 peers and was never enforced.
   - Never retry a 403 or 404. On a 5xx or timeout, at most 2 retries with jittered backoff (about 0.5 s, then 1.5 s).
   - 10 s timeout; 15 MB response cap.
 - **Server-side only.** SEC documents no CORS support for data.sec.gov (we did observe an `access-control-allow-origin: *` header \[obs\]), and browsers cannot set User-Agent. The browser never calls SEC.
@@ -683,7 +683,7 @@ Operations:
 
 - **Logs:** one structured JSON line per request — category, ticker, CIK, accession, SEC calls made, cache hits, duration. No personal data.
 - **Smoke test:** after every production deploy and daily, a GitHub Action checks that the live site resolves LII, returns fundamentals with a filing accession, and serves an export. It checks presence and shape, not values, because values change with new filings.
-- **Quota guards:** 40 SEC requests per analysis, 12 peers, the per-instance limiter (8.2).
+- **Quota guards:** at most 8 SEC requests per second in total (3 peers at a time × 2.5 per second per instance, decision 0009), 12 peers, the per-company request budget.
 - **Rollback:** Vercel's instant rollback to the previous production deployment.
 
 ## 15. Error handling, data quality and security

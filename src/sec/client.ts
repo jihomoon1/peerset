@@ -1,5 +1,5 @@
 // The only code that talks to SEC. Enforces blueprint §8.2 fair access: identify with
-// a User-Agent, at most 4 requests per second and 3 in flight per instance, bounded
+// a User-Agent, at most 2.5 requests per second and 3 in flight per instance, bounded
 // retries, timeouts and response sizes. Server-side only.
 
 import {
@@ -10,7 +10,9 @@ import {
 import { log as defaultLog, type Logger } from "@/lib/log";
 
 const ALLOWED_HOSTS = new Set(["www.sec.gov", "data.sec.gov"]);
-const MIN_GAP_MS = 250; // 4 requests per second
+// 2.5 requests per second: the browser loads up to 3 peers at once, each possibly on
+// its own instance, so the worst case is 3 × 2.5 = 7.5 per second (ADR 0009).
+const MIN_GAP_MS = 400;
 const MAX_IN_FLIGHT = 3;
 const TIMEOUT_MS = 10_000;
 const MAX_BYTES = 15 * 1024 * 1024;

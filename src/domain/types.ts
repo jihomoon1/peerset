@@ -109,7 +109,8 @@ export type WarningCode =
   | "W_SHARES_AFTER_BALANCE_SHEET" // §6: cover date after the balance sheet (info)
   | "W_TICKER_NOT_IN_SEC_LIST" // §6: cover symbol SEC doesn't list for the CIK
   | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
-  | "W_PRICE_STALE"; // §12: price date > 7 days before the analysis date
+  | "W_PRICE_STALE" // §12: price date > 7 days before the analysis date
+  | "W_PERIOD_LAG"; // §12: LTM end > 75 days from the peers' median LTM end
 
 export interface MetricWarning {
   code: WarningCode;
@@ -251,8 +252,20 @@ export type ExclusionCode =
   | "OUTSIDE_SIZE_RANGE" // screening revenue outside 0.2x–5x the target's
   | "NOT_IN_TOP_N"; // passed every rule but ranked below the number kept
 
+// One SIC tier tried, for the "No peers passed the screen" state (blueprint §6):
+// companies in the group (target excluded), how many each filter dropped, and how
+// many passed eligibility and the size band.
+export interface ScreeningFunnelStep {
+  tier: "sic4" | "sic3" | "sic2";
+  group: string; // the SIC prefix: "3585", "358", "35"
+  companies: number;
+  dropped: Partial<Record<ExclusionCode, number>>;
+  qualified: number;
+}
+
 export interface PeerSelectionResult {
   tier: "sic4" | "sic3" | "sic2";
+  funnel: ScreeningFunnelStep[]; // every tier tried, narrowest first
   selected: { cik: string; ticker: string; reason: string }[];
   excluded: {
     cik: string;

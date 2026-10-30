@@ -11,8 +11,12 @@ import {
   SCREENING_REVENUE_MAX_AGE_MONTHS,
   STALE_FILER_DAYS,
 } from "@/domain/policy";
-import type { ExclusionCode, PeerSelectionResult } from "@/domain/types";
-import { formatRatioX } from "@/lib/format";
+import type {
+  ExclusionCode,
+  PeerSelectionResult,
+  ScreeningFunnelStep,
+} from "@/domain/types";
+import { formatBandRatio } from "@/lib/format";
 import {
   InvalidInputError,
   TickerNotFoundError,
@@ -152,6 +156,7 @@ export function screenPeers(
   let inTier: PeerIndexCompany[] = [];
   let qualified: Candidate[] = [];
   let excluded: PeerSelectionResult["excluded"] = [];
+  const funnel: ScreeningFunnelStep[] = [];
   for (const t of TIERS) {
     const prefix = target.sic.slice(0, t.digits);
     inTier = index.companies.filter(
@@ -171,13 +176,22 @@ export function screenPeers(
           cik: company.cik,
           ticker: company.ticker,
           code: "OUTSIDE_SIZE_RANGE",
-          detail: `revenue ${formatRatioX(ratio)} the target's (allowed ${PEER_REVENUE_SCREEN.min}x–${PEER_REVENUE_SCREEN.max}x)`,
+          detail: `revenue ${formatBandRatio(ratio)} the target's (allowed ${PEER_REVENUE_SCREEN.min}x–${PEER_REVENUE_SCREEN.max}x)`,
         });
         continue;
       }
       qualified.push({ company, ratio, distance: Math.abs(Math.log(ratio)) });
     }
     tier = t.tier;
+    const dropped: ScreeningFunnelStep["dropped"] = {};
+    for (const e of excluded) dropped[e.code] = (dropped[e.code] ?? 0) + 1;
+    funnel.push({
+      tier: t.tier,
+      group: prefix,
+      companies: inTier.length,
+      dropped,
+      qualified: qualified.length,
+    });
     if (qualified.length >= PEERS.min) break;
   }
 
@@ -199,6 +213,7 @@ export function screenPeers(
   excluded.sort((a, b) => byText(a.code, b.code) || byText(a.ticker, b.ticker));
   return {
     tier,
+    funnel,
     selected: kept.map((q) => ({
       cik: q.company.cik,
       ticker: q.company.ticker,
@@ -221,5 +236,5 @@ function reasonFor(q: Candidate, target: PeerIndexCompany, tier: Tier): string {
   const month = MONTHS[Number(c.fiscalYearEnd.slice(0, 2)) - 1];
   const fye = month ? `${month} FYE` : "FYE not reported";
   const latest = c.latest!;
-  return `${sic} · revenue ${formatRatioX(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
+  return `${sic} · revenue ${formatBandRatio(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
 }

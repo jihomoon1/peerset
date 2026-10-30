@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.3.3** · Status: **approved by Jiho Moon, October 28, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.3.4** · Status: **approved by Jiho Moon, October 29, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a; 0.3.4 in M4b planning)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -162,13 +162,15 @@ Missing and Unsupported inputs are settled first. Then the NM checks run in this
 ## 11. Summary statistics
 
 - Computed over peers only; the target is excluded by default.
-- Per metric: mean, median, high, low, n valid, n excluded. NM, "—" and Unsupported never enter a statistic.
+- Per metric: mean, median, high, low, 25th and 75th percentile, n valid, n excluded. NM, "—" and Unsupported never enter a statistic.
+- A peer whose fundamentals failed to load counts in n excluded ("failed to load"). A peer still loading is not counted yet.
+- With no valid value, every statistic is empty ("—"), never 0.
 - Median of an even count = average of the middle two. Percentiles use linear interpolation, inclusive, the same as Excel's `PERCENTILE.INC`.
 
 ## 12. Dates and comparability
 
 - The as-of strip shows the price date and source, the LTM end and filing date, the share cover date, and when data was pulled.
-- A company is flagged as lagging when its LTM end is more than 75 days from the peer-set median LTM end.
+- A company is flagged as lagging (`W_PERIOD_LAG`, a caution) when its LTM end is more than 75 days from the peer-set median LTM end. The median is taken over the loaded peers' LTM ends only, as day numbers (an even count averages the middle two, so it can fall between days). Every row, the target included, is checked against it. Without a loaded peer there is no median and no flag.
 - USD only, so currencies are never mixed.
 - Prices are end-of-day closes and are never called real-time.
 - A price dated more than 7 calendar days before the analysis date carries the caution `W_PRICE_STALE` ("price is <n> days old"). It is a warning only: the price is still used.
@@ -189,7 +191,7 @@ Peers are screened from a monthly index built from SEC bulk data (`data/peer-ind
 - **Tiers.** Same 4-digit SIC. If fewer than 5 companies pass both eligibility and the size band, widen to the 3-digit group, then the 2-digit major group. At the 2-digit group, all qualifying companies are returned even if fewer than 5.
 - **Rank and select.** By |ln(peer ÷ target)|, ties by ticker in plain character order; keep 8 by default, 5–12 on request. Every peer gets a reason ("SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29") and every exclusion a code.
 
-## 14. Policy constants (v0.3.3)
+## 14. Policy constants (v0.3.4)
 
 | Constant                                            | Value                                      | Section            |
 | --------------------------------------------------- | ------------------------------------------ | ------------------ |
@@ -226,3 +228,4 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | 0.3.1   | October 26, 2026 | `W_PRICE_STALE` (caution) when the price date is more than 7 calendar days before the analysis date (§12, §14). A warning only; no value changes. Approved by Jiho in M2b planning                                                                                                                                                                                                                                                      |
 | 0.3.2   | October 26, 2026 | Writes down rules M2b already applies (no value changes): share-class to ticker mapping, `W_TICKER_NOT_IN_SEC_LIST`, `W_SHARES_AFTER_BALANCE_SHEET`, the cases where market cap is Unsupported, earliest class price date shown, P/E never priced off market cap (§6); not-in-EV warning only when EV is computed (§9); NM check order and "EV ≤ 0" as NM (§10). Added by Claude at Jiho's request in M2b review                        |
 | 0.3.3   | October 28, 2026 | Peer screening written down (§13A): universe, screening revenue (latest 10-K fiscal year, no fallback, FY end within 15 months of the latest report: new), eligibility for peers and target, inclusive size band, tier widening counts companies passing eligibility and size, ties in plain character order. No LTM, balance-sheet or valuation value changes. Approved by Jiho in M4a                                                 |
+| 0.3.4   | October 29, 2026 | Wording only, no value changes: statistics list the 25th and 75th percentiles, count failed peers as excluded and are empty (never 0) with no valid value (§11); the lag flag's median is over loaded peers' LTM ends in day numbers, the target is checked against it, code `W_PERIOD_LAG` (§12). Approved by Jiho in M4b planning                                                                                                     |

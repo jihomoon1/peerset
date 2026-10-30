@@ -37,7 +37,7 @@ Every value carries a status (Reported, Derived, NM, Missing or Unsupported). **
 - Golden tests run the pipeline on frozen SEC filings and check results to the dollar: LTM metrics and valuation for LII and WSO, and balance-sheet debt and cash for LII, WSO, GGG, AAON, Carrier and Trane.
 - Each golden company has a reconciliation table comparing PeerSet to the filing itself, row by row: [`docs/reconciliation/`](docs/reconciliation/) ([LII](docs/reconciliation/LII.md), [WSO](docs/reconciliation/WSO.md)).
 - Golden values change only with a written reconciliation note saying why (new filing, definition change or bug), never to make a test pass.
-- Every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.3.3).
+- Every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.3.4).
 
 Green CI means the code builds and the tests pass. It is not proof the numbers are right; the reconciliation tables are.
 

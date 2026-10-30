@@ -104,14 +104,14 @@ describe("SEC client", () => {
     expect(res.kind).toBe("ok");
   });
 
-  it("paces requests to at most 4 per second", async () => {
+  it("paces requests to at most 2.5 per second (ADR 0009)", async () => {
     const { client, callTimes } = setup([ok()]);
     await settle(
       Promise.all(Array.from({ length: 8 }, () => client.get(URL_OK))),
     );
     expect(callTimes.length).toBe(8);
     for (let k = 1; k < callTimes.length; k++)
-      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(250);
+      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(400);
   });
 
   it("keeps at most 3 requests in flight", async () => {

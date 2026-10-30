@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createFundamentalsHandler } from "@/app/api/fundamentals/handler";
 import type { CacheFn } from "@/lib/cache";
-import type { LoadDeps } from "@/lib/fundamentals";
+import {
+  FUNDAMENTALS_CACHE_VERSION,
+  tickerTableMemo,
+  type LoadDeps,
+} from "@/lib/fundamentals";
 import { createLimiter, createSecClient } from "@/sec/client";
 import { fixtureFetch } from "../helpers/fixtures";
 
@@ -118,7 +122,13 @@ describe("GET /api/fundamentals", () => {
     expect(companyFactsCalls()).toBe(1); // second request served from the cache
 
     expect(calls[0]).toEqual({
-      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.3.3"],
+      key: [
+        "fundamentals",
+        "0001069202",
+        "0001069202-26-000087",
+        "0.3.4",
+        `cache-v${FUNDAMENTALS_CACHE_VERSION}`,
+      ],
       revalidate: 86_400,
     });
     const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);
@@ -199,5 +209,35 @@ describe("GET /api/fundamentals", () => {
     expect(body.code).toBe("INTERNAL");
     expect(JSON.stringify(body)).not.toContain("SEC_USER_AGENT");
     expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+});
+
+describe("ticker-list memo (ADR 0009)", () => {
+  const TICKERS = "https://www.sec.gov/files/company_tickers_exchange.json";
+
+  it("a second load within the TTL doesn't request the ticker list again", async () => {
+    const clock = 0;
+    const memo = tickerTableMemo(24 * 3600 * 1000, () => clock);
+    const { deps: d, requested } = deps({ tickerTable: memo });
+    const handler = createFundamentalsHandler(() => d, quiet);
+    const submissions = () =>
+      requested.filter((u) => u.includes("/submissions/")).length;
+    expect((await get(handler, "?ticker=LII")).status).toBe(200);
+    const afterFirst = submissions();
+    expect((await get(handler, "?ticker=LII")).status).toBe(200);
+    expect(requested.filter((u) => u === TICKERS)).toHaveLength(1);
+    // Submissions is still checked every time: it is how a new filing is found.
+    expect(submissions()).toBeGreaterThan(afterFirst);
+  });
+
+  it("re-reads the ticker list once the TTL has passed", async () => {
+    let clock = 0;
+    const memo = tickerTableMemo(1000, () => clock);
+    const { deps: d, requested } = deps({ tickerTable: memo });
+    const handler = createFundamentalsHandler(() => d, quiet);
+    await get(handler, "?ticker=LII");
+    clock = 1001;
+    await get(handler, "?ticker=LII");
+    expect(requested.filter((u) => u === TICKERS)).toHaveLength(2);
   });
 });

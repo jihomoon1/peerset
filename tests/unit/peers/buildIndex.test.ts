@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  companyfactsUnreadableShare,
   diffIndexes,
   listedUniverse,
+  UNREADABLE_SHARE_LIMIT,
   summaryMarkdown,
 } from "@/peers/buildIndex";
 import type { PeerIndex, PeerIndexCompany } from "@/peers/indexTypes";
@@ -85,5 +87,29 @@ describe("diffIndexes", () => {
     expect(md).toContain(
       "### Reclassified SIC (1)\n- BBB · BBB Inc (CIK 2, SIC 3822): was SIC 3585",
     );
+    expect(md).toContain(
+      "companyfacts 0 (0.00% of listed companies; the build stops above 1%)",
+    );
+  });
+});
+
+describe("companyfactsUnreadableShare", () => {
+  const counts = (listed: number, companyfacts: number) => ({
+    listed,
+    unreadable: { submissions: 0, companyfacts },
+  });
+
+  it("is unreadable companyfacts entries ÷ listed companies", () => {
+    // 6 ÷ 600 = 0.01 exactly: at the limit, still allowed.
+    expect(companyfactsUnreadableShare(counts(600, 6))).toBe(0.01);
+    expect(UNREADABLE_SHARE_LIMIT).toBe(0.01);
+    // 7 ÷ 600 = 0.0117: over 1%, the build must refuse.
+    expect(companyfactsUnreadableShare(counts(600, 7))).toBeGreaterThan(
+      UNREADABLE_SHARE_LIMIT,
+    );
+  });
+
+  it("is 0 with no listed company (nothing to read)", () => {
+    expect(companyfactsUnreadableShare(counts(0, 0))).toBe(0);
   });
 });

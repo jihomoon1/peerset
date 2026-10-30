@@ -1,0 +1,324 @@
+{
+  "ticker": "GGG",
+  "cik": "0000042888",
+  "fixture": "GGG/2026Q3",
+  "asOf": "2026-10-26",
+  "latestFiling": {
+    "form": "10-Q",
+    "accession": "0000042888-26-000145",
+    "filed": "2026-10-21",
+    "reportDate": "2026-09-25"
+  },
+  "ltmPeriod": {
+    "start": "2025-09-27",
+    "end": "2026-09-25"
+  },
+  "freshness": "current",
+  "methodologyVersion": "0.3.4",
+  "note": "Values are read from the rendered filings (R pages of each filing's financial report), not from the engine. Graco reports in USD thousands; the XBRL facts carry decimals=-3, so each value times 1,000 is exact to the dollar. Graco's fiscal year is 52 or 53 weeks ending the last Friday of December: FY2025 is the 52 weeks ended December 26, 2025 (364 days), and the nine-month periods end on the last Friday of September.",
+  "metrics": {
+    "revenue": {
+      "concept": "us-gaap:Revenues",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 2236604000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-12-26"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 26, 2025",
+            "accession": "0000042888-26-000081",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+            "statement": "Consolidated Statements of Earnings (R3)",
+            "line": "Net Sales",
+            "column": "12 Months Ended Dec. 26, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 1717081000,
+          "period": {
+            "start": "2025-12-27",
+            "end": "2026-09-25"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Sales",
+            "column": "9 Months Ended Sep. 25, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 1643448000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-09-26"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Sales",
+            "column": "9 Months Ended Sep. 26, 2025"
+          }
+        }
+      },
+      "ltm": 2310237000,
+      "math": "2,236,604 + 1,717,081 − 1,643,448 = 2,310,237 (USD thousands)"
+    },
+    "operatingIncome": {
+      "concept": "us-gaap:OperatingIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 624797000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-12-26"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 26, 2025",
+            "accession": "0000042888-26-000081",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+            "statement": "Consolidated Statements of Earnings (R3)",
+            "line": "Operating Earnings",
+            "column": "12 Months Ended Dec. 26, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 460986000,
+          "period": {
+            "start": "2025-12-27",
+            "end": "2026-09-25"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Operating Earnings",
+            "column": "9 Months Ended Sep. 25, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 466218000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-09-26"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Operating Earnings",
+            "column": "9 Months Ended Sep. 26, 2025"
+          }
+        }
+      },
+      "ltm": 619565000,
+      "math": "624,797 + 460,986 − 466,218 = 619,565 (USD thousands)"
+    },
+    "da": {
+      "concept": "us-gaap:DepreciationDepletionAndAmortization",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 107433000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-12-26"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 26, 2025",
+            "accession": "0000042888-26-000081",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+            "statement": "Consolidated Statements of Cash Flows (R7)",
+            "line": "Depreciation and amortization",
+            "column": "12 Months Ended Dec. 26, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 77629000,
+          "period": {
+            "start": "2025-12-27",
+            "end": "2026-09-25"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Cash Flows (Unaudited) (R6)",
+            "line": "Depreciation and amortization",
+            "column": "9 Months Ended Sep. 25, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 75744000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-09-26"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Cash Flows (Unaudited) (R6)",
+            "line": "Depreciation and amortization",
+            "column": "9 Months Ended Sep. 26, 2025"
+          }
+        }
+      },
+      "ltm": 109318000,
+      "math": "107,433 + 77,629 − 75,744 = 109,318 (USD thousands)"
+    },
+    "netIncome": {
+      "concept": "us-gaap:NetIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 521839000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-12-26"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 26, 2025",
+            "accession": "0000042888-26-000081",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+            "statement": "Consolidated Statements of Earnings (R3)",
+            "line": "Net Earnings",
+            "column": "12 Months Ended Dec. 26, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 384994000,
+          "period": {
+            "start": "2025-12-27",
+            "end": "2026-09-25"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Earnings",
+            "column": "9 Months Ended Sep. 25, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 389352000,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-09-26"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Earnings",
+            "column": "9 Months Ended Sep. 26, 2025"
+          }
+        }
+      },
+      "ltm": 517481000,
+      "math": "521,839 + 384,994 − 389,352 = 517,481 (USD thousands)"
+    },
+    "dilutedEps": {
+      "concept": "us-gaap:EarningsPerShareDiluted",
+      "unit": "USD/shares",
+      "components": {
+        "fy": {
+          "value": 3.08,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-12-26"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 26, 2025",
+            "accession": "0000042888-26-000081",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+            "statement": "Consolidated Statements of Earnings (R3)",
+            "line": "Diluted Net Earnings per Common Share",
+            "column": "12 Months Ended Dec. 26, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 2.32,
+          "period": {
+            "start": "2025-12-27",
+            "end": "2026-09-25"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Earnings per Common Share, Diluted",
+            "column": "9 Months Ended Sep. 25, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 2.3,
+          "period": {
+            "start": "2024-12-28",
+            "end": "2025-09-26"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 25, 2026",
+            "accession": "0000042888-26-000145",
+            "filed": "2026-10-21",
+            "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000145/ggg-20260925.htm",
+            "statement": "Consolidated Statements of Earnings (Unaudited) (R2)",
+            "line": "Net Earnings per Common Share, Diluted",
+            "column": "9 Months Ended Sep. 26, 2025"
+          }
+        }
+      },
+      "ltm": 3.1,
+      "math": "3.08 + 2.32 − 2.3 = 3.10"
+    }
+  },
+  "ebitda": {
+    "ltm": 728883000,
+    "math": "Operating earnings 619,565 + D&A 109,318 = 728,883 (USD thousands)"
+  },
+  "ebitdaMargin": {
+    "ltmNumerator": 728883000,
+    "ltmDenominator": 2310237000,
+    "math": "728,883 ÷ 2,310,237 = 31.55%"
+  },
+  "epsCrossCheck": {
+    "fyDilutedShares": 169219000,
+    "source": {
+      "document": "Form 10-K for the fiscal year ended December 26, 2025",
+      "accession": "0000042888-26-000081",
+      "filed": "2026-02-17",
+      "url": "https://www.sec.gov/Archives/edgar/data/42888/000004288826000081/ggg-20251226.htm",
+      "statement": "Earnings per Share (Details) (R75)",
+      "line": "Weighted average shares outstanding for diluted earnings per share (in thousands)",
+      "column": "12 Months Ended Dec. 26, 2025"
+    },
+    "math": "517,481 ÷ 169,219 = 3.058; gap vs 3.10 is 1.4%, under the 5% warning threshold"
+  },
+  "unsupported": {}
+}

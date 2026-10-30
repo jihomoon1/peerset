@@ -1,0 +1,19 @@
+{
+"format": "peerset-peer-index/1",
+"meta": {"generatedAt":"2026-10-29T19:11:46.420Z","methodologyVersion":"0.3.4","sources":{"tickers":{"url":"fixture","lastModified":"2026-10-24T21:09:03.751Z"},"submissions":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"},"companyfacts":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"}},"counts":{"total":8024,"listed":7,"withRevenue":7,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
+"sicDescriptions": {"3561":"Pumps & Pumping Equipment","3585":"Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip","3822":"Auto Controls For Regulating Residential & Comml Environments","5070":"Wholesale-Hardware & Plumbing & Heating Equipment & Supplies"},
+"concepts": ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax","us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax","us-gaap:Revenues"],
+"fields": ["cik","name","listings","sic","fiscalYearEnd","incorporation","latest","revenue","revenueNote"],
+"rows": [
+["0000042888","GRACO INC",[["GGG","NYSE"]],"3561","1226","MN",["10-Q","2026-10-21","2026-09-25","0000042888-26-000145"],[2236604000,"2025-12-26",2,"0000042888-26-000081"],null],
+["0000105016","WATSCO INC",[["WSO","NYSE"],["WSO-B","NYSE"]],"5070","1231","FL",["10-Q","2026-08-07","2026-06-30","0001193125-26-340204"],[7239290000,"2025-12-31",2,"0001193125-26-082486"],null],
+["0000824142","AAON, INC.",[["AAON","Nasdaq"]],"3585","1231","NV",["10-Q","2026-08-10","2026-06-30","0000824142-26-000055"],[1442076000,"2025-12-31",1,"0000824142-26-000005"],null],
+["0000833444","Johnson Controls International plc",[["JCI","NYSE"]],"3585","0930","L2",["10-Q","2026-07-29","2026-06-30","0000833444-26-000087"],[23596000000,"2025-09-30",0,"0000833444-25-000097"],null],
+["0001069202","LENNOX INTERNATIONAL INC",[["LII","NYSE"]],"3585","1231","DE",["10-Q","2026-07-29","2026-06-30","0001069202-26-000087"],[5195300000,"2025-12-31",2,"0001069202-26-000028"],null],
+["0001466258","Trane Technologies plc",[["TT","NYSE"]],"3822","1231","L2",["10-Q","2026-07-30","2026-06-30","0001628280-26-051117"],[21321900000,"2025-12-31",0,"0001628280-26-005731"],null],
+["0001783180","CARRIER GLOBAL Corp",[["CARR","NYSE"]],"3585","1231","DE",["10-Q","2026-07-28","2026-06-30","0001783180-26-000032"],[21747000000,"2025-12-31",0,"0001783180-26-000008"],null]
+],
+"unlisted": [
+
+]
+}

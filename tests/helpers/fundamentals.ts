@@ -12,6 +12,7 @@ export const FIXTURES = {
   CARR: { fixture: "CARR/2026Q2", cik: "0001783180", asOf: "2026-10-26" },
   GGG: { fixture: "GGG/2026Q3", cik: "0000042888", asOf: "2026-10-26" },
   TT: { fixture: "TT/2026Q2", cik: "0001466258", asOf: "2026-10-26" },
+  JCI: { fixture: "JCI/2026Q2", cik: "0000833444", asOf: "2026-10-26" },
 } as const;
 
 export async function fixtureFundamentals(ticker: keyof typeof FIXTURES) {
