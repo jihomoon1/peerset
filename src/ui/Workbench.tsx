@@ -14,6 +14,7 @@ import type { QuoteError } from "@/lib/quotes";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
 import { CompsTable } from "./CompsTable";
+import { ImpliedValuationBlock } from "./ImpliedValuationBlock";
 import { OperatingBlock } from "./OperatingBlock";
 import { PeerPanel, type PeerSelection } from "./PeerPanel";
 import {
@@ -229,7 +230,7 @@ export function Workbench({
             onRestore={(t) => setPeerSet((s) => restorePeer(s, t))}
             onDismiss={(t) => setPeerSet((s) => removePeer(s, t))}
           />
-          <div className="min-w-0">
+          <div className="flex min-w-0 flex-col gap-6">
             <CompsTable
               table={table}
               inputs={inputs}
@@ -239,6 +240,7 @@ export function Workbench({
                 setInputs((cur) => ({ ...cur, [t]: text }));
               }}
             />
+            <ImpliedValuationBlock table={table} />
           </div>
         </div>
       </section>

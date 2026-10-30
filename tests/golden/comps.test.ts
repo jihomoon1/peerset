@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { buildComps, STAT_COLUMNS, type CompsTable } from "@/domain/comps";
+import { IMPLIED_POINTS, impliedValuation } from "@/domain/impliedValuation";
 import type { Metric, QuoteSnapshot } from "@/domain/types";
 import { fixtureFundamentals } from "../helpers/fundamentals";
 
@@ -134,4 +135,34 @@ describe("comps golden: LII vs CARR, AAON, TT, WSO, JCI", () => {
     for (const r of [table.target, ...table.peers])
       for (const k of ROW_KEYS) expect(r.cells![k].status).not.toBe("nm");
   });
+
+  it.each(["evEbitda", "evRevenue"] as const)(
+    "implied valuation of LII at the peer %s quartiles (methodology §13)",
+    (key) => {
+      const v = table.target.valuation!;
+      const r = impliedValuation({
+        revenue: table.target.cells!.revenue,
+        ebitda: table.target.cells!.ebitda,
+        totalDebt: v.bridge.totalDebt,
+        cash: v.bridge.cashAndInvestments,
+        shares: v.shareClasses.map((c) => c.shares),
+        stats: table.stats,
+      })[key];
+      const want = golden.impliedValuation[key];
+      expect(r.status).toBe("ok");
+      if (r.status !== "ok") return;
+      expect(r.metricValue).toBe(want.metricValue);
+      expect(r.nPeers).toBe(want.nPeers);
+      for (const p of IMPLIED_POINTS)
+        for (const f of [
+          "multiple",
+          "impliedEv",
+          "impliedEquity",
+          "impliedPrice",
+        ] as const)
+          expect(close(r.points[p][f], want.points[p][f]), `${p} ${f}`).toBe(
+            true,
+          );
+    },
+  );
 });

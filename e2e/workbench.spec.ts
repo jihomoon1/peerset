@@ -41,6 +41,11 @@ test("1. LII: peers load, pasted prices fill the table, stats appear", async ({
   await expect(
     table(page).getByRole("button", { name: /^JCI LTM EBITDA: Unsupported/ }),
   ).toBeVisible();
+  // Implied valuation (methodology §13) appears once peer multiples exist.
+  const implied = page.getByRole("table", { name: /^Implied price per share/ });
+  await expect(
+    implied.getByRole("row", { name: /^EV\/EBITDA [\d,]+\.\d\d/ }),
+  ).toBeVisible();
 });
 
 test("2. remove a peer: stats update; restore it", async ({ page }) => {

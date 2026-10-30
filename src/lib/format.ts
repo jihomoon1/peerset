@@ -102,8 +102,9 @@ export function formatDate(iso: string): string {
 
 // A multiple to one decimal ("16.1x", blueprint §6). NM and negatives never reach
 // here: the NM policy withholds them.
-export function formatMultiple(value: number): string {
-  return withParens(value, `${fixed(value, 1)}x`);
+// The implied-valuation math shows four decimals so the arithmetic can be redone.
+export function formatMultiple(value: number, decimals = 1): string {
+  return withParens(value, `${fixed(value, decimals)}x`);
 }
 
 // A share price in dollars, two decimals ("1,234.50").

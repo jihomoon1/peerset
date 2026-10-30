@@ -71,6 +71,10 @@ describe("formatMultiple", () => {
     expect(formatMultiple(3.5475)).toBe("3.5x");
     expect(formatMultiple(100)).toBe("100.0x");
   });
+
+  it("takes more decimals for the implied-valuation math", () => {
+    expect(formatMultiple(24.529952939, 4)).toBe("24.5300x");
+  });
 });
 
 describe("formatPrice", () => {
