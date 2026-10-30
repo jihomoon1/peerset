@@ -71,36 +71,36 @@ describe("impliedValuation", () => {
     expect(r.status === "ok" && r.points.median.impliedPrice).toBe(56);
   });
 
-  it("a target metric that isn't valid makes that multiple unavailable", () => {
+  it("a target metric that isn't valid makes that multiple Unsupported", () => {
     const r = impliedValuation({ ...base, ebitda: unsupported });
     expect(r.evEbitda).toMatchObject({
-      status: "unavailable",
+      status: "unsupported",
       reason: expect.stringMatching(/LTM EBITDA is Unsupported/),
     });
     expect(r.evRevenue.status).toBe("ok");
   });
 
-  it("a target metric ≤ 0 makes that multiple unavailable", () => {
+  it("a target metric ≤ 0 makes that multiple Unsupported", () => {
     expect(
       impliedValuation({ ...base, ebitda: derived(-5) }).evEbitda,
     ).toMatchObject({
-      status: "unavailable",
+      status: "unsupported",
       reason: "LTM EBITDA is not positive",
     });
   });
 
-  it("no valid peer multiple: unavailable, never 0", () => {
+  it("no valid peer multiple: Unsupported, never 0", () => {
     const r = impliedValuation({
       ...base,
       stats: { ...base.stats, evEbitda: stats(null, null, null) },
     });
     expect(r.evEbitda).toMatchObject({
-      status: "unavailable",
+      status: "unsupported",
       reason: "no peer has a valid EV/EBITDA",
     });
   });
 
-  it("debt, cash or shares not valid: everything unavailable", () => {
+  it("debt, cash or shares not valid: everything Unsupported", () => {
     const missing: Metric = {
       status: "missing",
       reason: "no cash line",
@@ -112,16 +112,16 @@ describe("impliedValuation", () => {
       { shares: [] },
     ]) {
       const r = impliedValuation({ ...base, ...over });
-      expect(r.evEbitda.status).toBe("unavailable");
-      expect(r.evRevenue.status).toBe("unavailable");
+      expect(r.evEbitda.status).toBe("unsupported");
+      expect(r.evRevenue.status).toBe("unsupported");
     }
   });
 
-  it("several share classes: unavailable, one price can't split across classes", () => {
+  it("several share classes: Unsupported, one price can't split across classes", () => {
     expect(
       impliedValuation({ ...base, shares: [40, 10] }).evRevenue,
     ).toMatchObject({
-      status: "unavailable",
+      status: "unsupported",
       reason: expect.stringMatching(/several share classes/),
     });
   });

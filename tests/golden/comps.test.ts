@@ -120,6 +120,12 @@ describe("comps golden: LII vs CARR, AAON, TT, WSO, JCI", () => {
       expect(close(got[s]!, want[s]), `${c} ${s}`).toBe(true);
   });
 
+  it("is computed under the current methodology version", () => {
+    expect(table.target.fundamentals!.methodologyVersion).toBe(
+      golden.methodologyVersion,
+    );
+  });
+
   it("the target never enters a statistic", () => {
     for (const c of STAT_COLUMNS)
       expect(table.stats[c].used.map((u) => u.ticker)).not.toContain("LII");

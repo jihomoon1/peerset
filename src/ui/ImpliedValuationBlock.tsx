@@ -80,7 +80,7 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
                   ))
                 ) : (
                   <td colSpan={3} className="text-muted">
-                    Unavailable: {r.reason}
+                    Unsupported: {r.reason}
                   </td>
                 )}
               </tr>

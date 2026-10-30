@@ -1,8 +1,8 @@
 // Implied valuation (methodology §13): the target's LTM metric × the peers' 25th
 // percentile, median and 75th percentile multiple gives an implied EV; minus debt plus
 // cash gives implied equity; ÷ shares gives an implied price. Shown only when every
-// target input is valid: an invalid input makes the result unavailable with the reason,
-// never a number. The target's own price is not an input.
+// target input is valid: an invalid input makes the result Unsupported with the reason,
+// never a number (status Unsupported, methodology §1). The target's own price is not an input.
 
 import type { MetricStats } from "./stats";
 import type { Metric } from "./types";
@@ -43,7 +43,7 @@ export type ImpliedResult =
       nPeers: number;
       points: Record<ImpliedPoint, ImpliedValue>;
     }
-  | { status: "unavailable"; reason: string };
+  | { status: "unsupported"; reason: string };
 
 export interface ImpliedInput {
   revenue: Metric;
@@ -86,20 +86,20 @@ export function impliedValuation(
             : null;
 
   const one = (spec: (typeof IMPLIED_MULTIPLES)[number]): ImpliedResult => {
-    if (common) return { status: "unavailable", reason: common };
+    if (common) return { status: "unsupported", reason: common };
     const metric = input[spec.metric];
     const value = usable(metric);
     if (value === null)
-      return { status: "unavailable", reason: why(spec.metricLabel, metric) };
+      return { status: "unsupported", reason: why(spec.metricLabel, metric) };
     if (value <= 0)
       return {
-        status: "unavailable",
+        status: "unsupported",
         reason: `${spec.metricLabel} is not positive`,
       };
     const s = input.stats[spec.key];
     if (s.nValid === 0)
       return {
-        status: "unavailable",
+        status: "unsupported",
         reason: `no peer has a valid ${spec.label}`,
       };
     const shares = input.shares[0];
