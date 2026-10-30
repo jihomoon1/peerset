@@ -125,4 +125,40 @@ describe("impliedValuation", () => {
       reason: expect.stringMatching(/several share classes/),
     });
   });
+
+  it("a blocked cover share count: Unsupported with the blocker's reason, even with one class", () => {
+    // One consolidated cover count with two listed symbols leaves one class with a
+    // count, but market cap is Unsupported (methodology §6), so no implied price.
+    const r = impliedValuation({
+      ...base,
+      shares: [50],
+      sharesBlocker: {
+        status: "unsupported",
+        reason: {
+          code: "SHARE_CLASS_MISMATCH",
+          message: "one cover share count for several listed classes",
+        },
+      },
+    });
+    for (const k of ["evEbitda", "evRevenue"] as const)
+      expect(r[k]).toMatchObject({
+        status: "unsupported",
+        reason: "shares: one cover share count for several listed classes",
+      });
+  });
+
+  it("a missing cover share count: Unsupported with the reason", () => {
+    const r = impliedValuation({
+      ...base,
+      shares: [],
+      sharesBlocker: {
+        status: "missing",
+        reason: "no cover-page share count in the latest filing",
+      },
+    });
+    expect(r.evRevenue).toMatchObject({
+      status: "unsupported",
+      reason: "shares: no cover-page share count in the latest filing",
+    });
+  });
 });

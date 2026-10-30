@@ -28,6 +28,7 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
     totalDebt: v.bridge.totalDebt,
     cash: v.bridge.cashAndInvestments,
     shares: v.shareClasses.map((c) => c.shares),
+    sharesBlocker: target.fundamentals!.shareClasses.blocker,
     stats: table.stats,
   });
 

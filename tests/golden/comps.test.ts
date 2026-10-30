@@ -152,6 +152,7 @@ describe("comps golden: LII vs CARR, AAON, TT, WSO, JCI", () => {
         totalDebt: v.bridge.totalDebt,
         cash: v.bridge.cashAndInvestments,
         shares: v.shareClasses.map((c) => c.shares),
+        sharesBlocker: table.target.fundamentals!.shareClasses.blocker,
         stats: table.stats,
       })[key];
       const want = golden.impliedValuation[key];

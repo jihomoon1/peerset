@@ -4,6 +4,7 @@
 // target input is valid: an invalid input makes the result Unsupported with the reason,
 // never a number (status Unsupported, methodology §1). The target's own price is not an input.
 
+import type { ShareClassBlocker } from "./capitalization";
 import type { MetricStats } from "./stats";
 import type { Metric } from "./types";
 
@@ -51,6 +52,10 @@ export interface ImpliedInput {
   totalDebt: Metric;
   cash: Metric;
   shares: number[]; // one count per share class
+  // Set when the cover share counts can't be used (methodology §6): a class can still
+  // carry a count then (e.g. one consolidated count for two listed symbols), so the
+  // blocker, not the class count, decides.
+  sharesBlocker?: ShareClassBlocker;
   stats: Record<ImpliedMultiple, MetricStats>;
 }
 
@@ -79,11 +84,17 @@ export function impliedValuation(
       ? why("Total debt", input.totalDebt)
       : cash === null
         ? why("Cash and short-term investments", input.cash)
-        : input.shares.length === 0
-          ? "no cover-page share count"
-          : input.shares.length > 1
-            ? "several share classes: one implied price can't be split across classes"
-            : null;
+        : input.sharesBlocker
+          ? `shares: ${
+              input.sharesBlocker.status === "missing"
+                ? input.sharesBlocker.reason
+                : input.sharesBlocker.reason.message
+            }`
+          : input.shares.length === 0
+            ? "no cover-page share count"
+            : input.shares.length > 1
+              ? "several share classes: one implied price can't be split across classes"
+              : null;
 
   const one = (spec: (typeof IMPLIED_MULTIPLES)[number]): ImpliedResult => {
     if (common) return { status: "unsupported", reason: common };
