@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createFundamentalsHandler } from "@/app/api/fundamentals/handler";
 import type { CacheFn } from "@/lib/cache";
-import { tickerTableMemo, type LoadDeps } from "@/lib/fundamentals";
+import {
+  FUNDAMENTALS_CACHE_VERSION,
+  tickerTableMemo,
+  type LoadDeps,
+} from "@/lib/fundamentals";
 import { createLimiter, createSecClient } from "@/sec/client";
 import { fixtureFetch } from "../helpers/fixtures";
 
@@ -118,7 +122,13 @@ describe("GET /api/fundamentals", () => {
     expect(companyFactsCalls()).toBe(1); // second request served from the cache
 
     expect(calls[0]).toEqual({
-      key: ["fundamentals", "0001069202", "0001069202-26-000087", "0.3.4"],
+      key: [
+        "fundamentals",
+        "0001069202",
+        "0001069202-26-000087",
+        "0.3.4",
+        `cache-v${FUNDAMENTALS_CACHE_VERSION}`,
+      ],
       revalidate: 86_400,
     });
     const line = JSON.parse(logs.find((l) => l.includes('"fundamentals"'))!);

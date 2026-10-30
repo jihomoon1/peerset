@@ -35,6 +35,10 @@ export const CACHE_SECONDS = {
   fundamentals: 24 * 3600,
 } as const;
 
+// Bump by hand when the cached fundamentals' shape or values change without a
+// methodology bump (a bug fix, a new field), so no instance serves the old entry.
+export const FUNDAMENTALS_CACHE_VERSION = 1;
+
 // Vercel's Data Cache refuses items over 2 MB (blueprint §14).
 export const CACHE_ITEM_LIMIT_BYTES = 2 * 1024 * 1024;
 
@@ -195,7 +199,13 @@ export async function getFundamentals(
   let cacheHit = true;
   let secRequests = 0;
   const fundamentals = await deps.cache<LoadedFundamentals>(
-    ["fundamentals", cik, accession, METHODOLOGY_VERSION],
+    [
+      "fundamentals",
+      cik,
+      accession,
+      METHODOLOGY_VERSION,
+      `cache-v${FUNDAMENTALS_CACHE_VERSION}`,
+    ],
     CACHE_SECONDS.fundamentals,
     async () => {
       cacheHit = false;
