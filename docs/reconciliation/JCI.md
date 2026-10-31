@@ -1,6 +1,6 @@
 # JCI reconciliation — LTM at June 30, 2026 (fiscal Q3 2026)
 
-Johnson Controls International plc · CIK 0000833444 · methodology 0.3.4 · golden file `tests/golden/JCI-2026Q2.json` · test `tests/golden/peers-ltm.test.ts`
+Johnson Controls International plc · CIK 0000833444 · methodology 0.3.5 · golden file `tests/golden/JCI-2026Q2.json` · test `tests/golden/peers-ltm.test.ts`
 
 JCI's fiscal year ends September 30, so the 10-Q for June 30, 2026 is **fiscal Q3 2026**. The fixture and golden are named `2026Q2` after the calendar quarter of the period end, like every other fixture. LTM = FY2025 (October 1, 2024 – September 30, 2025) + nine months ended June 30, 2026 − nine months ended June 30, 2025 (methodology §2). Amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-26).
 

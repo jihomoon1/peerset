@@ -3,12 +3,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import * as policy from "@/domain/policy";
 
-// Expected values are copied by hand from docs/methodology.md (0.3.4). If one of these
+// Expected values are copied by hand from docs/methodology.md (0.3.5). If one of these
 // fails, either policy.ts drifted from the methodology or the methodology changed
 // without a version bump.
-describe("policy matches methodology §14 (v0.3.4)", () => {
+describe("policy matches methodology §14 (v0.3.5)", () => {
   it("has the approved methodology version", () => {
-    expect(policy.METHODOLOGY_VERSION).toBe("0.3.4");
+    expect(policy.METHODOLOGY_VERSION).toBe("0.3.5");
   });
 
   it("matches the version written in docs/methodology.md", () => {

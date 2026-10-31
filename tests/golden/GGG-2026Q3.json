@@ -14,7 +14,7 @@
     "end": "2026-09-25"
   },
   "freshness": "current",
-  "methodologyVersion": "0.3.4",
+  "methodologyVersion": "0.3.5",
   "note": "Values are read from the rendered filings (R pages of each filing's financial report), not from the engine. Graco reports in USD thousands; the XBRL facts carry decimals=-3, so each value times 1,000 is exact to the dollar. Graco's fiscal year is 52 or 53 weeks ending the last Friday of December: FY2025 is the 52 weeks ended December 26, 2025 (364 days), and the nine-month periods end on the last Friday of September.",
   "metrics": {
     "revenue": {

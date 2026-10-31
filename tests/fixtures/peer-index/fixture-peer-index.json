@@ -1,6 +1,6 @@
 {
 "format": "peerset-peer-index/1",
-"meta": {"generatedAt":"2026-10-29T19:11:46.420Z","methodologyVersion":"0.3.4","sources":{"tickers":{"url":"fixture","lastModified":"2026-10-24T21:09:03.751Z"},"submissions":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"},"companyfacts":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"}},"counts":{"total":8024,"listed":7,"withRevenue":7,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
+"meta": {"generatedAt":"2026-10-29T19:11:46.420Z","methodologyVersion":"0.3.5","sources":{"tickers":{"url":"fixture","lastModified":"2026-10-24T21:09:03.751Z"},"submissions":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"},"companyfacts":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"}},"counts":{"total":8024,"listed":7,"withRevenue":7,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
 "sicDescriptions": {"3561":"Pumps & Pumping Equipment","3585":"Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip","3822":"Auto Controls For Regulating Residential & Comml Environments","5070":"Wholesale-Hardware & Plumbing & Heating Equipment & Supplies"},
 "concepts": ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax","us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax","us-gaap:Revenues"],
 "fields": ["cik","name","listings","sic","fiscalYearEnd","incorporation","latest","revenue","revenueNote"],

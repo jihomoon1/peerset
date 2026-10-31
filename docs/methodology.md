@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.3.4** · Status: **approved by Jiho Moon, October 29, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a; 0.3.4 in M4b planning)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.3.5** · Status: **approved by Jiho Moon, October 30, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a; 0.3.4 in M4b planning; 0.3.5 after M4b)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -179,6 +179,13 @@ Missing and Unsupported inputs are settled first. Then the NM checks run in this
 
 Target LTM metric × peer 25th percentile, median and 75th percentile multiple gives implied EV. Subtract debt and add cash for implied equity value, then divide by shares for an implied price. Shown only when every target input is valid.
 
+The implied price is Unsupported, with the reason, in these cases:
+
+- **Target metric not positive.** The target's LTM EBITDA (for EV/EBITDA) or LTM revenue (for EV/Revenue) is ≤ 0: "LTM EBITDA is not positive". A peer multiple applied to a negative or zero metric gives a meaningless value.
+- **Several share classes.** The target has more than one share class: "several share classes: one implied price can't be split across classes". Implied equity can't be divided between classes without a rule for their relative value.
+- **Shares unusable.** Market cap's share-class rules (§6) block the cover share count, or there is no cover share count.
+- **Other inputs.** Total debt, cash or the target metric is Missing, NM or Unsupported, or no peer has a valid multiple.
+
 ## 13A. Peer screening (blueprint §10)
 
 Peers are screened from a monthly index built from SEC bulk data (`data/peer-index.json`, `docs/decisions/0008-peer-index-format.md`). Screening never calls SEC or a price provider.
@@ -191,7 +198,7 @@ Peers are screened from a monthly index built from SEC bulk data (`data/peer-ind
 - **Tiers.** Same 4-digit SIC. If fewer than 5 companies pass both eligibility and the size band, widen to the 3-digit group, then the 2-digit major group. At the 2-digit group, all qualifying companies are returned even if fewer than 5.
 - **Rank and select.** By |ln(peer ÷ target)|, ties by ticker in plain character order; keep 8 by default, 5–12 on request. Every peer gets a reason ("SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29") and every exclusion a code.
 
-## 14. Policy constants (v0.3.4)
+## 14. Policy constants (v0.3.5)
 
 | Constant                                            | Value                                      | Section            |
 | --------------------------------------------------- | ------------------------------------------ | ------------------ |
@@ -229,3 +236,4 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | 0.3.2   | October 26, 2026 | Writes down rules M2b already applies (no value changes): share-class to ticker mapping, `W_TICKER_NOT_IN_SEC_LIST`, `W_SHARES_AFTER_BALANCE_SHEET`, the cases where market cap is Unsupported, earliest class price date shown, P/E never priced off market cap (§6); not-in-EV warning only when EV is computed (§9); NM check order and "EV ≤ 0" as NM (§10). Added by Claude at Jiho's request in M2b review                        |
 | 0.3.3   | October 28, 2026 | Peer screening written down (§13A): universe, screening revenue (latest 10-K fiscal year, no fallback, FY end within 15 months of the latest report: new), eligibility for peers and target, inclusive size band, tier widening counts companies passing eligibility and size, ties in plain character order. No LTM, balance-sheet or valuation value changes. Approved by Jiho in M4a                                                 |
 | 0.3.4   | October 29, 2026 | Wording only, no value changes: statistics list the 25th and 75th percentiles, count failed peers as excluded and are empty (never 0) with no valid value (§11); the lag flag's median is over loaded peers' LTM ends in day numbers, the target is checked against it, code `W_PERIOD_LAG` (§12). Approved by Jiho in M4b planning                                                                                                     |
+| 0.3.5   | October 30, 2026 | Writes down rules M4b's implied valuation already applies (no value changes): the implied price is Unsupported when the target's metric is ≤ 0, when the target has several share classes, or when its share count is blocked or absent (§13). Approved by Jiho after M4b                                                                                                                                                               |

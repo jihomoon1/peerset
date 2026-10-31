@@ -14,7 +14,7 @@
     "end": "2026-06-30"
   },
   "freshness": "filing-parsed",
-  "methodologyVersion": "0.3.4",
+  "methodologyVersion": "0.3.5",
   "note": "Values are read from the rendered filings (R pages of each filing's financial report), not from the engine. Johnson Controls International plc (Irish-domiciled, files 10-K/10-Q in USD) reports in USD millions; the XBRL facts carry decimals=-6, so each value times 1,000,000 is exact to the dollar. Its fiscal year ends September 30, so the June 2026 10-Q is fiscal Q3 2026 and LTM = FY2025 + nine months to June 30, 2026 − nine months to June 30, 2025. The income statement has no operating-income line and the filings tag no OperatingIncomeLoss (none since 2016), so operating income, EBITDA, EBITDA margin and EV/EBITDA are Unsupported (methodology §3). Net income is the line attributable to Johnson Controls. The fixture folder is 2026Q2: the calendar quarter of the period end, like every other fixture.",
   "metrics": {
     "revenue": {
