@@ -2,21 +2,54 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
+import type { CompanyIdentity } from "@/domain/types";
 import { parseTickerInput } from "@/lib/ticker";
+import { IdentityCard } from "./IdentityCard";
 
-// Ticker box: checks the shape in the browser, then Enter goes to /c/<TICKER>.
-// Whether SEC lists the ticker is checked on the company page.
+type Lookup =
+  | { kind: "idle" }
+  | { kind: "checking"; ticker: string }
+  | { kind: "found"; ticker: string; identity: CompanyIdentity };
+
+// Ticker box: checks the shape in the browser. In the header, Enter goes straight to
+// /c/<TICKER>. On the home page (lookup), it first asks /api/identity and shows who
+// the ticker belongs to, or "No SEC-registered company uses XYZ" inline (blueprint §6).
 export function TickerSearch({
   compact = false,
   label = "Ticker",
+  lookup = false,
 }: {
   compact?: boolean;
   label?: string;
+  lookup?: boolean;
 }) {
   const router = useRouter();
   const id = useId();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<Lookup>({ kind: "idle" });
+
+  async function check(ticker: string) {
+    setResult({ kind: "checking", ticker });
+    try {
+      const res = await fetch(
+        `/api/identity?ticker=${encodeURIComponent(ticker)}`,
+      );
+      const body = await res.json();
+      if (res.ok) setResult({ kind: "found", ticker, identity: body });
+      else {
+        setResult({ kind: "idle" });
+        setError(
+          typeof body?.message === "string"
+            ? body.message
+            : `Couldn't check ${ticker}; try again`,
+        );
+      }
+    } catch {
+      setResult({ kind: "idle" });
+      setError(`Couldn't check ${ticker}; try again`);
+    }
+  }
 
   return (
     <form
@@ -31,7 +64,8 @@ export function TickerSearch({
           return;
         }
         setError(null);
-        router.push(`/c/${encodeURIComponent(r.ticker)}`);
+        if (lookup) void check(r.ticker);
+        else router.push(`/c/${encodeURIComponent(r.ticker)}`);
       }}
     >
       <label
@@ -57,12 +91,22 @@ export function TickerSearch({
         type="submit"
         className="rounded-sm bg-accent px-3 py-1 font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        Analyze
+        {lookup ? "Look up" : "Analyze"}
       </button>
       {error && (
         <p id={`${id}-error`} className="w-full text-error">
           {error}
         </p>
+      )}
+      {lookup && (
+        <div aria-live="polite" className="w-full">
+          {result.kind === "checking" && (
+            <p className="text-muted">Checking {result.ticker} with SEC…</p>
+          )}
+          {result.kind === "found" && (
+            <IdentityCard identity={result.identity} ticker={result.ticker} />
+          )}
+        </div>
       )}
     </form>
   );

@@ -4,14 +4,17 @@
 // supported" with its one-sentence reason, as /api/fundamentals reports it. That
 // call stops at the ticker lookup or the support check, before any filing is read.
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { ErrorResponseBody } from "@/lib/errors";
 import { ErrorState } from "./ErrorState";
+import { TickerDelisted } from "./TickerMoved";
 
 export function CompanyNotFoundReason() {
   const params = useParams<{ ticker: string }>();
   const ticker = decodeURIComponent(params.ticker ?? "").toUpperCase();
+  // A shared link's CIK (M6): an unknown ticker then means "no longer listed".
+  const linkCik = useSearchParams().get("cik");
   const [error, setError] = useState<ErrorResponseBody | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -34,6 +37,8 @@ export function CompanyNotFoundReason() {
     };
   }, [ticker]);
 
+  if (error?.code === "TICKER_NOT_FOUND" && linkCik && /^\d{10}$/.test(linkCik))
+    return <TickerDelisted ticker={ticker.slice(0, 12)} linkCik={linkCik} />;
   if (error) return <ErrorState error={error} />;
   return (
     <h1 className="text-base font-semibold">

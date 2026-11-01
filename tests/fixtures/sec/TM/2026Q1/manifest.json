@@ -1,0 +1,20 @@
+{
+  "ticker": "TM",
+  "cik": "0001094517",
+  "accession": "0001193125-26-264811",
+  "form": "20-F",
+  "filedDate": "2026-06-10",
+  "reportDate": "2026-03-31",
+  "asof": "2026Q1",
+  "files": [
+    {
+      "role": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001094517.json",
+      "file": "submissions.json.gz",
+      "retrievedAt": "2026-11-01T21:43:28.525Z",
+      "bytes": 176684,
+      "gzippedBytes": 27325,
+      "sha256": "332b9d237b4df7e87efd938106bf8ff376f8759340fe4077b90753b8e582e9fa"
+    }
+  ]
+}

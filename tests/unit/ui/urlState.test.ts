@@ -60,6 +60,35 @@ describe("parseUrlState", () => {
   });
 });
 
+describe("cik (M6: ticker changed or delisted)", () => {
+  it("keeps a 10-digit CIK and drops anything else", () => {
+    expect(parse("cik=0001069202").cik).toBe("0001069202");
+    expect(parse("cik=1069202").cik).toBeUndefined();
+    expect(parse("cik=00010692O2").cik).toBeUndefined();
+  });
+
+  it("writes it first, so a shared link names the company it was made for", () => {
+    expect(
+      urlQuery({
+        cik: "0001069202",
+        add: ["TT"],
+        remove: [],
+        prices: {},
+      }),
+    ).toBe("?cik=0001069202&add=TT");
+  });
+
+  it("round-trips with the rest of the state", () => {
+    const state = {
+      cik: "0001069202",
+      add: [],
+      remove: ["CARR"],
+      prices: { LII: "500" },
+    };
+    expect(parse(urlQuery(state).slice(1))).toEqual(state);
+  });
+});
+
 describe("urlQuery", () => {
   it("writes the documented shape, with readable commas and colons", () => {
     expect(

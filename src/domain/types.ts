@@ -268,7 +268,12 @@ export interface ScreeningFunnelStep {
 export interface PeerSelectionResult {
   tier: "sic4" | "sic3" | "sic2";
   funnel: ScreeningFunnelStep[]; // every tier tried, narrowest first
-  selected: { cik: string; ticker: string; reason: string }[];
+  selected: {
+    cik: string;
+    ticker: string;
+    reason: string;
+    latest: { form: string; filedDate: string }; // named while it loads (M6)
+  }[];
   excluded: {
     cik: string;
     ticker: string;

@@ -26,6 +26,9 @@ export default defineConfig({
       PRICE_PROVIDER: "user",
       // One frozen filing per ticker (tests/helpers/fixturePins.ts).
       PEERSET_FIXTURE_ASOF: FIXTURE_PINS,
+      // Test-only: every SEC URL for GM answers 429 (rate-limited state, M6). GM has
+      // no saved filing, so no other test reaches it.
+      PEERSET_FIXTURE_FAULTS: "GM:429",
     },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

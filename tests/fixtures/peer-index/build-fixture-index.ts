@@ -60,6 +60,9 @@ export function buildFixtureIndex(): PeerIndex {
       if (f.retrievedAt > newest) newest = f.retrievedAt;
       return path.join(dir, f.file);
     };
+    // A submissions-only fixture (TM, a 20-F filer) is rejected before any filing is
+    // read, so it has no companyfacts and never screens as a peer.
+    if (!manifest.files.some((x) => x.role === "companyfacts")) continue;
     const listed = universe.listed.get(manifest.cik);
     if (!listed) throw new Error(`${dir}: CIK ${manifest.cik} is not listed`);
     companies.push(

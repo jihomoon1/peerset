@@ -259,9 +259,6 @@ export function ValuationBlock({
                       title={d.kind === "nm" ? d.note : undefined}
                     >
                       {d.text}
-                      {d.kind === "nm" && (
-                        <span className="sr-only"> ({d.note})</span>
-                      )}
                     </span>
                   )}
                 </td>

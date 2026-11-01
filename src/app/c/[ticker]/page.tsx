@@ -16,6 +16,7 @@ import { log } from "@/lib/log";
 import { defaultPeersDeps, selectPeers } from "@/lib/peers";
 import { defaultQuoteDeps, loadQuotes, type QuotesResult } from "@/lib/quotes";
 import { ErrorState } from "@/ui/ErrorState";
+import { TickerRemapped } from "@/ui/TickerMoved";
 import { IdentityLine } from "@/ui/IdentityLine";
 import type { PeerSelection } from "@/ui/PeerPanel";
 import { parseUrlState } from "@/ui/urlState";
@@ -99,7 +100,13 @@ export default async function CompanyPage({
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-4">
       <main className="flex flex-1 flex-col gap-5">
-        {f ? (
+        {f && initial.cik && initial.cik !== f.identity.cik ? (
+          <TickerRemapped
+            ticker={decodeURIComponent(ticker).toUpperCase()}
+            linkCik={initial.cik}
+            now={f.identity}
+          />
+        ) : f ? (
           <>
             <IdentityLine identity={f.identity} />
             <Workbench

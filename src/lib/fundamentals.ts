@@ -7,10 +7,15 @@ import {
   type CompanyFundamentals,
 } from "@/domain/fundamentals";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
+import type { CompanyIdentity } from "@/domain/types";
 import { createLimiter, createSecClient, type SecClient } from "@/sec/client";
 import { getCompanyFacts } from "@/sec/freshness";
 import { identityFromSubmissions, parseSubmissions } from "@/sec/submissions";
-import { fixtureFetch, allFixtureDirs } from "@/sec/fixtureFetch";
+import {
+  allFixtureDirs,
+  fixtureFaults,
+  fixtureFetch,
+} from "@/sec/fixtureFetch";
 import {
   lookupTicker,
   parseTickerTable,
@@ -92,7 +97,9 @@ export function defaultDeps(
   if (fixtureModeOn(env))
     return {
       client: createSecClient({
-        fetch: fixtureFetch(allFixtureDirs()).fetch,
+        fetch: fixtureFetch(allFixtureDirs(), undefined, {
+          faults: fixtureFaults(env.PEERSET_FIXTURE_FAULTS),
+        }).fetch,
         env: { SEC_USER_AGENT: "PeerSet-Fixtures fixtures@example.invalid" },
         limiter: fixtureLimiter,
       }),
@@ -120,11 +127,13 @@ export function normalizeTicker(raw: string | null | undefined): string {
   return ticker;
 }
 
-export async function loadFundamentals(
+// The ticker list and submissions only: the company's identity and whether PeerSet
+// supports it, before any filing is read. The home search's identity card (M6) uses
+// this alone; loadFundamentals continues from it.
+export async function loadIdentity(
   rawTicker: string | null | undefined,
   deps: LoadDeps,
-): Promise<LoadedFundamentals> {
-  const started = Date.now();
+): Promise<{ identity: CompanyIdentity; tickerListRequested: boolean }> {
   const ticker = normalizeTicker(rawTicker);
   const { client, asOf } = deps;
 
@@ -153,6 +162,17 @@ export async function loadFundamentals(
   const identity = identityFromSubmissions(parseSubmissions(subs.data), {
     asOf,
   });
+  return { identity, tickerListRequested };
+}
+
+export async function loadFundamentals(
+  rawTicker: string | null | undefined,
+  deps: LoadDeps,
+): Promise<LoadedFundamentals> {
+  const started = Date.now();
+  const ticker = normalizeTicker(rawTicker);
+  const { identity, tickerListRequested } = await loadIdentity(ticker, deps);
+  const cik = identity.cik;
   if (!identity.support.supported)
     throw new UnsupportedIssuerError(
       identity.support.reason.message,

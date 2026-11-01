@@ -228,7 +228,7 @@ export function CompsTable({
               <button
                 type="button"
                 aria-haspopup="dialog"
-                aria-label={`${row.ticker} ${c.label}: ${d.text}${d.note && d.kind !== "value" ? ` (${d.note})` : ""}. Show calculation`}
+                aria-label={`${row.ticker} ${c.label}: ${d.kind === "nm" && d.note ? d.note : `${d.text}${d.note && d.kind !== "value" ? ` (${d.note})` : ""}`}. Show calculation`}
                 title={d.kind === "value" ? undefined : d.note}
                 onClick={(e) => openFrom(e, { kind: "cell", row, col: c.key })}
                 className={`rounded-sm px-1 hover:bg-surface hover:underline focus-visible:outline-2 focus-visible:outline-accent ${tone(d.kind)}`}
