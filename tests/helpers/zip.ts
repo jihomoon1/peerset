@@ -3,6 +3,7 @@
 // for identical entries.
 
 import { crc32, deflateRawSync } from "node:zlib";
+import yauzl from "yauzl";
 
 const DOS_TIME = 0; // 00:00:00
 const DOS_DATE = ((2026 - 1980) << 9) | (1 << 5) | 1; // 2026-01-01
@@ -55,4 +56,26 @@ export function makeZip(entries: { name: string; data: string }[]): Buffer {
   end.writeUInt32LE(centralDir.length, 12);
   end.writeUInt32LE(offset, 16);
   return Buffer.concat([...locals, centralDir, end]);
+}
+
+// One entry's text from a zip in memory (yauzl), e.g. xl/workbook.xml of an .xlsx.
+export function readZipEntry(zip: Buffer, name: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    yauzl.fromBuffer(zip, { lazyEntries: true }, (err, file) => {
+      if (err) return reject(err);
+      file.on("entry", (entry: yauzl.Entry) => {
+        if (entry.fileName !== name) return file.readEntry();
+        file.openReadStream(entry, (e, stream) => {
+          if (e) return reject(e);
+          const chunks: Buffer[] = [];
+          stream.on("data", (c: Buffer) => chunks.push(c));
+          stream.on("end", () =>
+            resolve(Buffer.concat(chunks).toString("utf8")),
+          );
+        });
+      });
+      file.on("end", () => reject(new Error(`${name} not in the zip`)));
+      file.readEntry();
+    });
+  });
 }

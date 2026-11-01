@@ -1,18 +1,19 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { buildComps, type CompsPeer } from "@/domain/comps";
 import { impliedValuationOf } from "@/domain/impliedValuation";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
 import type { QuoteSnapshot } from "@/domain/types";
 import type { ExportSnapshot } from "@/export/snapshot";
-import { memoryCache } from "@/lib/cache";
 import { InvalidInputError } from "@/lib/errors";
-import { loadExportSnapshot, type ExportDeps } from "@/lib/exportSnapshot";
+import { loadExportSnapshot } from "@/lib/exportSnapshot";
 import { FIXTURE_AS_OF } from "@/lib/fixtureMode";
-import { indexFromText } from "@/peers/loadIndex";
-import { createLimiter, createSecClient } from "@/sec/client";
-import { allFixtureDirs, fixtureFetch } from "@/sec/fixtureFetch";
+import {
+  compsGolden,
+  fixtureDeps,
+  GENERATED_AT,
+  GOLDEN_REQUEST,
+  PULLED_AT,
+} from "../../helpers/exportFixture";
 import { fixtureFundamentals } from "../../helpers/fundamentals";
 
 // Server-truth export (blueprint §13, M5 step 1): the export reloads fundamentals,
@@ -20,62 +21,7 @@ import { fixtureFundamentals } from "../../helpers/fundamentals";
 // runs. For the comps-golden state the snapshot must equal what buildComps gives the
 // browser for the same inputs, field by field.
 
-const golden = JSON.parse(
-  readFileSync(
-    path.join(process.cwd(), "tests/golden/comps-LII-2026Q2.json"),
-    "utf8",
-  ),
-);
-
-const PULLED_AT = "2026-10-26T12:00:00.000Z";
-const GENERATED_AT = "2026-10-26T15:30:00.000Z";
-
-function fixtureDeps(): ExportDeps {
-  return {
-    load: {
-      client: createSecClient({
-        fetch: fixtureFetch(
-          allFixtureDirs({
-            pins: "AAON:2026Q2,CARR:2026Q2,GGG:2026Q3,JCI:2026Q2,LII:2026Q2,TT:2026Q2,WSO:2026Q2",
-          }),
-        ).fetch,
-        env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
-        logger: () => {},
-        limiter: createLimiter(0),
-      }),
-      cache: memoryCache(),
-      asOf: FIXTURE_AS_OF,
-      logger: () => {},
-      now: () => new Date(PULLED_AT),
-    },
-    peers: {
-      index: () =>
-        indexFromText(() =>
-          readFileSync(
-            path.join(
-              process.cwd(),
-              "tests/fixtures/peer-index/fixture-peer-index.json",
-            ),
-            "utf8",
-          ),
-        ),
-      analysisDate: FIXTURE_AS_OF,
-      logger: () => {},
-    },
-    now: () => new Date(GENERATED_AT),
-    appVersion: "9.9.9-test",
-  };
-}
-
-// The fixture index suggests GGG, AAON, CARR and JCI for LII; the golden set swaps
-// GGG for TT and WSO, the same state as /c/LII?add=TT,WSO&remove=GGG.
-const GOLDEN_REQUEST = {
-  target: "LII",
-  add: ["TT", "WSO"],
-  remove: ["GGG"],
-  prices: golden.prices.close as Record<string, number>,
-  priceDate: golden.prices.asOfDate as string,
-};
+const golden = compsGolden;
 
 let snapshot: ExportSnapshot;
 beforeAll(async () => {
