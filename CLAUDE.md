@@ -44,9 +44,9 @@ Rules: `domain/` never touches network, clock or environment; tests feed it fact
 
 ## Approved dependencies
 
-Runtime: `next`, `react`, `react-dom`. Dev: `typescript`, `@types/*`, `eslint`, `eslint-config-next`, `tailwindcss`, `@tailwindcss/turbopack`, `vitest`, `prettier`, `tsx` (runs TypeScript scripts), `yauzl` (M4a: reads single entries out of SEC's bulk zips in the peer-index script).
+Runtime: `next`, `react`, `react-dom`, `zod`, `fast-xml-parser`, `exceljs` (M5, pinned at 4.4.0: `docs/decisions/0010-excel-library.md`). Dev: `typescript`, `@types/*`, `eslint`, `eslint-config-next`, `tailwindcss`, `@tailwindcss/turbopack`, `vitest`, `prettier`, `tsx` (runs TypeScript scripts), `yauzl` (M4a: reads single entries out of SEC's bulk zips in the peer-index script).
 
-Planned for later milestones (add only in that milestone): `zod` (M1), `fast-xml-parser` (M1), `exceljs` (M5), `@playwright/test` and `@axe-core/playwright` (M3+).
+Also in use: `@playwright/test` and `@axe-core/playwright` (dev, M3+).
 
 Anything else needs a written justification and Jiho's OK. No Python, Redis, Postgres, Docker or queues.
 

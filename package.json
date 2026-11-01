@@ -14,6 +14,7 @@
     "smoke": "playwright test --config playwright.smoke.config.ts"
   },
   "dependencies": {
+    "exceljs": "4.4.0",
     "fast-xml-parser": "5.11.2",
     "next": "16.4.2",
     "react": "19.3.0",
