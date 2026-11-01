@@ -49,3 +49,6 @@ next-env.d.ts
 
 # peer-index build downloads (about 3 GB)
 /.peer-index-work/
+
+# local reports and generated files (never committed)
+/output/

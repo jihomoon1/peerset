@@ -24,7 +24,7 @@ When a session ends, paste its final report into the planning chat. The next pro
 | M2b (done, PRs #5, #6) | Cover-page shares by class, quote adapter (user-entered; Alpha Vantage behind a flag), EV bridge, as-of strip, valuation UI | M2a merged | M2 gate |
 | M3 (done, PR #7) | Connect Vercel to GitHub, production URL, environment variables, smoke workflow, README v1 | M2 merged | M3 gate: live URL |
 | M4a (done, PRs #9, #11, #12) | Cache fix, peer-index script and monthly workflow, screening, exclusions | M3 live | Index PR merged; screening tests green |
-| M4b | Peer panel, comps table, NM rules, statistics, lag flags, GGG and JCI fixtures, implied range if time allows | M4a merged | M4 gate |
+| M4b (done, PRs #14, #15, #16) | Peer panel, comps table, NM rules, statistics, lag flags, GGG and JCI fixtures, implied range if time allows | M4a merged | M4 gate |
 | M5 | Three-sheet Excel export, formats, formulas with cached values, workbook tests, LibreOffice recalculation | M4 merged | M5 gate |
 | M6 | UX states, accessibility, negative-EBITDA fixture, README and methodology page, interview pack | M5 merged | v1 release gate |
 
