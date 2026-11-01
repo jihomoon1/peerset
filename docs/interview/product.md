@@ -1,0 +1,5 @@
+# PeerSet in one paragraph
+
+PeerSet is a free, open-source web app that turns a U.S. ticker into first-pass trading comps built only from SEC filings. Type a ticker and it reads the company's latest 10-K and 10-Q, builds last-twelve-months revenue, EBITDA, net income and diluted EPS, reads debt and cash from the lines on the balance sheet, suggests 5–12 peers from SEC industry codes and revenue size, and computes EV/Revenue, EV/EBITDA and P/E with peer statistics and an implied price range. Every number opens a drawer that shows its formula, XBRL concept, period and filing link, and the Excel export carries the same numbers as live formulas. When a rule can't be met, PeerSet shows "—", NM or Unsupported with the reason instead of estimating. Prices are end-of-day closes the user enters, because no free price API allows public display. It is a first pass for an analyst to review, not a substitute for one: EBITDA is standardized and unadjusted.
+
+Live: https://peerset.vercel.app · Code: https://github.com/jihomoon1/peerset · Definitions: [/methodology](https://peerset.vercel.app/methodology)
