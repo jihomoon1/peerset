@@ -16,10 +16,10 @@ M5 writes a three-sheet workbook (blueprint §17): formulas with cached results,
 
 Before exceljs: 16 moderate, 0 high (all from the ESLint toolchain). After: **24 moderate, 0 high, 0 critical.** The new ones come through exceljs's own dependencies:
 
-| Advisory | Path | Why it doesn't reach PeerSet |
-| --- | --- | --- |
-| `minimatch` ReDoS via glob patterns (GHSA-g3hv-75wg-m249) | exceljs → archiver → readdir-glob / archiver-utils → glob → minimatch | archiver's glob matching runs only when archiving a directory from disk. ExcelJS adds in-memory buffers to its zip; no pattern ever comes from a user. |
-| `uuid` missing buffer bounds check in v3/v5/v6 when `buf` is passed (GHSA-w5hq-g745-h8pq) | exceljs → uuid 8 | ExcelJS calls `uuid.v4()` without a buffer. |
+| Advisory                                                                                  | Path                                                                  | Why it doesn't reach PeerSet                                                                                                                           |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `minimatch` ReDoS via glob patterns (GHSA-g3hv-75wg-m249)                                 | exceljs → archiver → readdir-glob / archiver-utils → glob → minimatch | archiver's glob matching runs only when archiving a directory from disk. ExcelJS adds in-memory buffers to its zip; no pattern ever comes from a user. |
+| `uuid` missing buffer bounds check in v3/v5/v6 when `buf` is passed (GHSA-w5hq-g745-h8pq) | exceljs → uuid 8                                                      | ExcelJS calls `uuid.v4()` without a buffer.                                                                                                            |
 
 `npm audit fix --force` would "fix" these by downgrading to exceljs 3.4.0, a breaking change, so it is not applied. CI's audit check is for high severity (blueprint §15); these are moderate. Revisit on the next exceljs release.
 
