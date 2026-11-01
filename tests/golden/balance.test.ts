@@ -167,13 +167,14 @@ describe.each(goldens.map((g) => [g.ticker, g] as const))(
   },
 );
 
-it("has the six M2a balance-sheet goldens", () => {
-  expect(goldens.map((g) => g.ticker).sort()).toEqual([
-    "AAON",
-    "CARR",
-    "GGG",
-    "LII",
-    "TT",
-    "WSO",
+it("has the balance-sheet goldens: six from M2a/M4b plus LII Q3 (M6)", () => {
+  expect(goldens.map((g) => g.fixture).sort()).toEqual([
+    "AAON/2026Q2",
+    "CARR/2026Q2",
+    "GGG/2026Q3",
+    "LII/2026Q2",
+    "LII/2026Q3",
+    "TT/2026Q2",
+    "WSO/2026Q2",
   ]);
 });

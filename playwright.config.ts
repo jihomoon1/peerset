@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { FIXTURE_PINS } from "./tests/helpers/fixturePins";
 
 // End-to-end tests in fixture mode (M3): the server answers SEC requests from
 // tests/fixtures/sec, so these never call live SEC. Run `npm run build` first.
@@ -23,10 +24,8 @@ export default defineConfig({
     env: {
       PEERSET_SEC_FIXTURES: "1",
       PRICE_PROVIDER: "user",
-      // One frozen filing per ticker, pinned so saving a newer fixture (LII Q3) never
-      // changes what the e2e suite sees (M4a note).
-      PEERSET_FIXTURE_ASOF:
-        "AAON:2026Q2,CARR:2026Q2,GGG:2026Q3,JCI:2026Q2,LII:2026Q2,TT:2026Q2,WSO:2026Q2",
+      // One frozen filing per ticker (tests/helpers/fixturePins.ts).
+      PEERSET_FIXTURE_ASOF: FIXTURE_PINS,
     },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

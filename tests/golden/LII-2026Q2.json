@@ -318,5 +318,6 @@
       "column": "2025"
     },
     "math": "788.5 ÷ 35.4 = 22.27; gap vs 22.51 is 1.0%, under the 5% warning threshold"
-  }
+  },
+  "fixture": "LII/2026Q2"
 }

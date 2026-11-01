@@ -1,0 +1,100 @@
+{
+  "ticker": "LII",
+  "cik": "0001069202",
+  "company": "Lennox International Inc.",
+  "fixture": "LII/2026Q3",
+  "asOf": "2026-11-01",
+  "filing": {
+    "form": "10-Q",
+    "accession": "0001069202-26-000096",
+    "filed": "2026-10-28",
+    "reportDate": "2026-09-30",
+    "document": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm"
+  },
+  "statement": {
+    "name": "Consolidated Balance Sheets",
+    "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/R2.htm",
+    "scale": "Millions"
+  },
+  "methodologyVersion": "0.4.0",
+  "note": "Every value is read from the filing's rendered balance sheet ('Consolidated Balance Sheets', column 2026-09-30), USD millions as displayed, times the scale. Not engine output. 'included' follows methodology 0.3.0 §7-§9.",
+  "debt": {
+    "lines": [
+      {
+        "label": "Commercial paper",
+        "concept": "us-gaap:CommercialPaper",
+        "displayed": "455.1",
+        "value": 455100000,
+        "included": true
+      },
+      {
+        "label": "Current maturities of long-term debt",
+        "concept": "us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent",
+        "displayed": "319.2",
+        "value": 319200000,
+        "included": true
+      },
+      {
+        "label": "Current operating lease liabilities",
+        "concept": "us-gaap:OperatingLeaseLiabilityCurrent",
+        "displayed": "87.3",
+        "value": 87300000,
+        "included": false
+      },
+      {
+        "label": "Long-term debt",
+        "concept": "us-gaap:LongTermDebtAndCapitalLeaseObligations",
+        "displayed": "847.1",
+        "value": 847100000,
+        "included": true
+      },
+      {
+        "label": "Long-term operating lease liabilities",
+        "concept": "us-gaap:OperatingLeaseLiabilityNoncurrent",
+        "displayed": "375.9",
+        "value": 375900000,
+        "included": false
+      }
+    ],
+    "total": 1621400000,
+    "warnings": []
+  },
+  "cash": {
+    "lines": [
+      {
+        "label": "Cash and cash equivalents",
+        "concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+        "displayed": "43.3",
+        "value": 43300000,
+        "included": true
+      },
+      {
+        "label": "Short-term investments",
+        "concept": "us-gaap:ShortTermInvestments",
+        "displayed": "2.2",
+        "value": 2200000,
+        "included": true
+      },
+      {
+        "label": "Restricted cash equivalents",
+        "concept": "us-gaap:RestrictedCashNoncurrent",
+        "displayed": "22.4",
+        "value": 22400000,
+        "included": false
+      }
+    ],
+    "total": 45500000,
+    "warnings": []
+  },
+  "preferred": {
+    "status": "derived",
+    "label": "Preferred stock, $0.01 par value, 25,000,000 shares authorized, no shares issued or outstanding",
+    "concept": "us-gaap:PreferredStockValue",
+    "displayed": "0.0",
+    "value": 0
+  },
+  "nci": {
+    "status": "missing",
+    "note": "no noncontrolling interest line on the balance sheet"
+  }
+}

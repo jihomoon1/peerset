@@ -47,11 +47,11 @@ function value(m: Metric): number {
   return m.value;
 }
 
-it("covers LII and WSO", () => {
-  expect(goldens.map((g) => g.ticker)).toEqual(["LII", "WSO"]);
+it("covers LII (Q2 and Q3) and WSO", () => {
+  expect(goldens.map((g) => g.fixture)).toEqual(["LII", "LII-Q3", "WSO"]);
 });
 
-describe.each(goldens)("$ticker valuation at test prices", (g) => {
+describe.each(goldens)("$fixture valuation at test prices", (g) => {
   const quotes: QuoteSnapshot[] = g.prices.map((p) => ({
     ...p,
     currency: "USD",
