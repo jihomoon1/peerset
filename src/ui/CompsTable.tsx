@@ -22,6 +22,7 @@ import {
   formatPercent,
   formatPerShare,
 } from "@/lib/format";
+import { METHODOLOGY_ANCHORS, METHODOLOGY_PATH } from "@/lib/methodologyLinks";
 import { sortPeerRows, type SortColumn, type SortState } from "./compsSort";
 import { EvBridgeDrawer } from "./EvBridgeDrawer";
 import { displayMetric } from "./metricDisplay";
@@ -380,6 +381,14 @@ export function CompsTable({
                 aria-sort={ariaSort(c.key)}
               >
                 {sortButton(c.key, c.header)}
+                <a
+                  href={`${METHODOLOGY_PATH}#${METHODOLOGY_ANCHORS[c.key]}`}
+                  aria-label={`How ${c.label} is calculated`}
+                  title={`How ${c.label} is calculated`}
+                  className="ml-0.5 inline-block px-1 text-[11px] font-normal text-muted underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+                >
+                  ?
+                </a>
               </th>
             ))}
           </tr>

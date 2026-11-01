@@ -4,7 +4,8 @@ import pkg from "../../package.json";
 
 export const APP_VERSION: string = pkg.version;
 export const REPO_URL = "https://github.com/jihomoon1/peerset";
-export const METHODOLOGY_URL = `${REPO_URL}/blob/main/docs/methodology.md`;
+// The methodology source on GitHub; the page on this site is in methodologyLinks.ts.
+export const METHODOLOGY_SOURCE_URL = `${REPO_URL}/blob/main/docs/methodology.md`;
 
 // Blueprint §1 positioning, shown on screen.
 export const DISCLAIMER =

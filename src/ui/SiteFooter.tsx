@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
 import { defaultQuoteDeps } from "@/lib/quotes";
-import { APP_VERSION, DISCLAIMER, METHODOLOGY_URL, REPO_URL } from "@/lib/site";
+import { METHODOLOGY_PATH } from "@/lib/methodologyLinks";
+import { APP_VERSION, DISCLAIMER, REPO_URL } from "@/lib/site";
 
 // Blueprint §6 footer: disclaimer, data attributions, GitHub link, versions.
 export function SiteFooter() {
@@ -20,9 +22,12 @@ export function SiteFooter() {
             GitHub
           </a>
           {" · "}
-          <a href={METHODOLOGY_URL} className="underline hover:text-foreground">
+          <Link
+            href={METHODOLOGY_PATH}
+            className="underline hover:text-foreground"
+          >
             Methodology
-          </a>
+          </Link>
           {" · "}App {APP_VERSION} · Methodology {METHODOLOGY_VERSION}
         </p>
       </div>
