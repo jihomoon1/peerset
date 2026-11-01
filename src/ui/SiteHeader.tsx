@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { HEADER_ACTIONS_ID } from "./headerSlot";
 import { TickerSearch } from "./TickerSearch";
 
-// Blueprint §6 header: wordmark and ticker search. Export comes in M5.
+// Blueprint §6 header: wordmark, ticker search and, on a company page, the Export
+// button (the workbench portals it into the actions slot, M5).
 export function SiteHeader() {
   return (
     <header className="border-b border-rule">
@@ -12,7 +14,10 @@ export function SiteHeader() {
         >
           PeerSet
         </Link>
-        <TickerSearch compact label="Go to ticker" />
+        <div className="flex items-center gap-4">
+          <div id={HEADER_ACTIONS_ID} />
+          <TickerSearch compact label="Go to ticker" />
+        </div>
       </div>
     </header>
   );
