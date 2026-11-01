@@ -65,6 +65,26 @@ describe("impliedValuation", () => {
     expect(r.points.p75.impliedPrice).toBe(56);
   });
 
+  it("implied equity ≤ 0 at a percentile: that price is Unsupported, EV and equity still shown (0.4.0)", () => {
+    // p25: 200 × 0.5 = 100 EV; 100 − 300 + 100 = (100) equity → no price.
+    // p75: 200 × 1 = 200 EV; 200 − 300 + 100 = 0 equity → no price (≤ 0).
+    const r = impliedValuation({
+      ...base,
+      stats: { ...base.stats, evEbitda: stats(0.5, 12, 1) },
+    }).evEbitda;
+    expect(r.status).toBe("ok");
+    if (r.status !== "ok") return;
+    expect(r.points.p25).toEqual({
+      multiple: 0.5,
+      impliedEv: 100,
+      impliedEquity: -100,
+      impliedPrice: null,
+      impliedPriceReason: "implied equity value is not positive",
+    });
+    expect(r.points.p75.impliedPrice).toBeNull();
+    expect(r.points.median.impliedPrice).toBe(44); // the others are unaffected
+  });
+
   it("EV/Revenue uses LTM revenue", () => {
     const r = impliedValuation(base).evRevenue;
     // median: 1,000 × 3 = 3,000 → 2,800 → 56

@@ -32,8 +32,12 @@ export interface ImpliedValue {
   multiple: number;
   impliedEv: number;
   impliedEquity: number;
-  impliedPrice: number;
+  // §13 (0.4.0): null when implied equity ≤ 0, with the reason; never a negative price.
+  impliedPrice: number | null;
+  impliedPriceReason?: string;
 }
+
+export const EQUITY_NOT_POSITIVE = "implied equity value is not positive";
 
 export type ImpliedResult =
   | {
@@ -118,6 +122,14 @@ export function impliedValuation(
     const point = (multiple: number): ImpliedValue => {
       const impliedEv = value * multiple;
       const impliedEquity = impliedEv - debt! + cash!;
+      if (impliedEquity <= 0)
+        return {
+          multiple,
+          impliedEv,
+          impliedEquity,
+          impliedPrice: null,
+          impliedPriceReason: EQUITY_NOT_POSITIVE,
+        };
       return {
         multiple,
         impliedEv,

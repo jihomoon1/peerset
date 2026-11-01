@@ -132,11 +132,37 @@ export function ProvenanceDrawer({
         </Section>
       )}
 
+      {(metricKey === "netIncome" || metricKey === "dilutedEps") &&
+        f.eps.discontinuedOps && (
+          <Section title="Discontinued operations">
+            <p>
+              {metricKey === "dilutedEps"
+                ? "These periods report discontinued operations, so diluted EPS (and P/E) uses continuing operations (methodology §5):"
+                : "These periods report discontinued operations. Net income is shown as reported, including them (methodology §3):"}
+            </p>
+            <ul className="mt-1 flex flex-col gap-1 tabular-nums">
+              {f.eps.discontinuedOps.periods.map((p) => (
+                <li key={p.role}>
+                  {DISC_OPS_ROLE[p.role]}{" "}
+                  {p.fact.period.kind === "duration"
+                    ? `${p.fact.period.start} to ${p.fact.period.end}`
+                    : p.fact.period.end}
+                  : {formatFactValue(p.value, p.unit)}
+                  {p.unit === "USD/shares" ? " per diluted share" : "M"} (
+                  <span className="font-mono text-xs">{p.concept}</span>)
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
       {metricKey === "dilutedEps" && (
         <Section title="EPS cross-check">
           {f.eps.crossCheck.status === "checked" ? (
             <p className="tabular-nums">
-              LTM net income{" "}
+              {f.eps.basis === "continuingOperations"
+                ? "LTM income from continuing operations"
+                : "LTM net income"}{" "}
               {formatFactValue(f.eps.crossCheck.netIncome, "USD")} ÷ FY diluted
               shares {formatFactValue(f.eps.crossCheck.dilutedShares, "shares")}
               M = {formatPerShare(f.eps.crossCheck.impliedEps)}; gap{" "}
@@ -158,6 +184,12 @@ export function ProvenanceDrawer({
     </Drawer>
   );
 }
+
+const DISC_OPS_ROLE = {
+  fy: "Fiscal year",
+  ytdCurrent: "Current YTD",
+  ytdPrior: "Prior-year YTD",
+} as const;
 
 const ROW_LABELS = {
   fy: "Fiscal year",

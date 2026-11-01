@@ -84,6 +84,7 @@ export function priceCompany(
               }
             : marketCap),
       eps: f.metrics.dilutedEps,
+      epsBasis: f.eps.basis,
       // The cover's class count, not the usable classes (one may have dropped
       // out); no cover count at all leaves P/E to the missing price.
       singleClass: f.shareClasses.coverClassCount <= 1,

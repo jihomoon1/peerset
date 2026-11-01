@@ -186,7 +186,7 @@ describe("comps golden: LII vs CARR, AAON, TT, WSO, JCI", () => {
           "impliedEquity",
           "impliedPrice",
         ] as const)
-          expect(close(r.points[p][f], want.points[p][f]), `${p} ${f}`).toBe(
+          expect(close(r.points[p][f]!, want.points[p][f]), `${p} ${f}`).toBe(
             true,
           );
     },

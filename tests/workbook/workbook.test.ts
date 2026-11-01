@@ -277,9 +277,44 @@ describe("implied valuation", () => {
       const v = comps.getCell(row, 3 + i).value;
       expect(isFormula(v)).toBe(true);
       expect(
-        Math.abs((numberOf(v) ?? NaN) - r.points[p].impliedPrice),
+        Math.abs((numberOf(v) ?? NaN) - (r.points[p].impliedPrice ?? NaN)),
       ).toBeLessThan(0.005);
     });
+  });
+});
+
+describe("implied price when implied equity is not positive (methodology 0.4.0 §13)", () => {
+  it("the formula guards equity ≤ 0, and a null price is Unsupported text with the reason", async () => {
+    const r = snapshot.implied.evEbitda;
+    if (r.status !== "ok") throw new Error("expected ok");
+    const negative: ExportSnapshot = {
+      ...snapshot,
+      implied: {
+        ...snapshot.implied,
+        evEbitda: {
+          ...r,
+          points: {
+            ...r.points,
+            p25: {
+              ...r.points.p25,
+              impliedEquity: -1,
+              impliedPrice: null,
+              impliedPriceReason: "implied equity value is not positive",
+            },
+          },
+        },
+      },
+    };
+    const ws = (await roundTrip(negative)).wb.getWorksheet(SHEET_NAMES.comps)!;
+    const row = rowByLabel(ws, "Implied price (USD per share)");
+    const p25 = ws.getCell(row, 3).value;
+    expect(isFormula(p25) && p25.formula).toMatch(/^IF\(.*<=0,"Unsupported",/);
+    expect(isFormula(p25) && p25.result).toBe("Unsupported");
+    expect(ws.getCell(row, 3).note).toBe(
+      "implied equity value is not positive",
+    );
+    const median = ws.getCell(row, 4).value;
+    expect(isFormula(median) && typeof median.result).toBe("number");
   });
 });
 

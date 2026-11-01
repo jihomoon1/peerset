@@ -648,7 +648,12 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
   }
   {
     const row = cur.row();
-    putText(row.getCell(1), "P/E = price ÷ LTM diluted EPS");
+    putText(
+      row.getCell(1),
+      f.eps.basis === "continuingOperations"
+        ? "P/E = price ÷ LTM diluted EPS from continuing operations"
+        : "P/E = price ÷ LTM diluted EPS",
+    );
     const m = r.cells!.pe;
     if (usable(m) && refs.price && at.dilutedEps) {
       putFormula(
@@ -957,12 +962,16 @@ function tradingComps(
         "shares",
         "link",
       );
-      putFormula(
-        ws.getCell(rows.price, c),
-        `${L}${rows.equity}/${L}${rows.shares}`,
-        pt.impliedPrice,
-        "perShare",
-      );
+      // §13 (0.4.0): implied equity ≤ 0 gives no price. The IF keeps that rule
+      // live if someone edits the inputs in Excel; the cached result matches.
+      const priceFormula = `IF(${L}${rows.equity}<=0,"Unsupported",${L}${rows.equity}/${L}${rows.shares})`;
+      const priceCell = ws.getCell(rows.price, c);
+      if (pt.impliedPrice === null) {
+        priceCell.value = { formula: priceFormula, result: "Unsupported" };
+        priceCell.font = font("muted");
+        priceCell.alignment = { horizontal: "right" };
+        priceCell.note = pt.impliedPriceReason ?? "";
+      } else putFormula(priceCell, priceFormula, pt.impliedPrice, "perShare");
     }
     r = rows.price + 2;
   }
@@ -1174,7 +1183,7 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
     "EBITDA (standardized, unadjusted) = operating income + D&A (cash-flow statement). EBITDA margin = EBITDA ÷ revenue.",
     "Equity value = Σ over share classes of price × cover-page shares. EV = equity value + total debt − cash and short-term investments.",
     "Total debt and cash are the sums of the lines the company presents on its balance sheet (methodology §7–§8). If the face can't be read, the 0.2.1 tag rules are used (W_FACE_UNAVAILABLE). No debt lines, or debt lines with no amount, is a reported 0.",
-    "EV/Revenue = EV ÷ LTM revenue · EV/EBITDA = EV ÷ LTM EBITDA · P/E = price ÷ LTM diluted EPS (single-class companies only).",
+    "EV/Revenue = EV ÷ LTM revenue · EV/EBITDA = EV ÷ LTM EBITDA · P/E = price ÷ LTM diluted EPS (single-class companies only); from continuing operations when an LTM period reports discontinued operations (methodology 0.4.0 §5).",
     "Implied valuation = target LTM metric × peer 25th percentile, median and 75th percentile multiple; less debt, plus cash; ÷ shares.",
   ]);
   section("NM policy", [
