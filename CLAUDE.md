@@ -63,6 +63,7 @@ npx tsx scripts/capture-fixture.ts --ticker LII --cik 0001069202 --accession <ac
 ```
 
 Before saying work is done: `npm run typecheck && npm run lint && npm test && npm run build`, and quote the result.
+A hook (`.claude/hooks/format-edited-file.sh`) runs Prettier on each file Claude edits; if `npx prettier --check` later fails on an edited file, the hook did not run: report it.
 
 ## Conventions
 
