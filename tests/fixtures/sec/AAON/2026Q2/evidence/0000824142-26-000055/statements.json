@@ -1,0 +1,48 @@
+{
+  "cik": "0000824142",
+  "accession": "0000824142-26-000055",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:23:49.633Z",
+      "sha256": "eaa44e13fa56b53d520f09efb8c565159d7b42cb24be286d5fac540b248323c8"
+    },
+    {
+      "file": "R2.htm.gz",
+      "statement": "Consolidated Balance Sheets",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R2.htm",
+      "retrievedAt": "2026-11-01T21:23:49.987Z",
+      "sha256": "5915500de940c41a53950604ee8fcb99740b858fa5d4e345891a8f50157daf71"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "Consolidated Statements of Income",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R3.htm",
+      "retrievedAt": "2026-11-01T21:23:50.189Z",
+      "sha256": "bda5dfdb3ab72d0c0a691134c6aa629dc9244a03210c9ca429fe0de1c6cdbc92"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "Consolidated Statements of Stockholders' Equity",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R4.htm",
+      "retrievedAt": "2026-11-01T21:23:50.486Z",
+      "sha256": "82b832092072a63ed2311045dae214eb6cd1e56efdae7ff633d43dac8fe99270"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "Consolidated Statements of Cash Flows",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R5.htm",
+      "retrievedAt": "2026-11-01T21:23:50.699Z",
+      "sha256": "2f58f0e398560e14a79a24efe12abf81b95ed054fe3ae02b7ca466a93d5667e7"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "Consolidated Balance Sheets (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000055/R6.htm",
+      "retrievedAt": "2026-11-01T21:23:50.918Z",
+      "sha256": "5ae2132450f3bb38cddb34422f9b70c2f9c28302cefe250ec80bd9d907f4bb1b"
+    }
+  ]
+}

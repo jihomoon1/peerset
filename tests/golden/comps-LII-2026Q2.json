@@ -16,7 +16,7 @@
       "JCI": 80
     }
   },
-  "note": "Comps golden (M4b). The prices are test inputs, not market data. Market cap, EV, multiples and statistics are computed here from the inputs listed per row (scratch script, independent of the engine); the test asserts the engine matches to the dollar (market cap, EV) and to 1e-9 relative (ratios and statistics). LII, WSO and JCI LTM inputs cite their filing-sourced goldens; CARR, AAON and TT LTM revenue, EBITDA and EPS, and JCI's debt, cash and shares, are engine output from the frozen fixtures, not separately reconciled. So this golden proves the comps and statistics arithmetic, not those LTM figures. Statistics are over the five peers only; LII is excluded (methodology §11). Percentiles are Excel PERCENTILE.INC. No value here is NM: every multiple is positive and under 100x. All five companies' LTM ends 2026-06-30, so the peer median LTM end is 2026-06-30 and no row is lagging. Methodology 0.4.0 (definition change, November 1, 2026): CARR, TT and JCI report discontinued operations in an LTM component period, so their P/E uses continuing-operations diluted EPS; their 0.3.5 values are kept under 'superseded'. LII, AAON and WSO are unchanged.",
+  "note": "Comps golden (M4b). The prices are test inputs, not market data. Market cap, EV, multiples and statistics are computed here from the inputs listed per row (scratch script, independent of the engine); the test asserts the engine matches to the dollar (market cap, EV) and to 1e-9 relative (ratios and statistics). LII, WSO and JCI LTM inputs cite their filing-sourced goldens; CARR, AAON and TT LTM revenue, EBITDA and EPS, and JCI's debt, cash and shares, were engine output until M6; in M6 each was cited against the rendered filings in docs/reconciliation/comps-golden.md and matched (no value changed). Statistics are over the five peers only; LII is excluded (methodology §11). Percentiles are Excel PERCENTILE.INC. No value here is NM: every multiple is positive and under 100x. All five companies' LTM ends 2026-06-30, so the peer median LTM end is 2026-06-30 and no row is lagging. Methodology 0.4.0 (definition change, November 1, 2026): CARR, TT and JCI report discontinued operations in an LTM component period, so their P/E uses continuing-operations diluted EPS; their 0.3.5 values are kept under 'superseded'. LII, AAON and WSO are unchanged.",
   "peerMedianLtmEnd": "2026-06-30",
   "rows": {
     "LII": {
@@ -67,16 +67,16 @@
             "price": 60
           }
         ],
-        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "totalDebt": 11952000000,
         "cash": 1344000000,
         "balanceSheetSource": "tests/golden/CARR-2026Q2-balance.json",
         "revenue": 22108000000,
-        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "ebitda": 3006000000,
-        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "dilutedEps": 1.4,
-        "epsSource": "engine output from the frozen fixture (IncomeLossFromContinuingOperationsPerDilutedShare), not separately reconciled",
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "epsBasis": "continuing operations (methodology 0.4.0: discontinued operations reported)"
       },
       "marketCap": 49459503420,
@@ -113,16 +113,16 @@
             "price": 100
           }
         ],
-        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "totalDebt": 435000000,
         "cash": 13000,
         "balanceSheetSource": "tests/golden/AAON-2026Q2-balance.json",
         "revenue": 1932367000,
-        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "ebitda": 298526000,
-        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "dilutedEps": 1.9,
-        "epsSource": "engine output from the frozen fixture, not separately reconciled"
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)"
       },
       "marketCap": 8245363900,
       "marketCapMath": "100 × 82,453,639 = 8,245,363,900",
@@ -151,16 +151,16 @@
             "price": 400
           }
         ],
-        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "totalDebt": 4616800000,
         "cash": 1318300000,
         "balanceSheetSource": "tests/golden/TT-2026Q2-balance.json",
         "revenue": 22209900000,
-        "revenueSource": "engine output from the frozen fixture, not separately reconciled",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "ebitda": 4374900000,
-        "ebitdaSource": "engine output from the frozen fixture, not separately reconciled",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "dilutedEps": 13.42,
-        "epsSource": "engine output from the frozen fixture (IncomeLossFromContinuingOperationsPerDilutedShare), not separately reconciled",
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "epsBasis": "continuing operations (methodology 0.4.0: discontinued operations reported)"
       },
       "marketCap": 88009270800,
@@ -241,10 +241,10 @@
             "price": 80
           }
         ],
-        "sharesSource": "cover page dei:EntityCommonStockSharesOutstanding in the fixture's latest 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "sharesSource": "10-Q cover page dei:EntityCommonStockSharesOutstanding, cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "totalDebt": 9475000000,
         "cash": 641000000,
-        "balanceSheetSource": "balance-sheet face in the fixture's 10-Q; engine output from the frozen fixture, not separately reconciled",
+        "balanceSheetSource": "balance-sheet face (R4) of the 10-Q, cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
         "revenue": 24995000000,
         "revenueSource": "tests/golden/JCI-2026Q2.json",
         "ebitda": null,
