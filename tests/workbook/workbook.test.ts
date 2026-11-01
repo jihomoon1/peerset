@@ -343,6 +343,25 @@ describe("text and small values", () => {
       );
   });
 
+  it("every blue input on Calculations has a note citing its source", () => {
+    const calc = wb.getWorksheet(SHEET_NAMES.calc)!;
+    let inputs = 0;
+    calc.eachRow((row) =>
+      row.eachCell((c) => {
+        if (typeof c.value !== "number") return;
+        inputs++;
+        const note =
+          typeof c.note === "string"
+            ? c.note
+            : (c.note?.texts ?? []).map((t) => t.text).join("");
+        expect(note, c.address).toMatch(
+          /(10-[KQ]|entered by user|cover page|PeerSet)/,
+        );
+      }),
+    );
+    expect(inputs).toBeGreaterThan(100);
+  });
+
   it("a nonzero amount under 0.05M shows three decimals, never 0.0", () => {
     const calc = wb.getWorksheet(SHEET_NAMES.calc)!;
     let found = false;

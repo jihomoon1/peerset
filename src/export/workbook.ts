@@ -28,6 +28,7 @@ import {
 } from "@/domain/impliedValuation";
 import { NM_MULTIPLE_CAP } from "@/domain/policy";
 import type {
+  FaceLineProvenance,
   LTMCalculation,
   Metric,
   ReportedFinancialFact,
@@ -169,11 +170,22 @@ const fmtFor = (fmt: NumFmt, n: number): string =>
     ? NUM_FMT.smallMillions
     : NUM_FMT[fmt];
 
-function putInput(cell: ExcelJS.Cell, n: number, fmt: NumFmt) {
+// Every hardcoded input says where it came from, as a cell note.
+function putInput(cell: ExcelJS.Cell, n: number, fmt: NumFmt, source?: string) {
   if (!Number.isFinite(n)) throw new RangeError(`not a finite input: ${n}`);
   cell.value = n;
   cell.numFmt = fmtFor(fmt, n);
   cell.font = font("input");
+  if (source) cell.note = source;
+}
+
+// "us-gaap:Revenues · 2025-01-01 to 2025-12-31 · 10-K 0001069202-26-000028 filed
+// 2026-02-17 (companyfacts)"
+export function cite(f: ReportedFinancialFact): string {
+  const period = f.period.start
+    ? `${f.period.start} to ${f.period.end}`
+    : `at ${f.period.end}`;
+  return `${f.concept} · ${period} · ${f.filing.form} ${f.filing.accession} filed ${f.filing.filedDate} (${f.source})`;
 }
 
 function putFormula(
@@ -252,14 +264,24 @@ function ltmRow(
     return undefined;
   }
   if (calc) {
-    putInput(row.getCell(2), calc.fy.value / scale, fmt);
+    putInput(row.getCell(2), calc.fy.value / scale, fmt, cite(calc.fy));
     if (
       calc.method === "fy_plus_ytd_minus_prior_ytd" &&
       calc.ytdCurrent &&
       calc.ytdPrior
     ) {
-      putInput(row.getCell(3), calc.ytdCurrent.value / scale, fmt);
-      putInput(row.getCell(4), calc.ytdPrior.value / scale, fmt);
+      putInput(
+        row.getCell(3),
+        calc.ytdCurrent.value / scale,
+        fmt,
+        cite(calc.ytdCurrent),
+      );
+      putInput(
+        row.getCell(4),
+        calc.ytdPrior.value / scale,
+        fmt,
+        cite(calc.ytdPrior),
+      );
       putFormula(row.getCell(5), `B${r}+C${r}-D${r}`, m.value / scale, fmt);
     } else putFormula(row.getCell(5), `B${r}`, m.value / scale, fmt);
     putMuted(row.getCell(6), calc.concept);
@@ -273,7 +295,13 @@ function ltmRow(
         .filter(Boolean)
         .join("; "),
     );
-  } else putInput(row.getCell(5), m.value / scale, fmt);
+  } else
+    putInput(
+      row.getCell(5),
+      m.value / scale,
+      fmt,
+      "LTM value as computed by PeerSet",
+    );
   return `E${r}`;
 }
 
@@ -300,7 +328,7 @@ function putTotal(
     cell.note =
       note ??
       (parts.length === 0
-        ? "Reported 0: no amount on the balance-sheet face"
+        ? "PeerSet: reported 0, no amount on the balance-sheet face"
         : "Total as computed by PeerSet; see the lines above");
   }
 }
@@ -445,8 +473,21 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
     const n = row.number;
     putText(row.getCell(1), memberLabel(c.classMember));
     putText(row.getCell(2), c.ticker ?? "unlisted");
-    putInput(row.getCell(3), c.shares / MILLION, "shares");
-    if (c.quote) putInput(row.getCell(4), c.quote.close, "perShare");
+    putInput(
+      row.getCell(3),
+      c.shares / MILLION,
+      "shares",
+      `cover page: ${cite(c.fact)}`,
+    );
+    if (c.quote)
+      putInput(
+        row.getCell(4),
+        c.quote.close,
+        "perShare",
+        c.quote.source === "user_entered"
+          ? `close on ${c.quote.asOfDate}, entered by user`
+          : `close on ${c.quote.asOfDate}, Alpha Vantage`,
+      );
     else putDash(row.getCell(4), "needs price");
     if (usable(c.equityValue) && c.quote) {
       putFormula(
@@ -481,6 +522,7 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
   const lines = (
     title: string,
     items: typeof v.bridge.debtLines,
+    sourceLines: readonly FaceLineProvenance[],
     total: Metric,
     totalLabel: string,
   ): string | undefined => {
@@ -499,7 +541,19 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
       putText(row.getCell(1), l.label);
       if (l.value === null)
         putDash(row.getCell(3), "no consolidated fact at the date");
-      else putInput(row.getCell(3), l.value / MILLION, "millions");
+      else {
+        const fact = sourceLines.find(
+          (x) => x.concept === l.concept && x.label === l.label,
+        )?.fact;
+        putInput(
+          row.getCell(3),
+          l.value / MILLION,
+          "millions",
+          fact
+            ? `balance sheet: ${cite(fact)}`
+            : `balance sheet line, as read by PeerSet (${l.concept})`,
+        );
+      }
       putText(row.getCell(4), l.included ? "Included" : "Excluded");
       putMuted(row.getCell(6), l.concept);
       putMuted(row.getCell(7), l.why);
@@ -527,6 +581,7 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
   refs.totalDebt = lines(
     `Debt lines (balance sheet, ${bsDate}; USD m)`,
     v.bridge.debtLines,
+    f.debt.lines,
     v.bridge.totalDebt,
     "Total debt",
   );
@@ -534,6 +589,7 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
   refs.cash = lines(
     `Cash lines (balance sheet, ${bsDate}; USD m)`,
     v.bridge.cashLines,
+    f.cash.lines,
     v.bridge.cashAndInvestments,
     "Cash and short-term investments",
   );
@@ -547,9 +603,21 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
       row.getCell(1),
       item.item === "preferred" ? "Preferred stock" : "Noncontrolling interest",
     );
-    if (item.status === "reported" || item.status === "derived")
-      putInput(row.getCell(3), item.value / MILLION, "millions");
-    else
+    if (item.status === "reported" || item.status === "derived") {
+      const src = (
+        item.item === "preferred"
+          ? f.evAdjustments.preferred
+          : f.evAdjustments.nci
+      ).lines.find((l) => l.included && l.fact)?.fact;
+      putInput(
+        row.getCell(3),
+        item.value / MILLION,
+        "millions",
+        src
+          ? `balance sheet: ${cite(src)}`
+          : "PeerSet: from the balance-sheet face (methodology §9)",
+      );
+    } else
       putDash(
         row.getCell(3),
         item.status === "missing" ? "no such line" : item.status,
