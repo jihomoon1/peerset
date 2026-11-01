@@ -6,6 +6,8 @@ import { fixtureDeps, GOLDEN_REQUEST } from "../helpers/exportFixture";
 
 // POST /api/export on the frozen fixtures (blueprint §13): an .xlsx for a valid
 // request, a user-safe JSON error otherwise. Never calls live SEC.
+// Loading six fixture companies takes ~2 s alone and longer beside the full suite.
+const SLOW = 30_000;
 
 const XLSX =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -19,7 +21,7 @@ const post = (body: unknown, raw = false) =>
     }),
   );
 
-describe("POST /api/export", () => {
+describe("POST /api/export", { timeout: SLOW }, () => {
   it("returns the workbook as an attachment named for the ticker and date", async () => {
     const res = await post(GOLDEN_REQUEST);
     expect(res.status).toBe(200);

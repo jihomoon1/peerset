@@ -77,7 +77,7 @@ beforeAll(async () => {
   snapshot = await loadExportSnapshot(GOLDEN_REQUEST, fixtureDeps());
   ({ wb, bytes, buffer } = await roundTrip(snapshot));
   comps = wb.getWorksheet(SHEET_NAMES.comps)!;
-});
+}, 30_000);
 
 describe("workbook structure", () => {
   it("has the three sheets, in order", () => {
@@ -362,7 +362,7 @@ describe("text and small values", () => {
   });
 });
 
-describe("NM, missing and formula injection", () => {
+describe("NM, missing and formula injection", { timeout: 30_000 }, () => {
   it("no prices: valuation cells are '—' text, statistics of nothing are '—'", async () => {
     const s = await loadExportSnapshot(
       { target: "LII", add: ["TT", "WSO"], remove: ["GGG"], prices: {} },

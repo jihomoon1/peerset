@@ -26,7 +26,7 @@ const golden = compsGolden;
 let snapshot: ExportSnapshot;
 beforeAll(async () => {
   snapshot = await loadExportSnapshot(GOLDEN_REQUEST, fixtureDeps());
-});
+}, 30_000);
 
 describe("export snapshot: comps-golden state", () => {
   it("holds exactly the golden peers", () => {
@@ -123,7 +123,7 @@ describe("export snapshot: comps-golden state", () => {
   });
 });
 
-describe("export request validation", () => {
+describe("export request validation", { timeout: 30_000 }, () => {
   const bad = (patch: Record<string, unknown>) =>
     loadExportSnapshot({ ...GOLDEN_REQUEST, ...patch }, fixtureDeps());
 
