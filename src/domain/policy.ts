@@ -107,10 +107,12 @@ export const CONCEPTS = {
   ],
   continuingOpsIncome: ["us-gaap:IncomeLossFromContinuingOperations"],
   // §5 (0.4.0): any of these, nonzero for a component period, means that period
-  // reports discontinued operations. Monetary first, so the note names an amount.
+  // reports discontinued operations. The order only decides which amount the note
+  // names: the parent's share first (what NetIncomeLoss includes), then the total,
+  // then per-share amounts.
   discontinuedOps: [
-    "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax",
     "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxAttributableToReportingEntity",
+    "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax",
     "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxPerDilutedShare",
     "us-gaap:DiscontinuedOperationIncomeLossFromDiscontinuedOperationNetOfTaxPerDilutedShare",
   ],

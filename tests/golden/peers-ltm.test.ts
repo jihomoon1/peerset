@@ -109,9 +109,20 @@ describe.each(["GGG-2026Q3", "JCI-2026Q2"])("%s golden", async (name) => {
     const epsCodes = f.metrics.dilutedEps.warnings.map((w) => w.code);
     const daCodes = f.metrics.da.warnings.map((w) => w.code);
     if (d) {
+      expect(f.eps.basis).toBe(d.basis);
+      const got = f.eps.discontinuedOps!.periods;
+      expect(got.map((p) => p.role)).toEqual(Object.keys(d.periods));
+      for (const p of got) {
+        const want = d.periods[p.role];
+        expect(p.concept, p.role).toBe(d.concept);
+        expect(p.value, p.role).toBe(want.value);
+        expect(p.fact.period).toMatchObject(want.period);
+        expect(p.fact.filing.accession).toBe(want.accession);
+      }
       expect(epsCodes).toContain(d.expectedWarnings.dilutedEps);
       expect(daCodes).toContain(d.expectedWarnings.da);
     } else {
+      expect(f.eps.basis).toBe("total");
       expect(epsCodes).not.toContain("W_EPS_CONTINUING_OPS");
       expect(daCodes).not.toContain("W_DA_INCLUDES_DISC_OPS");
     }

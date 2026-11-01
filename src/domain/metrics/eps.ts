@@ -92,6 +92,7 @@ function crossCheck(
 function detectSplit(
   input: LtmInput,
   ltm: LTMCalculation,
+  opts: { restatement: boolean },
 ): { split: boolean; evidence?: string } {
   const fyEnd = ltm.fy.period.end;
   const ratioFact = input.facts.find(
@@ -111,7 +112,7 @@ function detectSplit(
     };
 
   const restated = ltm.ytdPrior;
-  if (!restated) return { split: false };
+  if (!restated || !opts.restatement) return { split: false };
   // The originally filed value: the earliest-filed consolidated fact for that period.
   const original = input.facts
     .filter(
@@ -140,29 +141,68 @@ function detectSplit(
 }
 
 export function computeEps(input: LtmInput, netIncome: Metric): EpsResult {
-  // Split detection and the discontinued-operations periods always come from total
-  // diluted EPS (§5): a reclassification restates continuing-ops EPS, not a split.
   const total = computeLtm(input, CONCEPTS.dilutedEps);
-  if (total.kind !== "ok")
+  const cont = computeLtm(input, CONCEPTS.continuingOpsEps);
+  // §5: the component periods are total diluted EPS's; when total EPS has no LTM,
+  // continuing-operations EPS's, so discontinued operations are still found.
+  const periods =
+    total.kind === "ok"
+      ? total.calc
+      : cont.kind === "ok"
+        ? cont.calc
+        : undefined;
+  const found = periods
+    ? findDiscontinuedOps(input.facts, periods)
+    : ({ kind: "none" } as const);
+
+  if (found.kind === "none" && total.kind !== "ok")
     return {
       ...ltmMetric(total, "USD/shares"),
       basis: "total",
       crossCheck: { status: "skipped", reason: "LTM EPS unavailable" },
       splitSinceLastAnnual: false,
     };
-  const split = detectSplit(input, total.calc);
+  // Split detection always compares total EPS (§5): a reclassification restates
+  // continuing-ops EPS, not a split. Without a total-EPS LTM only the split-ratio
+  // fact can be checked.
+  const split = detectSplit(
+    input,
+    total.kind === "ok" ? total.calc : periods!,
+    {
+      restatement: total.kind === "ok",
+    },
+  );
   const splitFields = {
     splitSinceLastAnnual: split.split,
     ...(split.evidence ? { splitEvidence: split.evidence } : {}),
   };
 
-  const discOps = findDiscontinuedOps(input.facts, total.calc);
-  let r: typeof total = total;
+  if (found.kind === "conflict") {
+    const c = found.conflict;
+    return {
+      metric: {
+        status: "unsupported",
+        reason: {
+          code: "SOURCE_CONFLICT",
+          message: `facts filed the same day disagree on ${c.concept} for the ${c.role === "fy" ? "fiscal year" : c.role === "ytdCurrent" ? "current YTD" : "prior-year YTD"} (${c.facts.map((f) => f.value).join(" vs ")}), so whether discontinued operations are reported can't be decided`,
+        },
+        warnings: [],
+      },
+      basis: "total",
+      crossCheck: {
+        status: "skipped",
+        reason: "discontinued operations undecided",
+      },
+      ...splitFields,
+    };
+  }
+  const discOps = found.kind === "found" ? found.ops : null;
+  if (!discOps && total.kind !== "ok") throw new Error("unreachable");
+  let r = total as Extract<typeof total, { kind: "ok" }>;
   let numerator = netIncome;
   let numeratorConcept: string = CONCEPTS.netIncome[0];
   const notes: MetricWarning[] = [];
   if (discOps) {
-    const cont = computeLtm(input, CONCEPTS.continuingOpsEps);
     if (cont.kind !== "ok")
       return {
         metric: {

@@ -21,6 +21,19 @@ export interface DiscontinuedOps {
   periods: DiscontinuedOpsPeriod[]; // only the component periods that report them
 }
 
+// Same-day facts that disagree (§1): whether the period reports discontinued
+// operations can't be decided, so it is never treated as "none".
+export interface DiscontinuedOpsConflict {
+  role: ComponentRole;
+  concept: string;
+  facts: ReportedFinancialFact[];
+}
+
+export type DiscontinuedOpsResult =
+  | { kind: "none" }
+  | { kind: "found"; ops: DiscontinuedOps }
+  | { kind: "conflict"; conflict: DiscontinuedOpsConflict };
+
 const ROLE_LABEL: Record<ComponentRole, string> = {
   fy: "FY",
   ytdCurrent: "current YTD",
@@ -30,7 +43,7 @@ const ROLE_LABEL: Record<ComponentRole, string> = {
 export function findDiscontinuedOps(
   facts: readonly ReportedFinancialFact[],
   calc: LTMCalculation,
-): DiscontinuedOps | null {
+): DiscontinuedOpsResult {
   const components: [ComponentRole, ReportedFinancialFact | undefined][] = [
     ["fy", calc.fy],
     ["ytdCurrent", calc.ytdCurrent],
@@ -42,6 +55,11 @@ export function findDiscontinuedOps(
     const key = { start: component.period.start, end: component.period.end };
     for (const concept of CONCEPTS.discontinuedOps) {
       const s = selectFact(facts, concept, key);
+      if (s.kind === "conflict")
+        return {
+          kind: "conflict",
+          conflict: { role, concept, facts: s.facts },
+        };
       if (s.kind === "found" && s.fact.value !== 0) {
         periods.push({
           role,
@@ -54,7 +72,9 @@ export function findDiscontinuedOps(
       }
     }
   }
-  return periods.length ? { periods } : null;
+  return periods.length
+    ? { kind: "found", ops: { periods } }
+    : { kind: "none" };
 }
 
 // "FY 2025-01-01 to 2025-12-31: 150.0M; prior-year YTD …: (12.0)M"

@@ -39,7 +39,8 @@ const INCLUDES_DISC_OPS: MetricWarning = {
 export function computeDa(input: LtmInput): DaResult {
   const r = computeDaValue(input);
   const calc = r.ltm ?? r.ltmParts[0];
-  if (calc && findDiscontinuedOps(input.facts, calc))
+  // A conflict can't rule discontinued operations out, so it cautions too.
+  if (calc && findDiscontinuedOps(input.facts, calc).kind !== "none")
     r.metric = {
       ...r.metric,
       warnings: [...r.metric.warnings, INCLUDES_DISC_OPS],

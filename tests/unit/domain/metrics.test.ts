@@ -508,6 +508,51 @@ describe("diluted EPS, continuing operations (§5, methodology 0.4.0)", () => {
     expect(usable(r.metric).value).toBeCloseTo(4.2, 10);
   });
 
+  it("finds discontinued operations from continuing-ops EPS periods when total EPS has no LTM", () => {
+    const facts = withDiscOps.filter(
+      (f) => !(f.concept === EPS && f.period.end === "2026-06-30"),
+    );
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.basis).toBe("continuingOperations");
+    expect(usable(r.metric).value).toBeCloseTo(4.2, 10);
+  });
+
+  it("a conflicting discontinued-operations fact makes EPS Unsupported, never silently 'none'", () => {
+    const k25b = filing(
+      "0000000001-26-000011",
+      "10-K",
+      "2026-02-15",
+      "2025-12-31",
+    );
+    const facts = [
+      ...withDiscOps.filter((f) => f.concept !== DISC),
+      ...series(DISC, [150, 0, 0]),
+      fact({
+        concept: DISC,
+        value: 90,
+        start: "2025-01-01",
+        end: "2025-12-31",
+        filing: k25b, // filed the same day, a different value
+      }),
+    ];
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.metric).toMatchObject({
+      status: "unsupported",
+      reason: { code: "SOURCE_CONFLICT" },
+    });
+  });
+
+  it("names the amount attributable to the parent when it is reported", () => {
+    const ATTR =
+      "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxAttributableToReportingEntity";
+    const facts = [...withDiscOps, ...series(ATTR, [120, 0, 0])];
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.discontinuedOps?.periods[0]).toMatchObject({
+      concept: ATTR,
+      value: 120,
+    });
+  });
+
   it("split detection compares total EPS, not a reclassified continuing-operations EPS", () => {
     const facts = [
       ...withDiscOps,
