@@ -14,11 +14,17 @@ import {
 import type { LTMCalculation, Metric, MetricWarning } from "../types";
 import { formatPercent, formatPerShare } from "@/lib/format";
 import { isUsable, ltmMetric, type LtmMetricResult } from "./common";
+import {
+  describeDiscontinuedOps,
+  findDiscontinuedOps,
+  type DiscontinuedOps,
+} from "./discontinuedOps";
 
 export type EpsCrossCheck =
   | {
       status: "checked";
-      netIncome: number;
+      netIncome: number; // the numerator: LTM net income, or continuing-ops income
+      numeratorConcept: string;
       dilutedShares: number;
       impliedEps: number;
       gap: number; // |EPS − implied| ÷ |EPS|
@@ -26,6 +32,10 @@ export type EpsCrossCheck =
   | { status: "skipped"; reason: string };
 
 export interface EpsResult extends LtmMetricResult {
+  // §5 (0.4.0): total diluted EPS, or continuing operations when a component
+  // period reports discontinued operations.
+  basis: "total" | "continuingOperations";
+  discontinuedOps?: DiscontinuedOps;
   crossCheck: EpsCrossCheck;
   splitSinceLastAnnual: boolean;
   splitEvidence?: string;
@@ -45,11 +55,15 @@ function crossCheck(
   ltm: LTMCalculation,
   eps: number,
   netIncome: Metric,
+  numeratorConcept: string,
 ): EpsCrossCheck {
   if (!isUsable(netIncome))
     return {
       status: "skipped",
-      reason: `LTM net income is ${netIncome.status}`,
+      reason:
+        netIncome.status === "unsupported"
+          ? `LTM ${numeratorConcept} unavailable: ${netIncome.reason.message}`
+          : `LTM ${numeratorConcept} is ${netIncome.status}`,
     };
   const fy = ltm.fy.period;
   const shares = selectFact(input.facts, CONCEPTS.epsCrossCheck[0], {
@@ -68,6 +82,7 @@ function crossCheck(
   return {
     status: "checked",
     netIncome: netIncome.value,
+    numeratorConcept,
     dilutedShares,
     impliedEps,
     gap: Math.abs(eps - impliedEps) / Math.abs(eps),
@@ -125,27 +140,78 @@ function detectSplit(
 }
 
 export function computeEps(input: LtmInput, netIncome: Metric): EpsResult {
-  const r = computeLtm(input, CONCEPTS.dilutedEps);
-  if (r.kind !== "ok")
+  // Split detection and the discontinued-operations periods always come from total
+  // diluted EPS (§5): a reclassification restates continuing-ops EPS, not a split.
+  const total = computeLtm(input, CONCEPTS.dilutedEps);
+  if (total.kind !== "ok")
     return {
-      ...ltmMetric(r, "USD/shares"),
+      ...ltmMetric(total, "USD/shares"),
+      basis: "total",
       crossCheck: { status: "skipped", reason: "LTM EPS unavailable" },
       splitSinceLastAnnual: false,
     };
+  const split = detectSplit(input, total.calc);
+  const splitFields = {
+    splitSinceLastAnnual: split.split,
+    ...(split.evidence ? { splitEvidence: split.evidence } : {}),
+  };
 
-  const check = crossCheck(input, r.calc, r.value, netIncome);
-  const warnings: MetricWarning[] = [];
+  const discOps = findDiscontinuedOps(input.facts, total.calc);
+  let r: typeof total = total;
+  let numerator = netIncome;
+  let numeratorConcept: string = CONCEPTS.netIncome[0];
+  const notes: MetricWarning[] = [];
+  if (discOps) {
+    const cont = computeLtm(input, CONCEPTS.continuingOpsEps);
+    if (cont.kind !== "ok")
+      return {
+        metric: {
+          status: "unsupported",
+          reason: {
+            code:
+              cont.kind === "unsupported" &&
+              cont.reason.code !== "NO_CONCEPT_WITH_ALL_COMPONENTS"
+                ? cont.reason.code
+                : "NO_CONCEPT_WITH_ALL_COMPONENTS",
+            message: `continuing-operations EPS not reported (${cont.reason.message}); discontinued operations in ${describeDiscontinuedOps(discOps)}`,
+          },
+          warnings: cont.warnings,
+        },
+        ltm: cont.calc,
+        basis: "continuingOperations",
+        discontinuedOps: discOps,
+        crossCheck: {
+          status: "skipped",
+          reason: "continuing-operations EPS not reported",
+        },
+        ...splitFields,
+      };
+    r = cont;
+    numeratorConcept = CONCEPTS.continuingOpsIncome[0];
+    numerator = ltmMetric(
+      computeLtm(input, CONCEPTS.continuingOpsIncome),
+      "USD",
+    ).metric;
+    notes.push({
+      code: "W_EPS_CONTINUING_OPS",
+      message: `diluted EPS is from continuing operations (${CONCEPTS.continuingOpsEps[0]}) because discontinued operations are reported: ${describeDiscontinuedOps(discOps)}`,
+      severity: "info",
+    });
+  }
+
+  const check = crossCheck(input, r.calc, r.value, numerator, numeratorConcept);
+  const warnings: MetricWarning[] = [...notes];
   if (check.status === "checked" && check.gap > EPS_CROSSCHECK_TOLERANCE)
     warnings.push({
       code: "W_EPS_CROSSCHECK",
-      message: `LTM diluted EPS ${formatPerShare(r.value)} differs by ${formatPercent(check.gap)} from LTM net income ÷ FY diluted shares (${formatPerShare(check.impliedEps)})`,
+      message: `LTM diluted EPS ${formatPerShare(r.value)} differs by ${formatPercent(check.gap)} from LTM ${discOps ? "continuing-operations income" : "net income"} ÷ FY diluted shares (${formatPerShare(check.impliedEps)})`,
       severity: "caution",
     });
-  const split = detectSplit(input, r.calc);
   return {
     ...ltmMetric(r, "USD/shares", warnings),
+    basis: discOps ? "continuingOperations" : "total",
+    ...(discOps ? { discontinuedOps: discOps } : {}),
     crossCheck: check,
-    splitSinceLastAnnual: split.split,
-    ...(split.evidence ? { splitEvidence: split.evidence } : {}),
+    ...splitFields,
   };
 }

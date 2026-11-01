@@ -411,6 +411,154 @@ describe("diluted EPS (§5)", () => {
   });
 });
 
+describe("diluted EPS, continuing operations (§5, methodology 0.4.0)", () => {
+  const EPS = "us-gaap:EarningsPerShareDiluted";
+  const CONT_EPS = "us-gaap:IncomeLossFromContinuingOperationsPerDilutedShare";
+  const CONT_NI = "us-gaap:IncomeLossFromContinuingOperations";
+  const DISC = "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax";
+  const DISC_PER_SHARE =
+    "us-gaap:DiscontinuedOperationIncomeLossFromDiscontinuedOperationNetOfTaxPerDilutedShare";
+  const SH = "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding";
+  const NI = "us-gaap:NetIncomeLoss";
+  const shares = fact({
+    concept: SH,
+    value: 100,
+    start: "2025-01-01",
+    end: "2025-12-31",
+    filing: k25,
+    unit: "shares",
+  });
+  // FY2025 includes a 150 gain from discontinued operations (1.50 a share).
+  const withDiscOps = [
+    ...series(EPS, [5.5, 2.2, 2.0], "USD/shares"),
+    ...series(CONT_EPS, [4.0, 2.2, 2.0], "USD/shares"),
+    ...series(NI, [550, 220, 200]),
+    ...series(CONT_NI, [400, 220, 200]),
+    ...series(DISC, [150, 0, 0]),
+    shares,
+  ];
+  const ni = (facts: ReportedFinancialFact[]) =>
+    computeNetIncome(at(facts)).metric;
+
+  it("uses continuing-operations EPS when a component period reports discontinued operations", () => {
+    const r = computeEps(at(withDiscOps), ni(withDiscOps));
+    const m = usable(r.metric);
+    expect(m.value).toBeCloseTo(4.2, 10); // 4.00 + 2.20 − 2.00, not 5.50 + 2.20 − 2.00
+    expect(m.formula).toContain(CONT_EPS);
+    expect(r.basis).toBe("continuingOperations");
+    const note = m.warnings.find((w) => w.code === "W_EPS_CONTINUING_OPS");
+    expect(note).toMatchObject({ severity: "info" });
+    expect(note?.message).toContain("FY 2025-01-01 to 2025-12-31"); // names the period
+    expect(r.discontinuedOps?.periods).toHaveLength(1);
+    expect(r.discontinuedOps?.periods[0]).toMatchObject({
+      role: "fy",
+      concept: DISC,
+      value: 150,
+    });
+  });
+
+  it("detects discontinued operations from a per-share fact alone", () => {
+    const facts = [
+      ...withDiscOps.filter((f) => f.concept !== DISC),
+      ...series(DISC_PER_SHARE, [1.5, 0, 0], "USD/shares"),
+    ];
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.basis).toBe("continuingOperations");
+    expect(usable(r.metric).value).toBeCloseTo(4.2, 10);
+  });
+
+  it("is Unsupported when a continuing-operations EPS component is missing", () => {
+    const facts = withDiscOps.filter(
+      (f) => !(f.concept === CONT_EPS && f.period.end === "2026-06-30"),
+    );
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.metric.status).toBe("unsupported");
+    if (r.metric.status !== "unsupported") return;
+    expect(r.metric.reason.message).toContain(
+      "continuing-operations EPS not reported",
+    );
+  });
+
+  it("changes nothing when every discontinued-operations fact is zero", () => {
+    const facts = withDiscOps.map((f) =>
+      f.concept === DISC ? { ...f, value: 0 } : f,
+    );
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.basis).toBe("total");
+    expect(usable(r.metric).value).toBeCloseTo(5.7, 10);
+    expect(r.metric.warnings.map((w) => w.code)).not.toContain(
+      "W_EPS_CONTINUING_OPS",
+    );
+  });
+
+  it("cross-checks against LTM continuing-operations income", () => {
+    const r = computeEps(at(withDiscOps), ni(withDiscOps));
+    // 420 ÷ 100 = 4.20, exactly the continuing EPS; total NI would give 5.70
+    expect(r.crossCheck).toMatchObject({ status: "checked", gap: 0 });
+    if (r.crossCheck.status !== "checked") return;
+    expect(r.crossCheck.numeratorConcept).toBe(CONT_NI);
+  });
+
+  it("does not run the cross-check when continuing-operations income lacks a component", () => {
+    const facts = withDiscOps.filter((f) => f.concept !== CONT_NI);
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.crossCheck.status).toBe("skipped");
+    if (r.crossCheck.status !== "skipped") return;
+    expect(r.crossCheck.reason).toContain(CONT_NI);
+    expect(usable(r.metric).value).toBeCloseTo(4.2, 10);
+  });
+
+  it("split detection compares total EPS, not a reclassified continuing-operations EPS", () => {
+    const facts = [
+      ...withDiscOps,
+      // Continuing-ops prior YTD first filed at 4.00, restated to 2.00 by a
+      // reclassification: a 2x ratio, but total EPS was never restated.
+      fact({
+        concept: CONT_EPS,
+        value: 4.0,
+        start: "2025-01-01",
+        end: "2025-06-30",
+        filing: q2Of2025,
+        unit: "USD/shares",
+      }),
+      fact({
+        concept: EPS,
+        value: 2.0,
+        start: "2025-01-01",
+        end: "2025-06-30",
+        filing: q2Of2025,
+        unit: "USD/shares",
+      }),
+    ];
+    expect(computeEps(at(facts), ni(facts)).splitSinceLastAnnual).toBe(false);
+  });
+});
+
+describe("D&A with discontinued operations (§4, methodology 0.4.0)", () => {
+  const DA = "us-gaap:DepreciationDepletionAndAmortization";
+  const DISC = "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax";
+
+  it("adds the caution W_DA_INCLUDES_DISC_OPS without changing the value", () => {
+    const facts = [...series(DA, [50, 30, 25]), ...series(DISC, [0, 0, -12])];
+    const m = usable(computeDa(at(facts)).metric);
+    expect(m.value).toBe(55);
+    expect(m.warnings).toContainEqual(
+      expect.objectContaining({
+        code: "W_DA_INCLUDES_DISC_OPS",
+        severity: "caution",
+        message: "cash-flow D&A may include discontinued operations",
+      }),
+    );
+  });
+
+  it("no caution without discontinued operations", () => {
+    const facts = series(DA, [50, 30, 25]);
+    expect(
+      computeDa(at(facts)).metric.warnings.map((w) => w.code),
+    ).not.toContain("W_DA_INCLUDES_DISC_OPS");
+  });
+});
+
 describe("isSplitLike (§5, §14)", () => {
   it.each([
     [2, true],
