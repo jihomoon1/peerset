@@ -409,6 +409,45 @@ describe("diluted EPS (§5)", () => {
     ];
     expect(computeEps(at(facts), ni(facts)).splitSinceLastAnnual).toBe(false);
   });
+
+  // Methodology 0.4.1: a restatement explained by a split on or before the last
+  // fiscal year end is already reflected in the 10-K, so it is not "since" it.
+  const priorYtdFirstFiled = (value: number) =>
+    fact({
+      concept: EPS,
+      value,
+      start: "2025-01-01",
+      end: "2025-06-30",
+      filing: q2Of2025,
+      unit: "USD/shares",
+    });
+  const splitRatio = (value: number) =>
+    fact({
+      concept: "us-gaap:StockholdersEquityNoteStockSplitConversionRatio1",
+      value,
+      start: "2025-08-29",
+      end: "2025-08-29",
+      filing: k25,
+      unit: "pure",
+    });
+
+  it("no split since the 10-K: the restatement matches a split before the fiscal year end (0.4.1)", () => {
+    // first filed 4.00, restated 2.00: r = 2; split ratio 2 dated 2025-08-29 ≤ FY end
+    const facts = [...base, priorYtdFirstFiled(4.0), splitRatio(2)];
+    expect(computeEps(at(facts), ni(facts)).splitSinceLastAnnual).toBe(false);
+  });
+
+  it("a reverse split before the fiscal year end also explains it, like Lucid's 1-for-10 (0.4.1)", () => {
+    // first filed 0.20, restated 2.00: r = 0.1; split ratio 0.1
+    const facts = [...base, priorYtdFirstFiled(0.2), splitRatio(0.1)];
+    expect(computeEps(at(facts), ni(facts)).splitSinceLastAnnual).toBe(false);
+  });
+
+  it("a pre-year-end split ratio that does not match the restatement does not explain it", () => {
+    // r = 2, split ratio 3: still a split-like restatement with no matching split
+    const facts = [...base, priorYtdFirstFiled(4.0), splitRatio(3)];
+    expect(computeEps(at(facts), ni(facts)).splitSinceLastAnnual).toBe(true);
+  });
 });
 
 describe("diluted EPS, continuing operations (§5, methodology 0.4.0)", () => {

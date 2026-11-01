@@ -95,16 +95,16 @@ function detectSplit(
   opts: { restatement: boolean },
 ): { split: boolean; evidence?: string } {
   const fyEnd = ltm.fy.period.end;
-  const ratioFact = input.facts.find(
+  const ratioFacts = input.facts.filter(
     (f) =>
       CONCEPTS.stockSplit.includes(
         f.concept as (typeof CONCEPTS.stockSplit)[number],
       ) &&
       Object.keys(f.dimensions).length === 0 &&
       PERIODIC_FORMS.has(f.filing.form) &&
-      f.period.end > fyEnd &&
       f.value !== 1,
   );
+  const ratioFact = ratioFacts.find((f) => f.period.end > fyEnd);
   if (ratioFact)
     return {
       split: true,
@@ -132,7 +132,17 @@ function detectSplit(
   )
     return { split: false };
   const ratio = original.value / restated.value;
-  return isSplitLike(ratio)
+  // 0.4.1: a split dated on or before the last fiscal year end that matches the
+  // ratio (within the split-like tolerance) is already reflected in the 10-K.
+  const size = (r: number) => Math.max(r, 1 / r);
+  const explained = ratioFacts.some(
+    (f) =>
+      f.period.end <= fyEnd &&
+      f.value > 0 &&
+      Math.abs(size(ratio) - size(f.value)) / size(f.value) <=
+        SPLIT_LIKE_RATIO.tolerance,
+  );
+  return isSplitLike(ratio) && !explained
     ? {
         split: true,
         evidence: `prior-year YTD EPS first filed as ${original.value} (${original.filing.accession}), restated to ${restated.value} (${restated.filing.accession}): ratio ${formatPerShare(ratio)}`,

@@ -1,6 +1,6 @@
 # PeerSet methodology
 
-**Methodology version: 0.4.0** · Status: **approved by Jiho Moon, November 1, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a; 0.3.4 in M4b planning; 0.3.5 after M4b; 0.4.0 in M6 planning)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
+**Methodology version: 0.4.1** · Status: **approved by Jiho Moon, November 1, 2026 (0.3.0 approved in M2a planning; 0.3.1 in M2b planning; 0.3.2 in M2b review; 0.3.3 in M4a; 0.3.4 in M4b planning; 0.3.5 after M4b; 0.4.0 in M6 planning; 0.4.1 in M6)** · Source: `docs/blueprint.md` §7 (with §8.3 and §10.2 where they set policy), as amended in section 15
 
 This file is the single source of truth for PeerSet's financial definitions. Code in `src/domain/policy.ts` must match it. Any change to a definition or constant bumps the methodology version and is recorded in the commit message.
 
@@ -66,7 +66,7 @@ Q4 is never derived. A 53-week year inside the window adds the warning "LTM cove
 - The cross-check then uses LTM income from continuing operations attributable to the parent (`IncomeLossFromContinuingOperations`, same bridge) ÷ fiscal-year weighted-average diluted shares. If that concept lacks a component, the cross-check is not run, and the drawer says so.
 - Split detection always compares `EarningsPerShareDiluted`, never continuing-operations EPS, because a discontinued-operations reclassification restates continuing-operations EPS without any split.
 - Cross-check against LTM net income ÷ fiscal-year weighted-average diluted shares. A gap above 5% adds a warning, not a suppression.
-- A stock split since the last 10-K makes P/E Unsupported ("split since last 10-K"). Detection: a split-ratio fact (`StockholdersEquityNoteStockSplitConversionRatio1`, value other than 1) for a period ending after the last fiscal year end, or the 10-Q's restated prior-YTD EPS differing from the originally filed value by a split-like ratio.
+- A stock split since the last 10-K makes P/E Unsupported ("split since last 10-K"). Detection: a split-ratio fact (`StockholdersEquityNoteStockSplitConversionRatio1`, value other than 1) for a period ending after the last fiscal year end, or the 10-Q's restated prior-YTD EPS differing from the originally filed value by a split-like ratio. The restatement test is skipped when a split-ratio fact dated on or before the last fiscal year end matches the ratio (max(r, 1/r) within 2% of the fact's max(value, 1/value)): that split is already reflected in the 10-K. Example: Lucid's 1-for-10 reverse split of August 29, 2025 restates its first-filed six-month 2025 EPS of (0.52) to (5.18), but the FY2025 10-K is already post-split, so it is not a split since the last 10-K.
 - **Split-like ratio.** With r = originally filed prior-YTD EPS ÷ restated prior-YTD EPS, the ratio is split-like when max(r, 1/r) is within 2% of 1.5 (3-for-2) or of a whole number from 2 to 50 (2-for-1 through 50-for-1; reverse splits show as 1/r).
 - P/E = price ÷ LTM diluted EPS, single-class companies only. Multi-class P/E is Unsupported.
 
@@ -204,7 +204,7 @@ Peers are screened from a monthly index built from SEC bulk data (`data/peer-ind
 - **Tiers.** Same 4-digit SIC. If fewer than 5 companies pass both eligibility and the size band, widen to the 3-digit group, then the 2-digit major group. At the 2-digit group, all qualifying companies are returned even if fewer than 5.
 - **Rank and select.** By |ln(peer ÷ target)|, ties by ticker in plain character order; keep 8 by default, 5–12 on request. Every peer gets a reason ("SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29") and every exclusion a code.
 
-## 14. Policy constants (v0.4.0)
+## 14. Policy constants (v0.4.1)
 
 | Constant                                            | Value                                      | Section            |
 | --------------------------------------------------- | ------------------------------------------ | ------------------ |
@@ -244,3 +244,4 @@ Thresholds marked in blueprint §23 decision 3 (100x, 75 days, 5% EPS, 5% NCI) a
 | 0.3.4   | October 29, 2026 | Wording only, no value changes: statistics list the 25th and 75th percentiles, count failed peers as excluded and are empty (never 0) with no valid value (§11); the lag flag's median is over loaded peers' LTM ends in day numbers, the target is checked against it, code `W_PERIOD_LAG` (§12). Approved by Jiho in M4b planning                                                                                                        |
 | 0.3.5   | October 30, 2026 | Writes down rules M4b's implied valuation already applies (no value changes): the implied price is Unsupported when the target's metric is ≤ 0, when the target has several share classes, or when its share count is blocked or absent (§13). Approved by Jiho after M4b                                                                                                                                                                  |
 | 0.4.0   | November 1, 2026 | P/E uses continuing-operations diluted EPS when an LTM component period reports discontinued operations (`W_EPS_CONTINUING_OPS`); P/E Unsupported if a component is missing; the cross-check uses continuing-operations income; split detection stays on total EPS; D&A caution `W_DA_INCLUDES_DISC_OPS`; per-share facts in `USD/shares`. The implied price is Unsupported when implied equity value ≤ 0. Approved by Jiho in M6 planning |
+| 0.4.1   | November 1, 2026 | Split detection (§5): the restatement test is skipped when a split-ratio fact dated on or before the last fiscal year end matches the ratio, because the 10-K already reflects that split. Found with the Lucid fixture, whose 2025 reverse split predates its FY2025 10-K. No current golden value changes. Approved by Jiho in M6                                                                                                        |

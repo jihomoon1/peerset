@@ -126,7 +126,7 @@ describe("GET /api/fundamentals", () => {
         "fundamentals",
         "0001069202",
         "0001069202-26-000087",
-        "0.4.0",
+        "0.4.1",
         `cache-v${FUNDAMENTALS_CACHE_VERSION}`,
       ],
       revalidate: 86_400,

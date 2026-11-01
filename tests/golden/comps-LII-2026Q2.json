@@ -2,7 +2,7 @@
   "target": "LII",
   "peers": ["CARR", "AAON", "TT", "WSO", "JCI"],
   "analysisDate": "2026-10-26",
-  "methodologyVersion": "0.4.0",
+  "methodologyVersion": "0.4.1",
   "prices": {
     "asOfDate": "2026-10-23",
     "source": "user_entered",

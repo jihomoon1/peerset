@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.4.0";
+export const METHODOLOGY_VERSION = "0.4.1";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
