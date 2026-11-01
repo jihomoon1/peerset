@@ -1,6 +1,6 @@
 # 0004 — Negative-EBITDA candidate: Lucid Group (LCID)
 
-Date: October 23, 2026 · Status: proposed for the M6 fixture (research only; no fixture captured)
+Date: October 23, 2026 · Status: **accepted** (November 1, 2026): fixture `tests/fixtures/sec/LCID/2026Q2` captured in M6; goldens `tests/golden/LCID-2026Q2*.json`; reconciliation `docs/reconciliation/LCID.md`
 
 ## Candidate
 
@@ -44,3 +44,9 @@ Expected PeerSet behavior: EV/EBITDA is **NM** ("EBITDA ≤ 0"), and the negativ
 - Values are as filed; reconfirm against the latest filing when the fixture is captured (Lucid's Q3 2026 10-Q is likely due in early November 2026).
 - The prior-YTD D&A in the 10-Q instance is written as `209000000.0` (decimal form). The M1 parser must accept decimal-formatted numbers.
 - D&A carries `decimals="-5"` (rounded to 0.1M); operating income `decimals="-3"`.
+
+## Outcome (M6, November 1, 2026)
+
+- The captured 10-Q (0001628280-26-052606) gives exactly the LTM values above. No Q3 2026 10-Q existed yet.
+- EV/EBITDA is NM ("EBITDA ≤ 0") at the test price 20.00 (EV 10,481,518,520 > 0); P/E is NM ("EPS ≤ 0").
+- Two findings: Lucid's 2025 reverse split predates the FY2025 10-K but tripped the restatement split test, fixed by methodology 0.4.1; and its $2.9 billion temporary-equity preferred is Unsupported under §9, so EV has no "not in EV" warning (a known limitation).

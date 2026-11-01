@@ -26,7 +26,9 @@ interface GoldenItem {
   crossCheck?: { concept: string; value: number };
 }
 type GoldenSingle =
-  { status: "missing" } | { status: "derived"; concept: string; value: number };
+  | { status: "missing" }
+  | { status: "unsupported"; code: string }
+  | { status: "derived"; concept: string; value: number };
 interface Golden {
   ticker: string;
   cik: string;
@@ -150,6 +152,11 @@ describe.each(goldens.map((g) => [g.ticker, g] as const))(
       ] as const) {
         if (golden.status === "missing")
           expect(item.metric.status).toBe("missing");
+        else if (golden.status === "unsupported")
+          expect(item.metric).toMatchObject({
+            status: "unsupported",
+            reason: { code: golden.code },
+          });
         else
           expect(item.metric).toMatchObject({
             status: "derived",
@@ -167,11 +174,12 @@ describe.each(goldens.map((g) => [g.ticker, g] as const))(
   },
 );
 
-it("has the balance-sheet goldens: six from M2a/M4b plus LII Q3 (M6)", () => {
+it("has the balance-sheet goldens: six from M2a/M4b plus LII Q3 and LCID (M6)", () => {
   expect(goldens.map((g) => g.fixture).sort()).toEqual([
     "AAON/2026Q2",
     "CARR/2026Q2",
     "GGG/2026Q3",
+    "LCID/2026Q2",
     "LII/2026Q2",
     "LII/2026Q3",
     "TT/2026Q2",
