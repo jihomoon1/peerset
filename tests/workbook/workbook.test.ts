@@ -20,7 +20,7 @@ import {
   GOLDEN_REQUEST,
 } from "../helpers/exportFixture";
 import { fixtureFundamentals } from "../helpers/fundamentals";
-import { readZipEntry } from "../helpers/zip";
+import { cachedValues, readZipEntry } from "../helpers/zip";
 
 // Workbook validation (blueprint §16, §17): the generated file is read back with
 // ExcelJS and checked against the snapshot it was built from.
@@ -225,6 +225,26 @@ describe("statistics", () => {
     },
   );
 
+  it("n excluded counts the peers shown as NM, — or Unsupported", async () => {
+    const xml = cachedValues(
+      await readZipEntry(buffer, "xl/worksheets/sheet1.xml"),
+    );
+    const r = rowByLabel(comps, "n excluded");
+    for (const col of STAT_COLUMNS) {
+      const v = comps.getCell(r, colOf(col)).value;
+      expect(isFormula(v), col).toBe(true);
+      if (!isFormula(v)) continue;
+      expect(v.formula).toBe(
+        `COUNTA(${range(colOf(col))})-COUNT(${range(colOf(col))})`,
+      );
+      // Read from the XML: ExcelJS's reader drops a cached result of 0.
+      expect(xml.get(comps.getCell(r, colOf(col)).address), col).toBe(
+        snapshot.table.stats[col].excluded.filter((e) => e.status !== "failed")
+          .length,
+      );
+    }
+  });
+
   it("no statistic covers the target row", () => {
     const r = rowByLabel(comps, "Mean");
     for (const col of STAT_COLUMNS) {
@@ -325,9 +345,96 @@ describe("formatting", () => {
       expect(l).toMatch(/^HYPERLINK\("https:\/\/www\.sec\.gov\//);
   });
 
+  // Guards the XML reader the LibreOffice check relies on.
+  it("cached values read from the sheet XML agree with ExcelJS's", async () => {
+    let checked = 0;
+    for (const [i, ws] of wb.worksheets.entries()) {
+      const xml = cachedValues(
+        await readZipEntry(buffer, `xl/worksheets/sheet${i + 1}.xml`),
+      );
+      ws.eachRow((row) =>
+        row.eachCell((c) => {
+          if (!isFormula(c.value) || c.value.result === undefined) return;
+          expect(xml.get(c.address), `${ws.name}!${c.address}`).toBe(
+            c.value.result,
+          );
+          checked++;
+        }),
+      );
+    }
+    expect(checked).toBeGreaterThan(300);
+  });
+
   it("stays well under Vercel's 4.5 MB limit", () => {
     expect(bytes).toBeLessThan(500_000);
   });
+});
+
+describe("statuses outside the table", () => {
+  it("an Unsupported not-in-EV item reads Unsupported, not —", async () => {
+    const lii = await fixtureFundamentals("LII");
+    const unsupported = {
+      ...lii,
+      evAdjustments: {
+        ...lii.evAdjustments,
+        nci: {
+          ...lii.evAdjustments.nci,
+          metric: {
+            status: "unsupported" as const,
+            reason: {
+              code: "UNRECOGNIZED_EQUITY_LINE" as const,
+              message: "test line",
+            },
+            warnings: [],
+          },
+        },
+      },
+    };
+    const s = buildExportSnapshot({
+      target: unsupported,
+      peers: [],
+      quotes: [],
+      analysisDate: "2026-10-26",
+      generatedAt: GENERATED_AT,
+      appVersion: "test",
+      peerSelection: null,
+    });
+    const { wb } = await roundTrip(s);
+    const calc = wb.getWorksheet(SHEET_NAMES.calc)!;
+    const r = rowByLabel(calc, "Noncontrolling interest");
+    expect(calc.getCell(r, 3).value).toBe("Unsupported");
+  }, 30_000);
+
+  it("Sources marks facts from an LTM build that failed its checks as not used", async () => {
+    const lii = await fixtureFundamentals("LII");
+    const calc = lii.ltmDetail.netIncome;
+    const failed = {
+      ...lii,
+      ltmDetail: { ...lii.ltmDetail, netIncome: { ...calc, value: undefined } },
+    };
+    const s = buildExportSnapshot({
+      target: failed,
+      peers: [],
+      quotes: [],
+      analysisDate: "2026-10-26",
+      generatedAt: GENERATED_AT,
+      appVersion: "test",
+      peerSelection: null,
+    });
+    const { wb } = await roundTrip(s);
+    const labels: string[] = [];
+    wb.getWorksheet(SHEET_NAMES.sources)!.eachRow((row) =>
+      labels.push(String(row.getCell(2).value)),
+    );
+    expect(labels.filter((l) => l.startsWith("Net income"))).toEqual(
+      expect.arrayContaining([expect.stringMatching(/not used/)]),
+    );
+    expect(
+      labels
+        .filter((l) => l.startsWith("Revenue"))
+        .some((l) => /not used/.test(l)),
+    ).toBe(false);
+  }, 30_000);
 });
 
 describe("text and small values", () => {
@@ -394,6 +501,12 @@ describe("NM, missing and formula injection", { timeout: 30_000 }, () => {
     expect(
       ws.getCell(rowByLabel(ws, "Median"), colOf("revenue")).value,
     ).not.toBe("—");
+    // Methodology §11: the percentiles are shown even without an implied valuation.
+    expect(
+      isFormula(
+        ws.getCell(rowByLabel(ws, "25th percentile"), colOf("revenue")).value,
+      ),
+    ).toBe(true);
     ws.eachRow((row) =>
       row.eachCell((c) => {
         if (isFormula(c.value) && c.value.formula.startsWith("MAX("))

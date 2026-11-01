@@ -79,3 +79,22 @@ export function readZipEntry(zip: Buffer, name: string): Promise<string> {
     });
   });
 }
+
+// Cached cell values straight from a worksheet's XML (`xl/worksheets/sheetN.xml`),
+// keyed by address: numbers as numbers, everything else as its text. ExcelJS's reader
+// drops a cached formula result of exactly 0, so tests that need it read the XML.
+export function cachedValues(sheetXml: string): Map<string, number | string> {
+  const out = new Map<string, number | string>();
+  for (const m of sheetXml.matchAll(
+    /<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g,
+  )) {
+    const v = /<v>([\s\S]*?)<\/v>/.exec(m[3] ?? "");
+    if (!v) continue;
+    const type = /\bt="([^"]+)"/.exec(m[2])?.[1];
+    out.set(
+      m[1],
+      type === "str" || type === "s" || type === "e" ? v[1] : Number(v[1]),
+    );
+  }
+  return out;
+}

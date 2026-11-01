@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { buildWorkbook } from "@/export/workbook";
 import { loadExportSnapshot } from "@/lib/exportSnapshot";
 import { fixtureDeps, GOLDEN_REQUEST } from "../helpers/exportFixture";
+import { cachedValues, readZipEntry } from "../helpers/zip";
 
 // Independent recalculation (blueprint §16, ADR 0010): the comps-golden workbook is
 // written with every cached formula result removed, LibreOffice opens it headless with
@@ -91,24 +92,28 @@ describe.skipIf(!available && !required)(
         { stdio: "inherit", timeout: 120_000 },
       );
 
+      const outBuffer = readFileSync(path.join(outDir, "comps-golden.xlsx"));
       const recalculated = new ExcelJS.Workbook();
-      await recalculated.xlsx.load(
-        readFileSync(
-          path.join(outDir, "comps-golden.xlsx"),
-        ) as unknown as ArrayBuffer,
+      await recalculated.xlsx.load(outBuffer as unknown as ArrayBuffer);
+      // LibreOffice's values come from the sheet XML: ExcelJS's reader drops a
+      // cached result of 0.
+      const valuesOf = await Promise.all(
+        original.worksheets.map(async (_, i) =>
+          cachedValues(
+            await readZipEntry(outBuffer, `xl/worksheets/sheet${i + 1}.xml`),
+          ),
+        ),
       );
 
       let compared = 0;
       const mismatches: string[] = [];
-      for (const ws of original.worksheets) {
-        const other = recalculated.getWorksheet(ws.name);
-        expect(other, ws.name).toBeDefined();
+      for (const [i, ws] of original.worksheets.entries()) {
+        expect(recalculated.worksheets[i]?.name).toBe(ws.name);
         ws.eachRow((row) =>
           row.eachCell((cell) => {
             const v = cell.value;
             if (!isFormula(v)) return;
-            const got = other!.getCell(cell.address).value;
-            const lo = isFormula(got) ? got.result : got;
+            const lo = valuesOf[i].get(cell.address);
             const at = `${ws.name}!${cell.address} ${v.formula}`;
             compared++;
             if (typeof v.result === "number") {

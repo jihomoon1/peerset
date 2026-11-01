@@ -35,6 +35,12 @@ Every text cell is written as an explicit string through `src/export/sanitize.ts
 - Peers that failed to load are listed under the table, outside every statistics range.
 - Values are stored in USD millions at full precision (÷ 1,000,000, never rounded); number formats do the rounding. Formula cells carry cached results equal to the domain values, and `fullCalcOnLoad` is set.
 - Export prices are keyed by listed ticker per class (`WSO`, `WSO-B`), the same state the URL encodes.
+- **The export treats every price as user-entered, at the one price date sent.** That is the production mode (blueprint §9). In local Alpha Vantage mode the screen can hold provider quotes with their own dates, which the export doesn't carry; if that mode ever reaches production, the request must send per-symbol dates and sources.
+- **Two formats beyond blueprint §17's table:** a nonzero amount under 0.05M uses `#,##0.000_);(#,##0.000)` so it never reads 0.0 (AAON's $13,000 cash), and shares in millions use the same three decimals.
+- **Totals tie out or say so.** Market cap, total debt and cash are a `SUM` of the lines above them when those lines add up to the domain's total within half a cent. If they don't (which no golden company does), the domain total is written as a blue input with the note "Total as computed by PeerSet", never as a formula that would give a different number.
+- **A non-finite value fails the export.** If a Reported or Derived value is not a finite number (for example a cover share count of 0, making an implied price infinite), the writer throws and the route answers 500 rather than write a false number. The screen's statistics treat such a value as an exclusion, so in that rare case the screen shows a table and the export refuses.
+- **Statistics rows:** Mean, Median, High, Low, 25th and 75th percentile, n and n excluded, always (methodology §11, matching the web table; blueprint §17 lists only the first five and n). "n excluded" counts peers in the range shown as NM, — or Unsupported; peers that failed to load are listed under the table and named in that cell's note.
+- **ExcelJS reader quirk:** ExcelJS writes a cached result of 0 correctly (`<v>0</v>`) but drops it when reading a file back. Tests that need such values, including the LibreOffice comparison, read cached values from the sheet XML (`tests/helpers/zip.ts`, `cachedValues`). Excel and LibreOffice are unaffected.
 
 ## LibreOffice recalculation (CI)
 

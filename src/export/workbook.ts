@@ -617,11 +617,15 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
           ? `balance sheet: ${cite(src)}`
           : "PeerSet: from the balance-sheet face (methodology §9)",
       );
-    } else
-      putDash(
-        row.getCell(3),
-        item.status === "missing" ? "no such line" : item.status,
-      );
+    } else {
+      // Methodology §1: Missing reads "—", Unsupported and NM say so, with the reason.
+      const item_ =
+        item.item === "preferred"
+          ? f.evAdjustments.preferred
+          : f.evAdjustments.nci;
+      if (item.status === "missing") putDash(row.getCell(3), "no such line");
+      else putStatus(row.getCell(3), item_.metric);
+    }
   }
   cur.skip();
   {
@@ -730,6 +734,13 @@ const STAT_ROWS = [
     fn: (rng: string) => `_xlfn.PERCENTILE.INC(${rng},0.75)`,
   },
   { label: "n", stat: "nValid", fn: (rng: string) => `COUNT(${rng})` },
+  // Peers in the range shown as NM, — or Unsupported (failed peers are listed below
+  // the table, outside the range).
+  {
+    label: "n excluded",
+    stat: "nExcluded",
+    fn: (rng: string) => `COUNTA(${rng})-COUNT(${rng})`,
+  },
 ] as const;
 
 function tradingComps(
@@ -790,13 +801,9 @@ function tradingComps(
   // Statistics: formulas over the loaded peer rows only (the target is row 9).
   const last = FIRST_PEER_ROW + loaded.length - 1;
   let r = FIRST_PEER_ROW + Math.max(loaded.length, 1) + 1;
-  const showPercentiles = IMPLIED_MULTIPLES.some(
-    (m) => s.implied[m.key].status === "ok",
-  );
+  // Every methodology §11 statistic, as the web table shows them.
   const statRow: Partial<Record<string, number>> = {};
   for (const spec of STAT_ROWS) {
-    if ((spec.stat === "p25" || spec.stat === "p75") && !showPercentiles)
-      continue;
     const row = ws.getRow(r);
     statRow[spec.stat] = r;
     putText(row.getCell(1), spec.label, { bold: true });
@@ -808,7 +815,13 @@ function tradingComps(
     for (const col of STAT_COLUMNS) {
       const cell = row.getCell(colOf(col));
       const stats = table.stats[col as StatColumn];
-      const value = spec.stat === "nValid" ? stats.nValid : stats[spec.stat];
+      const failed = stats.excluded.filter((e) => e.status === "failed").length;
+      const value =
+        spec.stat === "nValid"
+          ? stats.nValid
+          : spec.stat === "nExcluded"
+            ? stats.nExcluded - failed
+            : stats[spec.stat];
       if (loaded.length === 0 || value === null) {
         putDash(
           cell,
@@ -817,10 +830,8 @@ function tradingComps(
         continue;
       }
       const L = letterOf(col);
-      const fmt =
-        spec.stat === "nValid"
-          ? null
-          : COMPS_SHEET_COLUMNS[colOf(col) - 1].fmt!;
+      const count = spec.stat === "nValid" || spec.stat === "nExcluded";
+      const fmt = count ? null : COMPS_SHEET_COLUMNS[colOf(col) - 1].fmt!;
       if (fmt === null) {
         cell.value = {
           formula: spec.fn(`${L}${FIRST_PEER_ROW}:${L}${last}`),
@@ -828,6 +839,8 @@ function tradingComps(
         };
         cell.numFmt = "0";
         cell.font = font("formula");
+        if (spec.stat === "nExcluded" && failed > 0)
+          cell.note = `plus ${failed} peer${failed === 1 ? "" : "s"} not loaded, listed below the table`;
       } else
         putFormula(
           cell,
@@ -1085,10 +1098,15 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
         : METRIC_KEYS.includes(key as MetricKey)
           ? METRIC_LABEL[key as MetricKey]
           : key;
-      fact(row.ticker, `${label}: FY`, calc.fy);
-      if (calc.ytdCurrent) fact(row.ticker, `${label}: YTD`, calc.ytdCurrent);
+      // A build that failed a §2 check fed no number: say so rather than list its
+      // facts as used.
+      const used =
+        calc.value === undefined ? " (not used: LTM checks failed)" : "";
+      fact(row.ticker, `${label}: FY${used}`, calc.fy);
+      if (calc.ytdCurrent)
+        fact(row.ticker, `${label}: YTD${used}`, calc.ytdCurrent);
       if (calc.ytdPrior)
-        fact(row.ticker, `${label}: prior-year YTD`, calc.ytdPrior);
+        fact(row.ticker, `${label}: prior-year YTD${used}`, calc.ytdPrior);
     }
     for (const c of f.shareClasses.classes)
       fact(
@@ -1155,7 +1173,7 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
     "LTM after a 10-Q = FY(prior) + YTD(current) − YTD(prior year); after a 10-K = that fiscal year. Q4 is never derived.",
     "EBITDA (standardized, unadjusted) = operating income + D&A (cash-flow statement). EBITDA margin = EBITDA ÷ revenue.",
     "Equity value = Σ over share classes of price × cover-page shares. EV = equity value + total debt − cash and short-term investments.",
-    "Total debt and cash are the sums of the lines the company presents on its balance sheet (methodology §7–§8).",
+    "Total debt and cash are the sums of the lines the company presents on its balance sheet (methodology §7–§8). If the face can't be read, the 0.2.1 tag rules are used (W_FACE_UNAVAILABLE). No debt lines, or debt lines with no amount, is a reported 0.",
     "EV/Revenue = EV ÷ LTM revenue · EV/EBITDA = EV ÷ LTM EBITDA · P/E = price ÷ LTM diluted EPS (single-class companies only).",
     "Implied valuation = target LTM metric × peer 25th percentile, median and 75th percentile multiple; less debt, plus cash; ÷ shares.",
   ]);
