@@ -86,15 +86,35 @@ describe.each(["GGG-2026Q3", "JCI-2026Q2"])("%s golden", async (name) => {
     expect(Math.abs(value(f.metrics.dilutedEps) - g.ltm)).toBeLessThan(0.005);
   });
 
-  it("EPS cross-check passes (no warning)", () => {
+  it("EPS cross-check: checked, warning only when the golden expects one", () => {
+    const cc = golden.epsCrossCheck;
     expect(f.eps.crossCheck).toMatchObject({
       status: "checked",
-      dilutedShares: golden.epsCrossCheck.fyDilutedShares,
+      dilutedShares: cc.fyDilutedShares,
+      ...(cc.numerator
+        ? {
+            numeratorConcept: cc.numerator.concept,
+            netIncome: cc.numerator.ltm,
+          }
+        : {}),
     });
-    expect(f.metrics.dilutedEps.warnings.map((w) => w.code)).not.toContain(
-      "W_EPS_CROSSCHECK",
-    );
+    const codes = f.metrics.dilutedEps.warnings.map((w) => w.code);
+    if (cc.expectWarning) expect(codes).toContain("W_EPS_CROSSCHECK");
+    else expect(codes).not.toContain("W_EPS_CROSSCHECK");
     expect(f.eps.splitSinceLastAnnual).toBe(false);
+  });
+
+  it("discontinued operations (methodology 0.4.0): notes only when reported", () => {
+    const d = golden.discontinuedOperations;
+    const epsCodes = f.metrics.dilutedEps.warnings.map((w) => w.code);
+    const daCodes = f.metrics.da.warnings.map((w) => w.code);
+    if (d) {
+      expect(epsCodes).toContain(d.expectedWarnings.dilutedEps);
+      expect(daCodes).toContain(d.expectedWarnings.da);
+    } else {
+      expect(epsCodes).not.toContain("W_EPS_CONTINUING_OPS");
+      expect(daCodes).not.toContain("W_DA_INCLUDES_DISC_OPS");
+    }
   });
 
   if (golden.ebitda)

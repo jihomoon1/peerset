@@ -14,8 +14,8 @@
     "end": "2026-06-30"
   },
   "freshness": "filing-parsed",
-  "methodologyVersion": "0.3.5",
-  "note": "Values are read from the rendered filings (R pages of each filing's financial report), not from the engine. Johnson Controls International plc (Irish-domiciled, files 10-K/10-Q in USD) reports in USD millions; the XBRL facts carry decimals=-6, so each value times 1,000,000 is exact to the dollar. Its fiscal year ends September 30, so the June 2026 10-Q is fiscal Q3 2026 and LTM = FY2025 + nine months to June 30, 2026 − nine months to June 30, 2025. The income statement has no operating-income line and the filings tag no OperatingIncomeLoss (none since 2016), so operating income, EBITDA, EBITDA margin and EV/EBITDA are Unsupported (methodology §3). Net income is the line attributable to Johnson Controls. The fixture folder is 2026Q2: the calendar quarter of the period end, like every other fixture.",
+  "methodologyVersion": "0.4.0",
+  "note": "Values are read from the rendered filings (R pages of each filing's financial report), not from the engine. Johnson Controls International plc (Irish-domiciled, files 10-K/10-Q in USD) reports in USD millions; the XBRL facts carry decimals=-6, so each value times 1,000,000 is exact to the dollar. Its fiscal year ends September 30, so the June 2026 10-Q is fiscal Q3 2026 and LTM = FY2025 + nine months to June 30, 2026 − nine months to June 30, 2025. The income statement has no operating-income line and the filings tag no OperatingIncomeLoss (none since 2016), so operating income, EBITDA, EBITDA margin and EV/EBITDA are Unsupported (methodology §3). Net income is the line attributable to Johnson Controls. The fixture folder is 2026Q2: the calendar quarter of the period end, like every other fixture. Methodology 0.4.0 (definition change): every component period reports discontinued operations, so diluted EPS and P/E use continuing-operations EPS; the 0.3.5 total-EPS values are kept under supersededDilutedEps. Evidence: tests/fixtures/sec/JCI/2026Q2/evidence/<accession>/R*.htm.gz.",
   "metrics": {
     "revenue": {
       "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -186,11 +186,12 @@
       "math": "3,291 + 1,886 − 1,598 = 3,579 (USD millions)"
     },
     "dilutedEps": {
-      "concept": "us-gaap:EarningsPerShareDiluted",
+      "concept": "us-gaap:IncomeLossFromContinuingOperationsPerDilutedShare",
       "unit": "USD/shares",
+      "basis": "continuingOperations",
       "components": {
         "fy": {
-          "value": 5.03,
+          "value": 2.63,
           "period": {
             "start": "2024-10-01",
             "end": "2025-09-30"
@@ -201,12 +202,12 @@
             "filed": "2025-11-14",
             "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344425000097/jci-20250930.htm",
             "statement": "Consolidated Statements of Income (R3)",
-            "line": "Diluted earnings per share attributable to Johnson Controls, Net income",
+            "line": "Diluted earnings per share attributable to Johnson Controls, Continuing operations",
             "column": "12 Months Ended Sep. 30, 2025"
           }
         },
         "ytdCurrent": {
-          "value": 3.08,
+          "value": 3.12,
           "period": {
             "start": "2025-10-01",
             "end": "2026-06-30"
@@ -217,12 +218,12 @@
             "filed": "2026-07-29",
             "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/jci-20260630.htm",
             "statement": "Consolidated Statements of Income (R2)",
-            "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Total",
+            "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Continuing operations",
             "column": "9 Months Ended Jun. 30, 2026"
           }
         },
         "ytdPrior": {
-          "value": 2.42,
+          "value": 2.2,
           "period": {
             "start": "2024-10-01",
             "end": "2025-06-30"
@@ -233,13 +234,13 @@
             "filed": "2026-07-29",
             "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/jci-20260630.htm",
             "statement": "Consolidated Statements of Income (R2)",
-            "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Total",
+            "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Continuing operations",
             "column": "9 Months Ended Jun. 30, 2025"
           }
         }
       },
-      "ltm": 5.69,
-      "math": "5.03 + 3.08 − 2.42 = 5.69"
+      "ltm": 3.55,
+      "math": "2.63 + 3.12 − 2.20 = 3.55"
     }
   },
   "epsCrossCheck": {
@@ -253,11 +254,103 @@
       "line": "Diluted weighted average shares outstanding (in millions)",
       "column": "12 Months Ended Sep. 30, 2025"
     },
-    "math": "3,579 ÷ 654.1 = 5.47; gap vs 5.69 is 3.8%, under the 5% warning threshold"
+    "numerator": {
+      "concept": "us-gaap:IncomeLossFromContinuingOperations",
+      "ltm": 2180000000,
+      "math": "1,721 + 1,913 − 1,454 = 2,180",
+      "lines": "Income from continuing operations attributable to Johnson Controls: 10-K R3 (12 Months Ended Sep. 30, 2025) 1,721; 10-Q R2 (9 Months Ended Jun. 30, 2026) 1,913 and (9 Months Ended Jun. 30, 2025) 1,454"
+    },
+    "expectWarning": true,
+    "math": "2,180 ÷ 654.1 = 3.333; gap vs 3.55 is 6.1%, above the 5% threshold, so W_EPS_CROSSCHECK (a caution, not a suppression). The FY share count (654.1M) is higher than the 9M 2026 count (612M), which widens the gap.",
+    "superseded": {
+      "validUnder": "methodology 0.3.5",
+      "math": "3,579 ÷ 654.1 = 5.47; gap vs 5.69 is 3.8%, under the 5% warning threshold"
+    }
   },
   "unsupported": {
     "operatingIncome": "NO_CONCEPT_WITH_ALL_COMPONENTS",
     "ebitda": "INPUT_UNSUPPORTED",
     "ebitdaMargin": "INPUT_UNSUPPORTED"
+  },
+  "supersededDilutedEps": {
+    "concept": "us-gaap:EarningsPerShareDiluted",
+    "unit": "USD/shares",
+    "components": {
+      "fy": {
+        "value": 5.03,
+        "period": {
+          "start": "2024-10-01",
+          "end": "2025-09-30"
+        },
+        "source": {
+          "document": "Form 10-K for the fiscal year ended September 30, 2025",
+          "accession": "0000833444-25-000097",
+          "filed": "2025-11-14",
+          "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344425000097/jci-20250930.htm",
+          "statement": "Consolidated Statements of Income (R3)",
+          "line": "Diluted earnings per share attributable to Johnson Controls, Net income",
+          "column": "12 Months Ended Sep. 30, 2025"
+        }
+      },
+      "ytdCurrent": {
+        "value": 3.08,
+        "period": {
+          "start": "2025-10-01",
+          "end": "2026-06-30"
+        },
+        "source": {
+          "document": "Form 10-Q for the quarter ended June 30, 2026 (fiscal Q3 2026)",
+          "accession": "0000833444-26-000087",
+          "filed": "2026-07-29",
+          "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/jci-20260630.htm",
+          "statement": "Consolidated Statements of Income (R2)",
+          "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Total",
+          "column": "9 Months Ended Jun. 30, 2026"
+        }
+      },
+      "ytdPrior": {
+        "value": 2.42,
+        "period": {
+          "start": "2024-10-01",
+          "end": "2025-06-30"
+        },
+        "source": {
+          "document": "Form 10-Q for the quarter ended June 30, 2026 (fiscal Q3 2026)",
+          "accession": "0000833444-26-000087",
+          "filed": "2026-07-29",
+          "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/jci-20260630.htm",
+          "statement": "Consolidated Statements of Income (R2)",
+          "line": "Diluted earnings (loss) per share attributable to Johnson Controls, Total",
+          "column": "9 Months Ended Jun. 30, 2025"
+        }
+      }
+    },
+    "ltm": 5.69,
+    "math": "5.03 + 3.08 − 2.42 = 5.69",
+    "supersededBy": "methodology 0.4.0 (definition change: continuing-operations EPS when discontinued operations are reported)",
+    "validUnder": "methodology 0.3.5"
+  },
+  "discontinuedOperations": {
+    "rule": "methodology 0.4.0 §5: nonzero IncomeLossFromDiscontinuedOperationsNetOfTax in a component period",
+    "concept": "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax",
+    "fy": {
+      "value": 1789000000,
+      "line": "Income from discontinued operations, net of tax",
+      "statement": "10-K Consolidated Statements of Income (R3), 12 Months Ended Sep. 30, 2025"
+    },
+    "ytdCurrent": {
+      "value": -27000000,
+      "line": "Income (loss) from discontinued operations, net of tax",
+      "statement": "10-Q Consolidated Statements of Income (R2), 9 Months Ended Jun. 30, 2026"
+    },
+    "ytdPrior": {
+      "value": 301000000,
+      "line": "Income (loss) from discontinued operations, net of tax",
+      "statement": "10-Q Consolidated Statements of Income (R2), 9 Months Ended Jun. 30, 2025"
+    },
+    "expectedWarnings": {
+      "dilutedEps": "W_EPS_CONTINUING_OPS",
+      "da": "W_DA_INCLUDES_DISC_OPS"
+    }
   }
 }

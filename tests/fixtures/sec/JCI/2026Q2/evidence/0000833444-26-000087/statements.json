@@ -1,0 +1,55 @@
+{
+  "cik": "0000833444",
+  "accession": "0000833444-26-000087",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:09:31.233Z",
+      "sha256": "2fa75e48e954f067ba46a6ac99f8b477a7be0568e76cbe667e713a8d54d44315"
+    },
+    {
+      "file": "R2.htm.gz",
+      "statement": "Consolidated Statements of Income",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R2.htm",
+      "retrievedAt": "2026-11-01T21:09:31.429Z",
+      "sha256": "50efc6a4024a7e088666c9bded81a8b121182e4733bdfe87259353299f3ef1ca"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "Consolidated Statements of Comprehensive Income",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R3.htm",
+      "retrievedAt": "2026-11-01T21:09:31.900Z",
+      "sha256": "cc6fa632ecb0e1f9e05873e33aac3e2999910c77b70f0d26b3149c38ca5322eb"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "Consolidated Statements of Financial Position",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R4.htm",
+      "retrievedAt": "2026-11-01T21:09:31.941Z",
+      "sha256": "e5d18d1e1970f12128e0754410ee63582bfa857e87ff3d5ea3015ed7e92bf29e"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "Consolidated Statements of Financial Position (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R5.htm",
+      "retrievedAt": "2026-11-01T21:09:32.285Z",
+      "sha256": "a632819be8d308b770c6c31ee022633e1b06d855a346d867375e9d57f7788359"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "Consolidated Statements of Cash Flows",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R6.htm",
+      "retrievedAt": "2026-11-01T21:09:32.470Z",
+      "sha256": "1105b5473c662afc8338266239537ab70948fe64d5c539f455cb4d582eadfbc8"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "Consolidated Statements of Shareholders' Equity",
+      "url": "https://www.sec.gov/Archives/edgar/data/833444/000083344426000087/R7.htm",
+      "retrievedAt": "2026-11-01T21:09:32.786Z",
+      "sha256": "2204a18dafecd51b5c9bfe35271a1b7a8199dc267ed08a2ed0b39475bdab1565"
+    }
+  ]
+}

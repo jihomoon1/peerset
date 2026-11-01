@@ -111,6 +111,19 @@ describe("LII Q2 2026 golden", () => {
     expect(f.eps.splitSinceLastAnnual).toBe(false);
   });
 
+  it("no discontinued operations: methodology 0.4.0 changes nothing (total EPS, no notes)", () => {
+    expect(f.eps.basis).toBe("total");
+    expect(f.ltmDetail.dilutedEps.concept).toBe(
+      "us-gaap:EarningsPerShareDiluted",
+    );
+    expect(f.metrics.dilutedEps.warnings.map((w) => w.code)).not.toContain(
+      "W_EPS_CONTINUING_OPS",
+    );
+    expect(f.metrics.da.warnings.map((w) => w.code)).not.toContain(
+      "W_DA_INCLUDES_DISC_OPS",
+    );
+  });
+
   it("EBITDA and margin, to the dollar", () => {
     expect(value(f.metrics.ebitda)).toBe(golden.metrics.ebitda.ltm);
     expect(value(f.metrics.ebitdaMargin)).toBe(
