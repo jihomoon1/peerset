@@ -20,6 +20,7 @@ import { PeerPanel, type PeerSelection } from "./PeerPanel";
 import {
   activePeers,
   addPeer,
+  NOT_A_PEER_CODES,
   removedPeers,
   removePeer,
   restorePeer,
@@ -31,7 +32,7 @@ import {
   providerPriceDate,
   quotesFromInputs,
 } from "./pricing";
-import { NOT_A_PEER_CODES, usePeerLoader } from "./usePeerLoader";
+import { usePeerLoader } from "./usePeerLoader";
 import { urlQuery, type WorkbenchUrlState } from "./urlState";
 import { ValuationBlock } from "./ValuationBlock";
 

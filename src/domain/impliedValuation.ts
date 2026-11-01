@@ -5,6 +5,7 @@
 // never a number (status Unsupported, methodology §1). The target's own price is not an input.
 
 import type { ShareClassBlocker } from "./capitalization";
+import type { CompsTable } from "./comps";
 import type { MetricStats } from "./stats";
 import type { Metric } from "./types";
 
@@ -143,4 +144,22 @@ export function impliedValuation(
     evEbitda: one(IMPLIED_MULTIPLES[0]),
     evRevenue: one(IMPLIED_MULTIPLES[1]),
   };
+}
+
+// The comps table's target and peer statistics as implied-valuation inputs: the one
+// place the workbench block and the export (M5) read them, so both show the same values.
+export function impliedValuationOf(
+  table: CompsTable,
+): Record<ImpliedMultiple, ImpliedResult> {
+  const { target } = table;
+  const v = target.valuation!;
+  return impliedValuation({
+    revenue: target.cells!.revenue,
+    ebitda: target.cells!.ebitda,
+    totalDebt: v.bridge.totalDebt,
+    cash: v.bridge.cashAndInvestments,
+    shares: v.shareClasses.map((c) => c.shares),
+    sharesBlocker: target.fundamentals!.shareClasses.blocker,
+    stats: table.stats,
+  });
 }

@@ -2,7 +2,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { buildComps, STAT_COLUMNS, type CompsTable } from "@/domain/comps";
-import { IMPLIED_POINTS, impliedValuation } from "@/domain/impliedValuation";
+import {
+  IMPLIED_POINTS,
+  impliedValuation,
+  impliedValuationOf,
+} from "@/domain/impliedValuation";
 import type { Metric, QuoteSnapshot } from "@/domain/types";
 import { fixtureFundamentals } from "../helpers/fundamentals";
 
@@ -140,6 +144,21 @@ describe("comps golden: LII vs CARR, AAON, TT, WSO, JCI", () => {
   it("no value is NM at these prices", () => {
     for (const r of [table.target, ...table.peers])
       for (const k of ROW_KEYS) expect(r.cells![k].status).not.toBe("nm");
+  });
+
+  it("impliedValuationOf(table) reads the same inputs the block passes", () => {
+    const v = table.target.valuation!;
+    expect(impliedValuationOf(table)).toEqual(
+      impliedValuation({
+        revenue: table.target.cells!.revenue,
+        ebitda: table.target.cells!.ebitda,
+        totalDebt: v.bridge.totalDebt,
+        cash: v.bridge.cashAndInvestments,
+        shares: v.shareClasses.map((c) => c.shares),
+        sharesBlocker: table.target.fundamentals!.shareClasses.blocker,
+        stats: table.stats,
+      }),
+    );
   });
 
   it.each(["evEbitda", "evRevenue"] as const)(

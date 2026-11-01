@@ -12,13 +12,6 @@ import type { CompanyFundamentals } from "@/domain/fundamentals";
 
 export const PEER_LOAD_CONCURRENCY = 3;
 
-// A failure the analyst should see next to the add box rather than as a table row:
-// the ticker isn't an SEC company, or PeerSet can't analyze it (e.g. files 20-F).
-export const NOT_A_PEER_CODES = new Set([
-  "TICKER_NOT_FOUND",
-  "UNSUPPORTED_ISSUER",
-]);
-
 async function fetchPeer(
   ticker: string,
   signal: AbortSignal,
