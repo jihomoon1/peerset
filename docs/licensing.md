@@ -6,9 +6,17 @@ SEC filings and EDGAR APIs are public data. PeerSet identifies itself with a Use
 
 ## Prices: Alpha Vantage permission request
 
-Status: **draft, not sent.** Production uses user-entered prices (`PRICE_PROVIDER=user`) until written approval is filed here (blueprint §9).
+Status: **declined; production stays on user-entered prices** (`PRICE_PROVIDER=user`, blueprint §9).
 
-Jiho: edit this in your own words, send it from your own email via the contact options on [alphavantage.co/support](https://www.alphavantage.co/support/), and paste the reply below.
+| When (ET)                 | What happened                                                                                                                                                                                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| October 28, 2026, 1:23 PM | Jiho emailed support@alphavantage.co asking for written permission to show end-of-day closes publicly, include them in the Excel export and cache them for one day.                                                                                   |
+| October 28, 2026, 1:37 PM | Alpha Vantage declined: "Unfortunately, we couldn't verify an ongoing educational collaboration with your school." They offered a permanent 25% discount on a premium plan. The reply did not say whether a paid plan includes public-display rights. |
+| October 28, 2026, 1:43 PM | Jiho declined the offer.                                                                                                                                                                                                                              |
+
+PeerSet therefore never fetches or redistributes vendor prices in production. The Alpha Vantage adapter (`src/prices/alphaVantage.ts`) stays in the code, off by default, in case permission is granted later.
+
+The draft below was the starting point for the request; the email Jiho sent may have been edited.
 
 ---
 
@@ -37,6 +45,6 @@ George Washington University School of Business
 
 ---
 
-### Reply (paste here when received)
+### Reply
 
-_Not yet received._
+Declined on October 28, 2026 (see the table above). The reply is kept in Jiho's email, not in the repo.
