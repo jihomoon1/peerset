@@ -95,15 +95,20 @@ describe.skipIf(!available && !required)(
       const outBuffer = readFileSync(path.join(outDir, "comps-golden.xlsx"));
       const recalculated = new ExcelJS.Workbook();
       await recalculated.xlsx.load(outBuffer as unknown as ArrayBuffer);
-      // LibreOffice's values come from the sheet XML: ExcelJS's reader drops a
-      // cached result of 0.
-      const valuesOf = await Promise.all(
-        original.worksheets.map(async (_, i) =>
-          cachedValues(
-            await readZipEntry(outBuffer, `xl/worksheets/sheet${i + 1}.xml`),
+      // Both sides come from the sheet XML: ExcelJS's cell.value drops a result of
+      // 0, even in memory, though the file holds <v>0</v>.
+      const xmlValues = (buffer: Buffer) =>
+        Promise.all(
+          original.worksheets.map(async (_, i) =>
+            cachedValues(
+              await readZipEntry(buffer, `xl/worksheets/sheet${i + 1}.xml`),
+            ),
           ),
-        ),
+        );
+      const cachedOf = await xmlValues(
+        Buffer.from(await original.xlsx.writeBuffer()),
       );
+      const valuesOf = await xmlValues(outBuffer);
 
       let compared = 0;
       const mismatches: string[] = [];
@@ -113,21 +118,23 @@ describe.skipIf(!available && !required)(
           row.eachCell((cell) => {
             const v = cell.value;
             if (!isFormula(v)) return;
+            const cached = cachedOf[i].get(cell.address);
             const lo = valuesOf[i].get(cell.address);
             const at = `${ws.name}!${cell.address} ${v.formula}`;
             compared++;
-            if (typeof v.result === "number") {
+            if (cached === undefined)
+              mismatches.push(`${at}: PeerSet wrote no cached result`);
+            else if (typeof cached === "number") {
               const ok =
                 typeof lo === "number" &&
-                Math.abs(lo - v.result) <=
-                  1e-9 * Math.max(1, Math.abs(v.result));
+                Math.abs(lo - cached) <= 1e-9 * Math.max(1, Math.abs(cached));
               if (!ok)
                 mismatches.push(
-                  `${at}: cached ${v.result}, LibreOffice ${String(lo)}`,
+                  `${at}: cached ${cached}, LibreOffice ${String(lo)}`,
                 );
-            } else if (lo !== v.result)
+            } else if (lo !== cached)
               mismatches.push(
-                `${at}: cached ${String(v.result)}, LibreOffice ${String(lo)}`,
+                `${at}: cached ${String(cached)}, LibreOffice ${String(lo)}`,
               );
           }),
         );
