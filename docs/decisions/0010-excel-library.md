@@ -38,4 +38,16 @@ Every text cell is written as an explicit string through `src/export/sanitize.ts
 
 ## LibreOffice recalculation (CI)
 
-See the section added with the CI job below.
+Cached results only prove PeerSet stored the right numbers; they don't prove the formulas next to them compute those numbers. So CI's `workbook-recalc` job recalculates the workbook in a second, independent spreadsheet engine.
+
+- The job installs `libreoffice-calc` from Ubuntu's packages on the CI runner only (`sudo apt-get install -y --no-install-recommends libreoffice-calc`). It is not a project dependency and nothing is installed on a developer machine.
+- `tests/workbook/libreoffice.test.ts` builds the comps-golden workbook, writes a copy with **every cached formula result removed**, and converts it headlessly with a throwaway LibreOffice profile set to "Recalculation on file load: Always" (`OOXMLRecalcMode = 0`):
+
+  ```bash
+  soffice -env:UserInstallation=file:///tmp/peerset-recalc-…/profile \
+    --headless --norestore --convert-to xlsx --outdir out in/comps-golden.xlsx
+  ```
+
+- It reads the converted file back with ExcelJS and requires every formula on all three sheets (about 357) to equal PeerSet's cached result, to 1e-9 relative (text results such as `HYPERLINK`'s exactly). Because the input had no cached values, any number in the output was computed by LibreOffice.
+- The job sets `REQUIRE_LIBREOFFICE=1`, so a missing `soffice` fails there. Elsewhere (`npm test` locally and in the main CI job) the test is skipped when `soffice` isn't installed.
+- To run it by hand: install LibreOffice, then `REQUIRE_LIBREOFFICE=1 npx vitest run tests/workbook/libreoffice.test.ts` (set `SOFFICE` to the binary's path if it isn't on `PATH`; on macOS `/Applications/LibreOffice.app/Contents/MacOS/soffice`). `npx tsx scripts/export-golden-workbook.ts --out output/comps-golden.xlsx [--strip-results]` writes the same file to open by hand.
