@@ -40,11 +40,13 @@ test("LCID added to LII's peers: its NM multiples are excluded from the statisti
   const table = page.getByRole("table", { name: /^Trading comps/ });
   await expect(
     table.getByRole("button", {
-      name: /^LCID EV\/EBITDA: NM \(NM: EBITDA ≤ 0/,
+      name: /^LCID EV\/EBITDA: NM: EBITDA ≤ 0; computed \(2\.9x\)\. Show/,
     }),
   ).toBeVisible();
   await expect(
-    table.getByRole("button", { name: /^LCID P\/E: NM \(NM: EPS ≤ 0/ }),
+    table.getByRole("button", {
+      name: /^LCID P\/E: NM: EPS ≤ 0; computed \(1\.5x\)\. Show/,
+    }),
   ).toBeVisible();
   // EV/EBITDA: GGG, AAON, CARR valid; JCI Unsupported and LCID NM excluded.
   await expect(

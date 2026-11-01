@@ -8,6 +8,11 @@ test("home search goes to LII and shows LTM revenue", async ({ page }) => {
   const search = page.getByRole("search", { name: "Ticker", exact: true });
   await search.getByLabel("Ticker", { exact: true }).fill("lii");
   await search.getByLabel("Ticker", { exact: true }).press("Enter");
+  // Blueprint §6 "Valid, not analyzed": the identity card, then Analyze.
+  await expect(
+    page.getByRole("heading", { level: 2, name: /LENNOX INTERNATIONAL/i }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Analyze LII" }).click();
   await expect(page).toHaveURL(/\/c\/LII$/);
   await expect(
     page.getByRole("button", { name: /^Revenue: 5,302\.2\. Show calculation/ }),
