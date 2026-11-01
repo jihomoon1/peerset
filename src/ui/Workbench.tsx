@@ -14,12 +14,15 @@ import type { QuoteError } from "@/lib/quotes";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
 import { CompsTable } from "./CompsTable";
+import { ExportButton } from "./ExportButton";
+import { exportState } from "./exportRequest";
 import { ImpliedValuationBlock } from "./ImpliedValuationBlock";
 import { OperatingBlock } from "./OperatingBlock";
 import { PeerPanel, type PeerSelection } from "./PeerPanel";
 import {
   activePeers,
   addPeer,
+  NOT_A_PEER_CODES,
   removedPeers,
   removePeer,
   restorePeer,
@@ -31,7 +34,7 @@ import {
   providerPriceDate,
   quotesFromInputs,
 } from "./pricing";
-import { NOT_A_PEER_CODES, usePeerLoader } from "./usePeerLoader";
+import { usePeerLoader } from "./usePeerLoader";
 import { urlQuery, type WorkbenchUrlState } from "./urlState";
 import { ValuationBlock } from "./ValuationBlock";
 
@@ -144,8 +147,20 @@ export function Workbench({
   ];
   const { counts } = table;
 
+  // The export sends these inputs; the server recomputes the same table (§13).
+  const exporting = exportState({
+    target: f.identity.ticker,
+    added: peerSet.added,
+    removed: peerSet.removed,
+    table,
+    quotes: priced.quotes,
+    priceDate,
+    ...(priced.dateError ? { dateError: priced.dateError } : {}),
+  });
+
   return (
     <>
+      <ExportButton state={exporting} />
       <AsOfStrip
         f={f}
         pulledAt={pulledAt}

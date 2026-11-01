@@ -9,7 +9,7 @@ import type { CompsTable } from "@/domain/comps";
 import {
   IMPLIED_MULTIPLES,
   IMPLIED_POINTS,
-  impliedValuation,
+  impliedValuationOf,
 } from "@/domain/impliedValuation";
 import { formatMillions, formatMultiple, formatPrice } from "@/lib/format";
 
@@ -21,16 +21,7 @@ const POINT_LABEL = {
 
 export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
   const { target } = table;
-  const v = target.valuation!;
-  const results = impliedValuation({
-    revenue: target.cells!.revenue,
-    ebitda: target.cells!.ebitda,
-    totalDebt: v.bridge.totalDebt,
-    cash: v.bridge.cashAndInvestments,
-    shares: v.shareClasses.map((c) => c.shares),
-    sharesBlocker: target.fundamentals!.shareClasses.blocker,
-    stats: table.stats,
-  });
+  const results = impliedValuationOf(table);
 
   return (
     <section
