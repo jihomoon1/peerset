@@ -116,9 +116,10 @@ describe("export snapshot: comps-golden state", () => {
       (w) => `${w.ticker}:${w.code}:${w.message}`,
     );
     expect(new Set(keys).size).toBe(keys.length);
-    expect(snapshot.warnings.map((w) => `${w.ticker}:${w.code}`)).toContain(
-      "LII:W_DA_FROM_CASH_FLOW",
-    );
+    const codes = snapshot.warnings.map((w) => `${w.ticker}:${w.code}`);
+    expect(codes).toContain("LII:W_DA_FROM_CASH_FLOW");
+    // The company-level note covers the metric-level one.
+    expect(codes.filter((c) => c === "LII:W_FILING_PARSED")).toHaveLength(1);
   });
 });
 

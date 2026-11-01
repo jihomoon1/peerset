@@ -5,6 +5,9 @@ import type ExcelJS from "exceljs";
 
 export const NUM_FMT = {
   millions: "#,##0.0_);(#,##0.0)", // USD millions
+  // A nonzero amount under 0.05M would read 0.0, which looks like zero (AAON's
+  // $13,000 cash, M4a): three decimals instead.
+  smallMillions: "#,##0.000_);(#,##0.000)",
   perShare: "#,##0.00_);(#,##0.00)", // share price, EPS
   multiple: '0.0"x"',
   percent: "0.0%_);(0.0%)",

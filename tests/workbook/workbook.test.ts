@@ -330,6 +330,38 @@ describe("formatting", () => {
   });
 });
 
+describe("text and small values", () => {
+  it("no label PeerSet writes is caught by the injection guard", () => {
+    for (const ws of wb.worksheets)
+      ws.eachRow((row) =>
+        row.eachCell((c) => {
+          if (typeof c.value === "string")
+            expect(c.value.startsWith("'"), `${ws.name}!${c.address}`).toBe(
+              false,
+            );
+        }),
+      );
+  });
+
+  it("a nonzero amount under 0.05M shows three decimals, never 0.0", () => {
+    const calc = wb.getWorksheet(SHEET_NAMES.calc)!;
+    let found = false;
+    calc.eachRow((row) =>
+      row.eachCell((c) => {
+        if (
+          typeof c.value === "number" &&
+          c.value !== 0 &&
+          Math.abs(c.value) < 0.05
+        ) {
+          found = true;
+          expect(c.numFmt, c.address).toBe(NUM_FMT.smallMillions);
+        }
+      }),
+    );
+    expect(found).toBe(true); // AAON's $13,000 cash
+  });
+});
+
 describe("NM, missing and formula injection", () => {
   it("no prices: valuation cells are '—' text, statistics of nothing are '—'", async () => {
     const s = await loadExportSnapshot(

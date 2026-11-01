@@ -163,10 +163,16 @@ function putDash(cell: ExcelJS.Cell, note?: string) {
   if (note) cell.note = note;
 }
 
+// Millions too small for one decimal get three, so they never read as 0.0.
+const fmtFor = (fmt: NumFmt, n: number): string =>
+  fmt === "millions" && n !== 0 && Math.abs(n) < 0.05
+    ? NUM_FMT.smallMillions
+    : NUM_FMT[fmt];
+
 function putInput(cell: ExcelJS.Cell, n: number, fmt: NumFmt) {
   if (!Number.isFinite(n)) throw new RangeError(`not a finite input: ${n}`);
   cell.value = n;
-  cell.numFmt = NUM_FMT[fmt];
+  cell.numFmt = fmtFor(fmt, n);
   cell.font = font("input");
 }
 
@@ -180,7 +186,7 @@ function putFormula(
   if (!Number.isFinite(result))
     throw new RangeError(`not a finite result for ${formula}`);
   cell.value = { formula, result };
-  cell.numFmt = NUM_FMT[fmt];
+  cell.numFmt = fmtFor(fmt, result);
   cell.font = font(role);
 }
 
@@ -339,9 +345,9 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
   headerRow(cur.row(), [
     "LTM bridge (USD m; EPS in USD)",
     "FY",
-    "+ YTD",
-    "− prior YTD",
-    "= LTM",
+    "Plus: YTD",
+    "Less: prior YTD",
+    "LTM",
     "Concept",
     "Periods",
   ]);

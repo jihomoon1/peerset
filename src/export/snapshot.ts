@@ -119,7 +119,11 @@ function rowWarnings(r: CompsRow): SnapshotWarning[] {
       message: w.message,
       severity: w.code === "W_FILING_PARSED" ? "info" : "caution",
     });
-  for (const m of metrics) for (const w of m.warnings) add(w);
+  // The company-level W_FILING_PARSED already says the filing was parsed.
+  const parsed = f.warnings.some((w) => w.code === "W_FILING_PARSED");
+  for (const m of metrics)
+    for (const w of m.warnings)
+      if (!(parsed && w.code === "W_FILING_PARSED")) add(w);
   if (r.lag) add(r.lag);
   return out;
 }
