@@ -28,7 +28,14 @@ export function memoryCache(): CacheFn {
     fn: () => Promise<T>,
   ) => {
     const k = JSON.stringify(key);
-    if (!entries.has(k)) entries.set(k, fn());
+    if (!entries.has(k)) {
+      const p = fn();
+      entries.set(k, p);
+      // Like unstable_cache, a failed run caches nothing.
+      p.catch(() => {
+        if (entries.get(k) === p) entries.delete(k);
+      });
+    }
     return entries.get(k) as Promise<T>;
   };
 }

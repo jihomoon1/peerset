@@ -44,6 +44,11 @@ export const CACHE_SECONDS = {
 // methodology bump (a bug fix, a new field), so no instance serves the old entry.
 export const FUNDAMENTALS_CACHE_VERSION = 1;
 
+// How long an export may reuse another request's submissions check instead of
+// asking SEC again (ADR 0012). A filing SEC lists in the last 10 minutes may be
+// missed by such an export; submissions' 6 h fetch cache already allows more.
+export const IDENTITY_RECENT_SECONDS = 600;
+
 // Vercel's Data Cache refuses items over 2 MB (blueprint §14).
 export const CACHE_ITEM_LIMIT_BYTES = 2 * 1024 * 1024;
 
@@ -130,6 +135,70 @@ export function normalizeTicker(raw: string | null | undefined): string {
 // The ticker list and submissions only: the company's identity and whether PeerSet
 // supports it, before any filing is read. The home search's identity card (M6) uses
 // this alone; loadFundamentals continues from it.
+// ── Recent identity checks (ADR 0012) ──────────────────────────────────────
+// Every live identity check is also written to the persistent cache in 10-minute
+// buckets, with the time it ran. An export reads the current or previous bucket and
+// accepts an entry at most IDENTITY_RECENT_SECONDS old, so exporting comps the
+// browser just loaded makes no SEC request. Only reads that find an entry count:
+// a probe that misses throws inside the cache callback, which caches nothing.
+
+interface CheckedIdentity {
+  identity: CompanyIdentity;
+  checkedAt: string; // ISO timestamp
+}
+
+class CacheMiss extends Error {}
+
+const BUCKET_MS = IDENTITY_RECENT_SECONDS * 1000;
+const identityKey = (ticker: string, asOf: string, bucket: number) => [
+  "identity-check",
+  ticker,
+  asOf,
+  String(bucket),
+  "v1",
+];
+const clockOf = (deps: LoadDeps) => (deps.now ?? (() => new Date()))();
+
+async function rememberIdentity(
+  ticker: string,
+  identity: CompanyIdentity,
+  deps: LoadDeps,
+): Promise<void> {
+  const now = clockOf(deps).getTime();
+  try {
+    await deps.cache<CheckedIdentity>(
+      identityKey(ticker, deps.asOf, Math.floor(now / BUCKET_MS)),
+      2 * IDENTITY_RECENT_SECONDS,
+      async () => ({ identity, checkedAt: new Date(now).toISOString() }),
+    );
+  } catch {
+    // best effort: without the entry an export just checks SEC itself
+  }
+}
+
+export async function recentIdentity(
+  rawTicker: string | null | undefined,
+  deps: LoadDeps,
+): Promise<CompanyIdentity | null> {
+  const ticker = normalizeTicker(rawTicker);
+  const now = clockOf(deps).getTime();
+  const bucket = Math.floor(now / BUCKET_MS);
+  for (const b of [bucket, bucket - 1]) {
+    try {
+      const hit = await deps.cache<CheckedIdentity>(
+        identityKey(ticker, deps.asOf, b),
+        2 * IDENTITY_RECENT_SECONDS,
+        () => Promise.reject(new CacheMiss()),
+      );
+      const at = Date.parse(hit.checkedAt);
+      if (at <= now && now - at <= BUCKET_MS) return hit.identity;
+    } catch {
+      // a miss, or an unreadable entry: try the next bucket
+    }
+  }
+  return null;
+}
+
 export async function loadIdentity(
   rawTicker: string | null | undefined,
   deps: LoadDeps,
@@ -162,16 +231,25 @@ export async function loadIdentity(
   const identity = identityFromSubmissions(parseSubmissions(subs.data), {
     asOf,
   });
+  await rememberIdentity(ticker, identity, deps);
   return { identity, tickerListRequested };
 }
 
+// `reuseRecentIdentity` (the export only, ADR 0012): skip SEC's submissions check when
+// another request ran it within IDENTITY_RECENT_SECONDS.
 export async function loadFundamentals(
   rawTicker: string | null | undefined,
   deps: LoadDeps,
+  options: { reuseRecentIdentity?: boolean } = {},
 ): Promise<LoadedFundamentals> {
   const started = Date.now();
   const ticker = normalizeTicker(rawTicker);
-  const { identity, tickerListRequested } = await loadIdentity(ticker, deps);
+  const recent = options.reuseRecentIdentity
+    ? await recentIdentity(ticker, deps)
+    : null;
+  const { identity, tickerListRequested } = recent
+    ? { identity: recent, tickerListRequested: false }
+    : await loadIdentity(ticker, deps);
   const cik = identity.cik;
   if (!identity.support.supported)
     throw new UnsupportedIssuerError(
@@ -195,7 +273,8 @@ export async function loadFundamentals(
     // The ticker list and submissions go through Next's fetch cache (24 h, 6 h), so
     // these may not have reached SEC; the rest did, and only on a miss. The ticker
     // list is skipped entirely when the instance memo holds it.
-    secRequestsMax: (tickerListRequested ? 2 : 1) + secRequests,
+    identityReused: recent !== null,
+    secRequestsMax: (recent ? 0 : tickerListRequested ? 2 : 1) + secRequests,
     bytes,
     overCacheLimit: bytes > CACHE_ITEM_LIMIT_BYTES,
     ms: Date.now() - started,

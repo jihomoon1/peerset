@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLimiter, createSecClient } from "@/sec/client";
+import { createLimiter, createSecClient, MIN_GAP_MS } from "@/sec/client";
 import type { LogFields } from "@/lib/log";
 import { PeerSetError } from "@/lib/errors";
 
@@ -104,14 +104,15 @@ describe("SEC client", () => {
     expect(res.kind).toBe("ok");
   });
 
-  it("paces requests to at most 2.5 per second (ADR 0009)", async () => {
+  it("paces requests to at most 2 per second (ADR 0012)", async () => {
+    expect(MIN_GAP_MS).toBe(500);
     const { client, callTimes } = setup([ok()]);
     await settle(
       Promise.all(Array.from({ length: 8 }, () => client.get(URL_OK))),
     );
     expect(callTimes.length).toBe(8);
     for (let k = 1; k < callTimes.length; k++)
-      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(400);
+      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(500);
   });
 
   it("keeps at most 3 requests in flight", async () => {

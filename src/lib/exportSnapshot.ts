@@ -94,7 +94,9 @@ async function loadPeer(ticker: string, deps: LoadDeps): Promise<PeerState> {
   try {
     return {
       kind: "loaded",
-      fundamentals: await loadFundamentals(ticker, deps),
+      fundamentals: await loadFundamentals(ticker, deps, {
+        reuseRecentIdentity: true,
+      }),
     };
   } catch (err) {
     const body = errorResponseBody(err, "export");
@@ -132,7 +134,13 @@ export async function loadExportSnapshot(
 ): Promise<ExportSnapshot> {
   const analysisDate = deps.load.asOf;
   const req = parseExportRequest(body, analysisDate);
-  const target = await loadFundamentals(normalizeTicker(req.target), deps.load);
+  const target = await loadFundamentals(
+    normalizeTicker(req.target),
+    deps.load,
+    {
+      reuseRecentIdentity: true,
+    },
+  );
 
   // Screening as the page does it: a failure leaves only the added peers.
   let selection: ReturnType<typeof selectPeers> | null = null;
