@@ -87,3 +87,29 @@ describe("exportState", () => {
     expect(exportState({ ...base, table, quotes }).notANumber).toBe(0);
   });
 });
+
+describe("exportState with prices filled by the user's key (v1.1)", () => {
+  it("names the filled prices and their bar dates, nothing else", () => {
+    const quotes: QuoteSnapshot[] = [
+      { ...quote("LII", 376.01), source: "alpha_vantage_user_key" },
+      quote("AAON", 100),
+    ];
+    const table = buildComps(
+      lii,
+      [peer({ kind: "loaded", fundamentals: aaon })],
+      quotes,
+      "2026-10-26",
+    );
+    const s = exportState({ ...base, table, quotes });
+    expect(s.request.filled).toEqual({ LII: "2026-10-23" });
+    expect(s.request.prices).toEqual({ LII: 376.01, AAON: 100 });
+  });
+
+  it("omits filled when every price was typed", () => {
+    const quotes = [quote("LII", 500)];
+    const table = buildComps(lii, [], quotes, "2026-10-26");
+    expect(exportState({ ...base, table, quotes }).request).not.toHaveProperty(
+      "filled",
+    );
+  });
+});

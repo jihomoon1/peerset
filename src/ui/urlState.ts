@@ -4,7 +4,9 @@
 // cik (M6) is the target's CIK when the link was made, so a ticker that later maps to
 // another company, or to none, is reported instead of silently remapped.
 // add/remove are tickers; px is ticker:price per listed class; pxdate is the shared
-// price date. Parsing is defensive: anything malformed is dropped, never guessed.
+// price date; pxav (v1.1) names the px prices the browser filled from Alpha Vantage
+// with the user's own key, each with its bar's date (pxav=LII:2026-10-30). Never the
+// key itself. Parsing is defensive: anything malformed is dropped, never guessed.
 // Prices for removed peers stay in the URL but aren't applied.
 
 import { isIsoDate } from "@/domain/dates";
@@ -18,6 +20,7 @@ export interface WorkbenchUrlState {
   remove: string[];
   prices: Record<string, string>; // ticker → price text, as typed
   priceDate?: string;
+  filled?: Record<string, string>; // ticker → bar date, for px prices filled (v1.1)
 }
 
 const MAX_PARAM_LENGTH = 2000; // a 12-peer, 2-class state is well under 400
@@ -57,6 +60,13 @@ export function parseUrlState(params: Params): WorkbenchUrlState {
   }
   const date = param(params, "pxdate");
   const cik = param(params, "cik");
+  const filled: Record<string, string> = {};
+  for (const part of param(params, "pxav").split(",")) {
+    const [rawTicker, d, extra] = part.split(":");
+    const ticker = (rawTicker ?? "").trim().toUpperCase();
+    if (extra !== undefined || !(ticker in prices)) continue;
+    if (d !== undefined && isIsoDate(d.trim())) filled[ticker] = d.trim();
+  }
   return {
     ...(/^\d{10}$/.test(cik) ? { cik } : {}),
     add: tickerList(param(params, "add"), PEERS.max),
@@ -64,10 +74,11 @@ export function parseUrlState(params: Params): WorkbenchUrlState {
     remove: tickerList(param(params, "remove"), PEERS.max * 2),
     prices,
     ...(isIsoDate(date) ? { priceDate: date } : {}),
+    ...(Object.keys(filled).length ? { filled } : {}),
   };
 }
 
-// "?cik=…&add=…&remove=…&px=…&pxdate=…", or "" for an empty state. Commas and colons stay
+// "?cik=…&add=…&remove=…&px=…&pxdate=…&pxav=…", or "" for an empty state. Commas and colons stay
 // readable; tickers and prices never need escaping once validated.
 export function urlQuery(state: WorkbenchUrlState): string {
   const parts: string[] = [];
@@ -80,5 +91,14 @@ export function urlQuery(state: WorkbenchUrlState): string {
   if (px.length) parts.push(`px=${px.join(",")}`);
   if (state.priceDate && isIsoDate(state.priceDate))
     parts.push(`pxdate=${state.priceDate}`);
+  const pxav = Object.entries(state.filled ?? {})
+    .filter(
+      ([t, d]) =>
+        TICKER_PATTERN.test(t) &&
+        isIsoDate(d) &&
+        validPriceText((state.prices[t] ?? "").trim()),
+    )
+    .map(([t, d]) => `${t}:${d}`);
+  if (pxav.length) parts.push(`pxav=${pxav.join(",")}`);
   return parts.length ? `?${parts.join("&")}` : "";
 }

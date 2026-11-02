@@ -156,11 +156,18 @@ describe("operating income (§3: no fallback)", () => {
 });
 
 describe("D&A (§3)", () => {
-  it("always warns that it comes from the cash-flow statement", () => {
+  it("always notes it is the reported D&A concept, usually from the cash-flow statement (0.4.3)", () => {
     const facts = series("us-gaap:DepreciationAndAmortization", [50, 26, 25]);
     const { metric } = computeDa(at(facts));
     expect(usable(metric).value).toBe(51);
-    expect(metric.warnings.map((w) => w.code)).toContain("W_DA_FROM_CASH_FLOW");
+    expect(
+      metric.warnings.find((w) => w.code === "W_DA_FROM_CASH_FLOW"),
+    ).toEqual({
+      code: "W_DA_FROM_CASH_FLOW",
+      message:
+        "D&A is the filing's reported D&A concept, usually from the cash-flow statement; it may include items outside operating expenses",
+      severity: "info",
+    });
   });
 
   it("falls back to Depreciation + AmortizationOfIntangibleAssets over the same periods", () => {
@@ -590,6 +597,28 @@ describe("diluted EPS, continuing operations (§5, methodology 0.4.0)", () => {
       concept: ATTR,
       value: 120,
     });
+  });
+
+  it("runs the split restatement test on total EPS even when total EPS has no full LTM (M6 review edge case, v1.1)", () => {
+    // Total EPS lacks its FY fact, so continuing-ops EPS carries the LTM; the
+    // 10-Q restates the prior-YTD total EPS 2-for-1 against its first filing.
+    const facts = [
+      ...withDiscOps.filter(
+        (f) => !(f.concept === EPS && f.period.end === "2025-12-31"),
+      ),
+      fact({
+        concept: EPS,
+        value: 4.0,
+        start: "2025-01-01",
+        end: "2025-06-30",
+        filing: q2Of2025,
+        unit: "USD/shares",
+      }),
+    ];
+    const r = computeEps(at(facts), ni(facts));
+    expect(r.basis).toBe("continuingOperations");
+    expect(r.splitSinceLastAnnual).toBe(true);
+    expect(r.splitEvidence).toMatch(/first filed as 4 .* restated to 2/);
   });
 
   it("split detection compares total EPS, not a reclassified continuing-operations EPS", () => {

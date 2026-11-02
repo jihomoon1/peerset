@@ -27,6 +27,7 @@ interface Golden {
   enterpriseValue: { value: number };
   dates: { price: string; balanceSheet: string; sharesAsOf: string };
   notInEvWarning: boolean;
+  notInEvUnclassified?: string[]; // W_NOT_IN_EV_UNCLASSIFIED messages (0.4.3)
   multiples: Record<
     "evRevenue" | "evEbitda" | "pe",
     | { status: "derived"; value: number }
@@ -105,6 +106,12 @@ describe.each(goldens)("$fixture valuation at test prices", (g) => {
     expect(
       v.bridge.enterpriseValue.warnings.some((w) => w.code === "W_NOT_IN_EV"),
     ).toBe(g.notInEvWarning);
+    // §9 (0.4.3): temporary-equity lines EV may leave out, named by the caution.
+    expect(
+      v.bridge.enterpriseValue.warnings
+        .filter((w) => w.code === "W_NOT_IN_EV_UNCLASSIFIED")
+        .map((w) => w.message),
+    ).toEqual(g.notInEvUnclassified ?? []);
   });
 
   it.each(["evRevenue", "evEbitda", "pe"] as const)(

@@ -1,4 +1,4 @@
-# Methodology cheat sheet (v0.4.2)
+# Methodology cheat sheet (v0.4.3)
 
 Full text: [/methodology](https://peerset.vercel.app/methodology) · source `docs/methodology.md`.
 

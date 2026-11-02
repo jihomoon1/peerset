@@ -13,7 +13,14 @@ import {
 } from "./capitalization";
 import { daysBetween } from "./dates";
 import { isUsable, mergeWarnings, unusableInputs } from "./metrics/common";
-import { NCI_MATERIALITY, PRICE_STALE_DAYS } from "./policy";
+import {
+  isTemporaryEquityConcept,
+  isTemporaryEquityNci,
+  NCI_LIKE_LABEL,
+  NCI_MATERIALITY,
+  PREFERRED_LIKE_LABEL,
+  PRICE_STALE_DAYS,
+} from "./policy";
 import type {
   FaceLineProvenance,
   Metric,
@@ -235,7 +242,48 @@ function notInEvWarnings(input: EnterpriseValueInput): MetricWarning[] {
       message: `material item not in EV: noncontrolling interest ${millions(nci.metric.value)} is ${formatPercent(nci.metric.value / input.marketCap.value)} of market cap (above ${NCI_MATERIALITY * 100}%)`,
       severity: "caution",
     });
+  out.push(
+    ...unclassifiedNotInEv(
+      input.preferred,
+      "preferred stock",
+      PREFERRED_LIKE_LABEL,
+    ),
+  );
+  out.push(
+    ...unclassifiedNotInEv(
+      input.nci,
+      "noncontrolling interest",
+      NCI_LIKE_LABEL,
+    ),
+  );
   return out;
+}
+
+// §9 (0.4.3): when preferred stock or NCI is Unsupported, "material item not in EV"
+// can't be decided; a temporary-equity line that looks like the item and shows an
+// amount is named instead, so EV never leaves it out silently.
+function unclassifiedNotInEv(
+  item: BalanceSheetItem,
+  noun: string,
+  looksLike: RegExp,
+): MetricWarning[] {
+  if (item.metric.status !== "unsupported") return [];
+  return item.lines
+    .filter(
+      (l) =>
+        isTemporaryEquityConcept(l.concept) &&
+        looksLike.test(l.label) &&
+        // §9 tie-break: a temporary-equity NCI line is never named as preferred
+        (noun !== "preferred stock" ||
+          !isTemporaryEquityNci(l.concept, l.label)) &&
+        l.value !== null &&
+        l.value !== 0,
+    )
+    .map((l) => ({
+      code: "W_NOT_IN_EV_UNCLASSIFIED" as const,
+      message: `possible ${noun} not in EV: ${l.label} ${millions(l.value!)}`,
+      severity: "caution" as const,
+    }));
 }
 
 export function computeEnterpriseValue(

@@ -45,6 +45,9 @@ export const ExportRequestSchema = z.object({
   // One price per listed class ticker (WSO, WSO-B), as the URL's px= encodes them.
   prices: z.record(ticker, z.number().gt(0).lt(PRICE_LIMIT)).default({}),
   priceDate: z.string().optional(),
+  // v1.1: which prices the user's browser filled from Alpha Vantage with the user's
+  // own key, and each bar's date. Labels user inputs; checked like any other input.
+  filled: z.record(ticker, z.string()).optional(),
 });
 export type ExportRequest = z.infer<typeof ExportRequestSchema>;
 
@@ -72,6 +75,16 @@ export function parseExportRequest(
         `Price date can't be after the analysis date (${analysisDate})`,
       );
   }
+  for (const [t, d] of Object.entries(req.filled ?? {})) {
+    if (!(t in req.prices))
+      throw new InvalidInputError(
+        `Filled price for ${t} has no price in the request`,
+      );
+    if (!isIsoDate(d) || d > analysisDate)
+      throw new InvalidInputError(
+        `Filled price date for ${t} must be a real date on or before ${analysisDate}`,
+      );
+  }
   return req;
 }
 
@@ -81,7 +94,9 @@ async function loadPeer(ticker: string, deps: LoadDeps): Promise<PeerState> {
   try {
     return {
       kind: "loaded",
-      fundamentals: await loadFundamentals(ticker, deps),
+      fundamentals: await loadFundamentals(ticker, deps, {
+        reuseRecentIdentity: true,
+      }),
     };
   } catch (err) {
     const body = errorResponseBody(err, "export");
@@ -119,7 +134,13 @@ export async function loadExportSnapshot(
 ): Promise<ExportSnapshot> {
   const analysisDate = deps.load.asOf;
   const req = parseExportRequest(body, analysisDate);
-  const target = await loadFundamentals(normalizeTicker(req.target), deps.load);
+  const target = await loadFundamentals(
+    normalizeTicker(req.target),
+    deps.load,
+    {
+      reuseRecentIdentity: true,
+    },
+  );
 
   // Screening as the page does it: a failure leaves only the added peers.
   let selection: ReturnType<typeof selectPeers> | null = null;
@@ -162,6 +183,12 @@ export async function loadExportSnapshot(
     analysisDate,
     retrievedAt: generatedAt,
     providerQuotes: [],
+    filled: Object.fromEntries(
+      Object.entries(req.filled ?? {}).map(([t, asOfDate]) => [
+        t,
+        { close: req.prices[t], asOfDate },
+      ]),
+    ),
   });
   const bad = Object.keys(q.errors);
   if (q.dateError || bad.length > 0)

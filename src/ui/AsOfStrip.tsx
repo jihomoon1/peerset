@@ -5,6 +5,7 @@ import { formatDate, formatTimestamp } from "@/lib/format";
 const SOURCE_WORDS: Record<QuoteSnapshot["source"], string> = {
   user_entered: "entered by you",
   alpha_vantage: "Alpha Vantage close",
+  alpha_vantage_user_key: "Alpha Vantage, fetched with your key",
 };
 
 // The as-of strip (blueprint §6, methodology §12): prices as of and their source,
@@ -26,6 +27,13 @@ export function AsOfStrip({
   const filing = f.identity.latestPeriodic;
   const sharesAsOf = f.shareClasses.classes[0]?.sharesAsOf;
   const sources = [...new Set(quotes.map((q) => SOURCE_WORDS[q.source]))];
+  // v1.1 attribution for prices the user's browser filled with the user's key.
+  const userKeyDates = quotes
+    .filter((q) => q.source === "alpha_vantage_user_key")
+    .map((q) => q.asOfDate);
+  const userKeyClose = userKeyDates.length
+    ? userKeyDates.reduce((a, b) => (a < b ? a : b))
+    : null;
   return (
     <section
       aria-label="As of"
@@ -81,6 +89,20 @@ export function AsOfStrip({
           <span aria-hidden="true">● </span>
           Parsed from the filing: SEC&apos;s companyfacts didn&apos;t include it
           yet
+        </span>
+      )}
+      {userKeyClose && (
+        <span className="text-muted" data-attribution="alpha-vantage-user-key">
+          Prices:{" "}
+          <a
+            href="https://www.alphavantage.co"
+            className="text-accent underline underline-offset-2"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Alpha Vantage
+          </a>
+          , fetched with your key · close of {formatDate(userKeyClose)}
         </span>
       )}
       {providerOn && (

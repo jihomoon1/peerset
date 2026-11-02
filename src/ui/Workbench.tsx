@@ -5,6 +5,8 @@
 // Holds the peer set, every price input and the shared price date, mirrors them into
 // the URL, and recomputes the whole table in the browser on every change with the
 // same domain code the server uses (blueprint §13). Nothing is stored on a server.
+// Price autofill (v1.1) fills inputs from the user's own browser with the user's own
+// Alpha Vantage key; filled prices are user inputs like typed ones.
 
 import { useEffect, useState } from "react";
 import { buildComps, type CompsPeer } from "@/domain/comps";
@@ -29,11 +31,14 @@ import {
   restorePeer,
   type PeerSetState,
 } from "./peerSet";
+import { PriceAutofill } from "./PriceAutofill";
 import {
   byListingOrder,
   parsePastedPrices,
+  priceNumber,
   providerPriceDate,
   quotesFromInputs,
+  type FilledPrice,
 } from "./pricing";
 import { usePeerLoader } from "./usePeerLoader";
 import { urlQuery, type WorkbenchUrlState } from "./urlState";
@@ -89,6 +94,16 @@ export function Workbench({
   const [priceDate, setPriceDate] = useState(
     initial.priceDate ?? providerPriceDate(providerQuotes) ?? analysisDate,
   );
+  // Prices filled from Alpha Vantage with the user's key, restored from pxav=.
+  const [filled, setFilled] = useState<Record<string, FilledPrice>>(() =>
+    Object.fromEntries(
+      Object.entries(initial.filled ?? {}).flatMap(([t, asOfDate]) =>
+        initial.prices[t]
+          ? [[t, { close: priceNumber(initial.prices[t]), asOfDate }]]
+          : [],
+      ),
+    ),
+  );
   const [retrievedAt, setRetrievedAt] = useState(pulledAt);
   const touch = () => setRetrievedAt(new Date().toISOString());
 
@@ -131,6 +146,7 @@ export function Workbench({
     analysisDate,
     retrievedAt,
     providerQuotes,
+    filled,
   });
   const priced = {
     ...q,
@@ -143,11 +159,19 @@ export function Workbench({
     const prices = Object.fromEntries(
       Object.entries(inputs).filter(([, v]) => v.trim()),
     );
+    const filledInUse = Object.fromEntries(
+      Object.entries(filled).flatMap(([t, fp]) =>
+        prices[t] && priceNumber(prices[t]) === fp.close
+          ? [[t, fp.asOfDate]]
+          : [],
+      ),
+    );
     const state = {
       add: peerSet.added,
       remove: peerSet.removed,
       prices,
       ...(Object.keys(prices).length ? { priceDate } : {}),
+      ...(Object.keys(filledInUse).length ? { filled: filledInUse } : {}),
     };
     // A link that carries an analysis also names the company it was made for (M6).
     const query = urlQuery(
@@ -156,7 +180,14 @@ export function Workbench({
     const url = `${window.location.pathname}${query}`;
     if (url !== `${window.location.pathname}${window.location.search}`)
       window.history.replaceState(window.history.state, "", url);
-  }, [f.identity.cik, peerSet.added, peerSet.removed, inputs, priceDate]);
+  }, [
+    f.identity.cik,
+    peerSet.added,
+    peerSet.removed,
+    inputs,
+    priceDate,
+    filled,
+  ]);
 
   const pasteTickers = [
     ...targetTickers,
@@ -214,6 +245,44 @@ export function Workbench({
             setInputs((cur) => ({ ...cur, ...prices }));
           }
           return unmatched;
+        }}
+      />
+      <PriceAutofill
+        tickers={pasteTickers}
+        inputs={inputs}
+        disabledReason={
+          counts.loading > 0
+            ? "Wait until every peer has finished loading"
+            : null
+        }
+        onQuote={(quote) => {
+          touch();
+          setInputs((cur) => ({ ...cur, [quote.symbol]: String(quote.close) }));
+          setFilled((cur) => ({
+            ...cur,
+            [quote.symbol]: { close: quote.close, asOfDate: quote.asOfDate },
+          }));
+        }}
+        onDone={(quotes) => {
+          if (quotes.length === 0) return;
+          // When every entered price now carries its own bar date, the shared date
+          // shows the earliest of them (methodology §6); typed prices keep theirs.
+          const done = new Set(quotes.map((x) => x.symbol));
+          const typedLeft = Object.entries(inputs).some(
+            ([t, v]) =>
+              v.trim() &&
+              !done.has(t) &&
+              !(filled[t] && filled[t].close === priceNumber(v)),
+          );
+          if (!typedLeft) {
+            const dates = [
+              ...quotes.map((x) => x.asOfDate),
+              ...Object.entries(filled)
+                .filter(([t]) => !done.has(t) && inputs[t]?.trim())
+                .map(([, fp]) => fp.asOfDate),
+            ];
+            setPriceDate(dates.reduce((a, b) => (a < b ? a : b)));
+          }
         }}
       />
 

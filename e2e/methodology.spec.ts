@@ -14,7 +14,7 @@ test("the methodology page shows the summary and the full definitions", async ({
   await expect(
     page.getByRole("heading", { name: "10. Multiples and the NM policy" }),
   ).toBeVisible();
-  await expect(page.getByText(/Methodology version: 0\.4\.2/)).toBeVisible();
+  await expect(page.getByText(/Methodology version: 0\.4\.3/)).toBeVisible();
   const axe = await new AxeBuilder({ page }).analyze();
   expect(
     axe.violations.filter((v) => ["serious", "critical"].includes(v.impact!)),

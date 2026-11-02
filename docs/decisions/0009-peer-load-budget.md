@@ -1,6 +1,6 @@
 # 0009 — Peer load budget: 3 peers at a time, 2.5 SEC requests per second per instance
 
-Date: October 29, 2026 · Status: approved by Jiho Moon in M4b planning
+Date: October 29, 2026 · Status: approved by Jiho Moon in M4b planning · **Pacing numbers superseded by [ADR 0012](0012-sec-pacing-v1-1.md)** (v1.1: 500 ms per instance, exports reuse recent identity checks)
 
 ## Context
 

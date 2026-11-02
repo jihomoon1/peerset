@@ -42,12 +42,24 @@ export function providerPriceDate(
     : undefined;
 }
 
+// A price the browser filled from Alpha Vantage with the user's key (v1.1): the close
+// it filled and that bar's own date. It applies while the input still holds that close;
+// typing over it makes the price user-entered at the shared price date.
+export interface FilledPrice {
+  close: number;
+  asOfDate: string;
+}
+
+export const priceNumber = (text: string) =>
+  Number(text.replace(/[$,\s]/g, ""));
+
 export function quotesFromInputs(input: {
   inputs: Record<string, string>; // ticker → price text as typed
   priceDate: string;
   analysisDate: string;
   retrievedAt: string;
   providerQuotes: readonly QuoteSnapshot[];
+  filled?: Readonly<Record<string, FilledPrice>>;
 }): {
   quotes: QuoteSnapshot[];
   errors: Record<string, string>;
@@ -55,18 +67,26 @@ export function quotesFromInputs(input: {
 } {
   const entered = Object.entries(input.inputs).filter(([, t]) => t.trim());
   if (entered.length === 0) return { quotes: [], errors: {} };
-  if (!isIsoDate(input.priceDate))
-    return {
-      quotes: [],
-      errors: {},
-      dateError: "Price date must be a real date (YYYY-MM-DD)",
-    };
-  if (input.priceDate > input.analysisDate)
-    return {
-      quotes: [],
-      errors: {},
-      dateError: `Price date can't be after the analysis date (${input.analysisDate})`,
-    };
+  const filledFor = (ticker: string, text: string) => {
+    const f = input.filled?.[ticker];
+    return f && f.close === priceNumber(text) ? f : undefined;
+  };
+  // The shared date matters only for prices that carry no date of their own.
+  const typed = entered.filter(([t, text]) => !filledFor(t, text));
+  if (typed.length > 0) {
+    if (!isIsoDate(input.priceDate))
+      return {
+        quotes: [],
+        errors: {},
+        dateError: "Price date must be a real date (YYYY-MM-DD)",
+      };
+    if (input.priceDate > input.analysisDate)
+      return {
+        quotes: [],
+        errors: {},
+        dateError: `Price date can't be after the analysis date (${input.analysisDate})`,
+      };
+  }
 
   // While the date is still the pre-filled one, an unchanged price keeps its provider
   // quote and that quote's own date; classes can close on different days.
@@ -75,7 +95,21 @@ export function quotesFromInputs(input: {
   const quotes: QuoteSnapshot[] = [];
   const errors: Record<string, string> = {};
   for (const [ticker, text] of entered) {
-    const close = Number(text.replace(/[$,\s]/g, ""));
+    const close = priceNumber(text);
+    const filled = filledFor(ticker, text);
+    if (filled) {
+      const r = userQuote({
+        symbol: ticker,
+        close,
+        asOfDate: filled.asOfDate,
+        analysisDate: input.analysisDate,
+        retrievedAt: input.retrievedAt,
+        source: "alpha_vantage_user_key",
+      });
+      if (r.kind === "ok") quotes.push(r.quote);
+      else errors[ticker] = r.message;
+      continue;
+    }
     const provided = input.providerQuotes.find(
       (q) =>
         q.symbol === ticker &&

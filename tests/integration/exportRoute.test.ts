@@ -52,6 +52,16 @@ describe("POST /api/export", { timeout: SLOW }, () => {
       { ...GOLDEN_REQUEST, priceDate: "2027-01-01" },
       false,
     ],
+    [
+      "a filled price with no price",
+      { ...GOLDEN_REQUEST, filled: { ZZZ: "2026-10-23" } },
+      false,
+    ],
+    [
+      "a filled price dated after the analysis date",
+      { ...GOLDEN_REQUEST, filled: { LII: "2026-10-27" } },
+      false,
+    ],
   ])("answers 400 with a plain message for %s", async (_l, body, raw) => {
     const res = await post(body, raw);
     expect(res.status).toBe(400);
@@ -59,6 +69,27 @@ describe("POST /api/export", { timeout: SLOW }, () => {
     expect(json).toMatchObject({ code: "INVALID_INPUT" });
     expect(typeof json.message).toBe("string");
     expect(JSON.stringify(json)).not.toMatch(/schema:|at .*\.ts/);
+  });
+
+  it("labels prices the user's browser filled with the user's own key (v1.1)", async () => {
+    const filled = Object.fromEntries(
+      Object.keys(GOLDEN_REQUEST.prices).map((t) => [
+        t,
+        GOLDEN_REQUEST.priceDate,
+      ]),
+    );
+    const res = await post({ ...GOLDEN_REQUEST, filled });
+    expect(res.status).toBe(200);
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(await res.arrayBuffer());
+    expect(wb.getWorksheet(SHEET_NAMES.comps)!.getCell("A5").value).toBe(
+      `Prices: Alpha Vantage via the user's own key, close of ${GOLDEN_REQUEST.priceDate}; entered by the user's browser.`,
+    );
+    const sources = JSON.stringify(
+      wb.getWorksheet(SHEET_NAMES.sources)!.getSheetValues(),
+    );
+    expect(sources).toContain("Alpha Vantage via the user's own key");
+    expect(sources).toContain("PeerSet's servers never received the key");
   });
 
   it("answers 404 for an unknown target", async () => {

@@ -34,7 +34,7 @@ Every value carries a status (Reported, Derived, NM, Missing or Unsupported). **
 - **Golden tests** run the pipeline on frozen SEC filings for 8 companies (LII, WSO, GGG, AAON, Carrier, Trane, JCI, Lucid) and check results to the dollar (`tests/golden/`).
 - **Reconciliation tables** compare PeerSet to the rendered filing, row by row: [`docs/reconciliation/`](docs/reconciliation/) ([LII](docs/reconciliation/LII.md), [WSO](docs/reconciliation/WSO.md), [GGG](docs/reconciliation/GGG.md), [JCI](docs/reconciliation/JCI.md), [LCID](docs/reconciliation/LCID.md), [comps golden](docs/reconciliation/comps-golden.md)).
 - Golden values change only with a written reconciliation note saying why (new filing, definition change or bug), never to make a test pass.
-- **Methodology:** every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.4.2) and shown on the site at [/methodology](https://peerset.vercel.app/methodology).
+- **Methodology:** every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.4.3) and shown on the site at [/methodology](https://peerset.vercel.app/methodology).
 - **Tests:** unit, golden, integration and workbook tests (Vitest), plus browser tests with accessibility checks (Playwright and axe). CI never calls live SEC. See [`tests/README.md`](tests/README.md).
 
 Green CI means the code builds and the tests pass. It is not proof the numbers are right; the reconciliation tables are.
@@ -47,11 +47,11 @@ Green CI means the code builds and the tests pass. It is not proof the numbers a
 ## Known limitations
 
 - EBITDA is standardized and unadjusted; company-reported adjusted EBITDA will differ.
-- D&A comes from the cash-flow statement and may include items outside operating expenses. When a period has discontinued operations, D&A may include them (flagged with a caution).
+- D&A is the filing's reported D&A tag, usually from the cash-flow statement (sometimes a note), and may include items outside operating expenses. When a period has discontinued operations, D&A may include them (flagged with a caution).
 - Shares are basic (cover page), not diluted by the treasury stock method, so equity value runs below a banker's figure.
-- EV leaves out preferred stock, noncontrolling interests and equity investments; PeerSet warns when they look material. Preferred stock held in temporary equity isn't classified yet, so it is Unsupported and gets no warning (Lucid's $2.9 billion of redeemable convertible preferred is the known case).
+- EV leaves out preferred stock, noncontrolling interests and equity investments; PeerSet warns when they look material. Preferred stock or noncontrolling interest held in temporary equity is classified by its label; when PeerSet still can't classify the item, it names the temporary-equity line in a caution instead (Lucid's $2.9 billion of redeemable convertible preferred is the known case).
 - Peers come from SIC codes and revenue scale, not economic judgment.
-- Prices are user-entered; there are no historical prices.
+- Prices are user inputs: typed, or filled by your own browser with your own free Alpha Vantage key (PeerSet never sees the key). There are no historical prices.
 - Only U.S. 10-K/10-Q filers reporting in USD; no 20-F filers, ADRs or financial companies (SIC 6000–6799).
 - Company-specific XBRL extension tags are ignored, so some companies come out Unsupported. Lucid, for example, tags its cash-flow D&A with its own concept, so PeerSet uses the standard D&A tag from its notes instead (a $30,000 difference).
 - Multi-class P/E and unlisted share classes are Unsupported.

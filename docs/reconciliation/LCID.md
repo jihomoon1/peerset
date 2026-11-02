@@ -1,6 +1,6 @@
 # Lucid Group (LCID) reconciliation
 
-Lucid Group, Inc. · CIK 0001811210 · Nasdaq · SIC 3711 · methodology 0.4.2 · golden files `tests/golden/LCID-2026Q2.json`, `LCID-2026Q2-balance.json`, `LCID-2026Q2-valuation.json` · tests `tests/golden/peers-ltm.test.ts`, `balance.test.ts`, `valuation.test.ts`, `e2e/negative-ebitda.spec.ts`
+Lucid Group, Inc. · CIK 0001811210 · Nasdaq · SIC 3711 · methodology 0.4.3 · golden files `tests/golden/LCID-2026Q2.json`, `LCID-2026Q2-balance.json`, `LCID-2026Q2-valuation.json` · tests `tests/golden/peers-ltm.test.ts`, `balance.test.ts`, `valuation.test.ts`, `e2e/negative-ebitda.spec.ts`
 
 PeerSet's negative-EBITDA fixture (ADR 0004). Every value below is read from the rendered filings saved under `tests/fixtures/sec/LCID/2026Q2/evidence/`, not from the engine. USD thousands unless noted.
 
@@ -33,7 +33,7 @@ LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025
 | Total debt   | 3,361,428                    | "Finance lease liabilities, current portion" 5,045 + "Current portion of debt" 707,142 + "Finance lease liabilities, net of current portion" 102,685 + "Debt, net of current portion" 2,546,556 | Confirmed |
 | Cash         | 761,313                      | "Cash and cash equivalents" 732,601 + "Short-term investments" 28,712                                                                                                                           | Confirmed |
 | Cover shares | 394,070,176 as of 2026-07-29 | 10-Q cover page                                                                                                                                                                                 | Confirmed |
-| Preferred    | Unsupported                  | "Redeemable convertible preferred stock, (related party)" 2,906,257 in temporary equity                                                                                                         | Confirmed |
+| Preferred    | Unsupported                  | "Redeemable convertible preferred stock, (related party)" 2,906,257 in temporary equity; since 0.4.3 named by `W_NOT_IN_EV_UNCLASSIFIED`                                                        | Confirmed |
 | NCI          | Missing                      | no noncontrolling-interest line                                                                                                                                                                 | Confirmed |
 
 ## Valuation at the test price 20.00 (a test input, not market data)
@@ -49,7 +49,10 @@ LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025
 - **D&A is not the cash-flow line.** Lucid's cash-flow "Depreciation and amortization" (451,243 / 238,634 / 209,047) is tagged with its own concept `lcid:DepreciationAndAmortizationExcludingDebtDiscountsAndInsurancePremiums`, which methodology §3 does not read. PeerSet uses `us-gaap:DepreciationDepletionAndAmortization`, shown in the segment narrative rounded to $0.1M. From the cash-flow line, LTM D&A would be 480,830, which is 30 more. EBITDA is negative either way.
 - **Reverse split, not since the 10-K.** Lucid did a 1-for-10 reverse split on August 29, 2025. The six-month 2025 EPS was first filed as (0.52) and restated to (5.18). The FY2025 10-K is already post-split, so every EPS component is on the same basis. Methodology 0.4.1 skips the restatement test when a split dated on or before the fiscal year end explains it; before 0.4.1, P/E was wrongly Unsupported ("split since last 10-K").
 - **EPS cross-check gap is real.** EPS uses net loss attributable to common stockholders, which adds preferred-stock effects (FY2025 diluted (3,789,155) vs net loss (2,698,051)). The warning is expected.
-- **Preferred stock in temporary equity.** $2.9 billion of redeemable convertible preferred is held by a related party. Methodology §9 doesn't classify temporary-equity preferred yet, so preferred is Unsupported and EV leaves it out **without** the "material item not in EV" warning. That's a known limitation; Lucid is the first real filing to show it. The engine names the first unclassified line it meets, "Derivative liabilities associated with redeemable convertible preferred stock" (`DerivativeLiabilitiesNoncurrent`), which is not debt.
+- **Preferred stock in temporary equity.** $2.9 billion of redeemable convertible preferred is held by a related party.
+  - Since methodology 0.4.3, §9 classifies the temporary-equity line (`TemporaryEquityCarryingAmountAttributableToParent`) as preferred by its label.
+  - Preferred is still Unsupported, because an earlier line, "Derivative liabilities associated with redeemable convertible preferred stock" (`DerivativeLiabilitiesNoncurrent`), looks like preferred stock and isn't classified. That line is not debt.
+  - EV leaves the preferred out, as for every company, but no longer silently: EV carries the caution `W_NOT_IN_EV_UNCLASSIFIED`, "possible preferred stock not in EV: Redeemable convertible preferred stock, (related party) 2,906.3M".
 - **Total-debt tag.** `DebtLongtermAndShorttermCombinedAmount` is 3,253,700; the face sum is 3,361,428. The 107,728 gap is the finance leases (5,045 + 102,685 = 107,730, rounding), so `W_DEBT_TOTAL_TAG_DIFFERS` is expected.
 
 ## How to check (about 15 minutes)
@@ -64,3 +67,4 @@ Open each link and find the named line. For the 10-Q, use the **6 Months Ended**
 
 - **November 1, 2026 — new golden (M6).** First version, methodology 0.4.1.
 - **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for LCID no value changed.
+- **November 2, 2026 — definition change, methodology 0.4.3 (warnings only).** `LCID-2026Q2-valuation.json` gains `notInEvUnclassified`: EV carries the new caution `W_NOT_IN_EV_UNCLASSIFIED` naming "Redeemable convertible preferred stock, (related party)" 2,906,257 thousand (R2.htm, Jun. 30, 2026). The notes in `LCID-2026Q2-balance.json` are reworded. No value changed: preferred stays Unsupported with the same code, EV stays 10,481,518,520, and every other golden is unchanged except its `methodologyVersion` (0.4.2 → 0.4.3).

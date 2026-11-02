@@ -107,7 +107,10 @@ describe("GET /api/fundamentals", () => {
   it("caches fundamentals by CIK + latest accession + methodology version, under 2 MB", async () => {
     const calls: { key: string[]; revalidate: number }[] = [];
     let stored: unknown;
+    // Only the fundamentals entry is under test; the recent identity-check entry
+    // (ADR 0012) just runs.
     const cache: CacheFn = async (key, revalidate, fn) => {
+      if (key[0] !== "fundamentals") return fn();
       calls.push({ key, revalidate });
       stored ??= await fn();
       return stored as never;
@@ -126,7 +129,7 @@ describe("GET /api/fundamentals", () => {
         "fundamentals",
         "0001069202",
         "0001069202-26-000087",
-        "0.4.2",
+        "0.4.3",
         `cache-v${FUNDAMENTALS_CACHE_VERSION}`,
       ],
       revalidate: 86_400,

@@ -1,6 +1,7 @@
 // Balance-sheet items left out of EV (methodology §9): preferred stock and
 // noncontrolling interest, read from the face lines like debt and cash (0.3.0). They
-// feed the "material item not in EV" warning once prices exist (M2b).
+// feed the "material item not in EV" warning once prices exist (M2b). Temporary-equity
+// carrying amounts count when their label names the item (0.4.3).
 
 import {
   faceUnavailableWarning,
@@ -10,7 +11,14 @@ import {
   type BalanceSheetItem,
 } from "./balanceSheet";
 import { selectFact } from "./factSelection";
-import { CONCEPTS, FACE, NCI_LIKE_LABEL, PREFERRED_LIKE_LABEL } from "./policy";
+import {
+  CONCEPTS,
+  FACE,
+  NCI_LIKE_LABEL,
+  isTemporaryEquityNci,
+  PREFERRED_LIKE_LABEL,
+  TEMPORARY_EQUITY_BY_LABEL,
+} from "./policy";
 import type {
   FaceLine,
   FaceLineProvenance,
@@ -46,7 +54,14 @@ function compute(input: BalanceSheetInput, kind: Kind): BalanceSheetItem {
   const counted = new Set<string>();
   let unsupported: MetricUnsupportedReason | undefined;
   for (const line of input.face.lines) {
-    if (kind.concepts.has(line.concept)) {
+    // §9 tie-break (0.4.3): a temporary-equity NCI line is never preferred stock.
+    if (kind === PREFERRED && isTemporaryEquityNci(line.concept, line.label))
+      continue;
+    const classified =
+      kind.concepts.has(line.concept) ||
+      (TEMPORARY_EQUITY_BY_LABEL.has(line.concept) &&
+        kind.looksLike.test(line.label));
+    if (classified) {
       const again = counted.has(line.concept);
       counted.add(line.concept);
       candidates.push({
@@ -54,9 +69,15 @@ function compute(input: BalanceSheetInput, kind: Kind): BalanceSheetItem {
         include: !again,
         reason: again
           ? "same concept already counted above"
-          : `${kind.noun} line`,
+          : TEMPORARY_EQUITY_BY_LABEL.has(line.concept)
+            ? `${kind.noun} line (temporary equity)`
+            : `${kind.noun} line`,
       });
-    } else if (!line.total && kind.looksLike.test(line.label)) {
+    } else if (
+      !line.total &&
+      !TEMPORARY_EQUITY_BY_LABEL.has(line.concept) &&
+      kind.looksLike.test(line.label)
+    ) {
       // Totals such as "Total equity including noncontrolling interests" mention
       // the item without being it.
       unsupported ??= {

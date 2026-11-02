@@ -173,15 +173,25 @@ export function computeEps(input: LtmInput, netIncome: Metric): EpsResult {
       splitSinceLastAnnual: false,
     };
   // Split detection always compares total EPS (§5): a reclassification restates
-  // continuing-ops EPS, not a split. Without a total-EPS LTM only the split-ratio
-  // fact can be checked.
-  const split = detectSplit(
-    input,
-    total.kind === "ok" ? total.calc : periods!,
-    {
-      restatement: total.kind === "ok",
-    },
-  );
+  // continuing-ops EPS, not a split. Without a total-EPS LTM, the restatement test
+  // still runs on total EPS's latest-filed fact for the prior-year YTD period, when
+  // one exists (M6 review edge case, v1.1).
+  const splitBasis = (() => {
+    if (total.kind === "ok") return total.calc;
+    const prior = periods!.ytdPrior;
+    if (!prior || prior.period.kind !== "duration") return periods!;
+    const sel = selectFact(input.facts, CONCEPTS.dilutedEps[0], {
+      start: prior.period.start,
+      end: prior.period.end,
+    });
+    return {
+      ...periods!,
+      ytdPrior: sel.kind === "found" ? sel.fact : undefined,
+    };
+  })();
+  const split = detectSplit(input, splitBasis, {
+    restatement: splitBasis.ytdPrior?.concept === CONCEPTS.dilutedEps[0],
+  });
   const splitFields = {
     splitSinceLastAnnual: split.split,
     ...(split.evidence ? { splitEvidence: split.evidence } : {}),

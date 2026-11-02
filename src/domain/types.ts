@@ -86,7 +86,11 @@ export interface QuoteSnapshot {
   close: number;
   currency: "USD";
   asOfDate: string; // trading date of the close
-  source: "user_entered" | "alpha_vantage";
+  // user_entered: typed by the user. alpha_vantage: the server provider (off in
+  // production, blueprint §9). alpha_vantage_user_key: fetched by the user's own
+  // browser with the user's own key (v1.1, docs/licensing.md); a user input like
+  // a typed price.
+  source: "user_entered" | "alpha_vantage" | "alpha_vantage_user_key";
   retrievedAt: string; // ISO timestamp
 }
 
@@ -111,6 +115,7 @@ export type WarningCode =
   | "W_SHARES_AFTER_BALANCE_SHEET" // §6: cover date after the balance sheet (info)
   | "W_TICKER_NOT_IN_SEC_LIST" // §6: cover symbol SEC doesn't list for the CIK
   | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
+  | "W_NOT_IN_EV_UNCLASSIFIED" // §9 (0.4.3): temporary-equity line, item Unsupported
   | "W_PRICE_STALE" // §12: price date > 7 days before the analysis date
   | "W_PERIOD_LAG"; // §12: LTM end > 75 days from the peers' median LTM end
 

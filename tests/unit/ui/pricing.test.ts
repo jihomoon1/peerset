@@ -213,3 +213,65 @@ describe("quotesFromInputs with provider quotes of different dates", () => {
     ]);
   });
 });
+
+describe("quotesFromInputs with filled prices (v1.1)", () => {
+  const base = {
+    priceDate: "2026-10-26",
+    analysisDate: "2026-10-26",
+    retrievedAt: "2026-10-26T14:00:00.000Z",
+    providerQuotes: [],
+  };
+
+  it("labels a filled price with its own bar date and the user-key source", () => {
+    const q = quotesFromInputs({
+      ...base,
+      inputs: { LII: "376.01", WSO: "450" },
+      filled: { LII: { close: 376.01, asOfDate: "2026-10-23" } },
+    });
+    expect(q.quotes).toEqual([
+      expect.objectContaining({
+        symbol: "LII",
+        asOfDate: "2026-10-23",
+        source: "alpha_vantage_user_key",
+      }),
+      expect.objectContaining({
+        symbol: "WSO",
+        asOfDate: "2026-10-26",
+        source: "user_entered",
+      }),
+    ]);
+  });
+
+  it("typing over a filled price makes it user-entered at the shared date", () => {
+    const q = quotesFromInputs({
+      ...base,
+      inputs: { LII: "380" },
+      filled: { LII: { close: 376.01, asOfDate: "2026-10-23" } },
+    });
+    expect(q.quotes[0]).toMatchObject({
+      source: "user_entered",
+      asOfDate: "2026-10-26",
+    });
+  });
+
+  it("a bad shared date doesn't block prices that carry their own date", () => {
+    const q = quotesFromInputs({
+      ...base,
+      priceDate: "",
+      inputs: { LII: "376.01" },
+      filled: { LII: { close: 376.01, asOfDate: "2026-10-23" } },
+    });
+    expect(q.dateError).toBeUndefined();
+    expect(q.quotes).toHaveLength(1);
+  });
+
+  it("still refuses a filled date after the analysis date", () => {
+    const q = quotesFromInputs({
+      ...base,
+      inputs: { LII: "376.01" },
+      filled: { LII: { close: 376.01, asOfDate: "2026-10-27" } },
+    });
+    expect(q.quotes).toEqual([]);
+    expect(q.errors.LII).toMatch(/after the analysis date/);
+  });
+});

@@ -14,7 +14,10 @@ import { computeDa } from "./metrics/da";
 import { computeEbitda } from "./metrics/ebitda";
 import { computeEbitdaMargin } from "./metrics/ebitdaMargin";
 import { computeEps, type EpsCrossCheck } from "./metrics/eps";
-import type { DiscontinuedOps } from "./metrics/discontinuedOps";
+import {
+  findDiscontinuedOps,
+  type DiscontinuedOps,
+} from "./metrics/discontinuedOps";
 import { computeNetIncome } from "./metrics/netIncome";
 import { computeOperatingIncome } from "./metrics/operatingIncome";
 import { computeRevenue } from "./metrics/revenue";
@@ -69,6 +72,9 @@ export interface CompanyFundamentals {
     splitSinceLastAnnual: boolean;
     splitEvidence?: string;
   };
+  // §3: discontinued operations in net income's own LTM component periods, for the
+  // drawer. Usually the same periods EPS uses; found even when EPS has no full LTM.
+  netIncomeDiscontinuedOps?: DiscontinuedOps;
   // Methodology §7–§9, as of the balance-sheet date. statement is null when the
   // rendered balance sheet couldn't be read (tag fallback).
   balanceSheet: {
@@ -106,6 +112,9 @@ export function buildFundamentals(
   const netIncome = computeNetIncome(ltm);
   const eps = computeEps(ltm, netIncome.metric);
   const ebitda = computeEbitda(operatingIncome.metric, da.metric);
+  const niDiscOps = netIncome.ltm
+    ? findDiscontinuedOps(input.facts, netIncome.ltm)
+    : null;
 
   const bs: BalanceSheetInput = {
     date: input.balanceSheet.date,
@@ -146,6 +155,9 @@ export function buildFundamentals(
       splitSinceLastAnnual: eps.splitSinceLastAnnual,
       ...(eps.splitEvidence ? { splitEvidence: eps.splitEvidence } : {}),
     },
+    ...(niDiscOps?.kind === "found"
+      ? { netIncomeDiscontinuedOps: niDiscOps.ops }
+      : {}),
     balanceSheet: {
       date: bs.date,
       statement:
