@@ -434,6 +434,8 @@ Recommendation:
 4. **Local development** may use your own free key; that is personal use.
 5. **If a paid feed is ever justified:** Twelve Data Venture (display) or Tiingo Redistribution (display and download).
 
+**v1.1: bring your own key.** The workbench's "Fill prices" button lets each visitor's own browser call Alpha Vantage with the visitor's own free key. PeerSet's servers never see the key or the quotes; filled prices are user inputs like typed ones, with attribution on screen and in the workbook. Design, hard rules and limits: `docs/licensing.md`.
+
 The adapter keeps this swappable: a `QuoteProvider` interface returns quote snapshots; implementations are `userEntered` and `alphaVantage`; `PRICE_PROVIDER=user` in production until approval is on file. Caveat: provider terms are a contract binding you personally, and "non-commercial" ends with ads, paid features or running the site for an organization. This is not legal advice.
 
 ## 10. Peer universe and screening
