@@ -18,9 +18,9 @@ export const metadata: Metadata = {
 
 const SUMMARY = [
   "LTM (last twelve months) = the latest fiscal year + this year's year-to-date − last year's year-to-date, from the 10-K and the latest 10-Q. Quarters are never added up.",
-  "EBITDA = operating income + depreciation and amortization from the cash-flow statement. It is standardized and unadjusted: no add-backs.",
+  "EBITDA = operating income + depreciation and amortization as the filing reports it, usually on the cash-flow statement. It is standardized and unadjusted: no add-backs.",
   "Debt and cash come from the lines the company shows on its balance sheet. Operating leases are never debt. A line PeerSet can't classify makes the total Unsupported instead of guessed.",
-  "Enterprise value = market cap (price × cover-page shares) + total debt − cash and short-term investments. Preferred stock and noncontrolling interests are left out, with a warning when material.",
+  "Enterprise value = market cap (price × cover-page shares) + total debt − cash and short-term investments. Preferred stock and noncontrolling interests are left out, with a warning when material or when a temporary-equity line can't be classified.",
   "A multiple is NM (not meaningful) when its denominator is ≤ 0, when EV ≤ 0, or above 100x. “—” means an input is missing; “Unsupported” means the method can't apply, with the reason.",
   "Peers share the target's SIC industry code (widening from 4 to 3 to 2 digits when fewer than 5 qualify), with latest-fiscal-year revenue between 0.2x and 5x the target's, closest in size first.",
   "Prices are end-of-day closes you enter. PeerSet never estimates a number: missing data stays missing.",

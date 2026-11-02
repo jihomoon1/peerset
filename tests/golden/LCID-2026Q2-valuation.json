@@ -1,7 +1,7 @@
 {
   "ticker": "LCID",
   "fixture": "LCID",
-  "methodologyVersion": "0.4.2",
+  "methodologyVersion": "0.4.3",
   "analysisDate": "2026-10-26",
   "note": "Negative-EBITDA fixture (M6). The price is a test input, not market data, chosen so EV > 0 and the EV/EBITDA NM reason is 'EBITDA ≤ 0', not 'EV ≤ 0'. Shares come from the 10-Q cover page; debt, cash, revenue, EBITDA and EPS are the values in LCID-2026Q2.json and LCID-2026Q2-balance.json, read from the rendered filings.",
   "prices": [
@@ -36,6 +36,10 @@
     "sharesAsOf": "2026-07-29"
   },
   "notInEvWarning": false,
+  "notInEvUnclassified": [
+    "possible preferred stock not in EV: Redeemable convertible preferred stock, (related party) 2,906.3M"
+  ],
+  "notInEvUnclassifiedNote": "Methodology 0.4.3 (definition change, warnings only): preferred stays Unsupported because the earlier derivative-liability line mentions preferred stock, so 'material item not in EV' can't be decided; the temporary-equity line 'Redeemable convertible preferred stock, (related party)' 2,906,257 thousand (R2.htm, Jun. 30, 2026, us-gaap:TemporaryEquityCarryingAmountAttributableToParent) is named by the caution W_NOT_IN_EV_UNCLASSIFIED. EV and every value are unchanged.",
   "multiples": {
     "evRevenue": {
       "status": "derived",

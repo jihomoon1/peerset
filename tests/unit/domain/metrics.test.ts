@@ -156,11 +156,18 @@ describe("operating income (§3: no fallback)", () => {
 });
 
 describe("D&A (§3)", () => {
-  it("always warns that it comes from the cash-flow statement", () => {
+  it("always notes it is the reported D&A concept, usually from the cash-flow statement (0.4.3)", () => {
     const facts = series("us-gaap:DepreciationAndAmortization", [50, 26, 25]);
     const { metric } = computeDa(at(facts));
     expect(usable(metric).value).toBe(51);
-    expect(metric.warnings.map((w) => w.code)).toContain("W_DA_FROM_CASH_FLOW");
+    expect(
+      metric.warnings.find((w) => w.code === "W_DA_FROM_CASH_FLOW"),
+    ).toEqual({
+      code: "W_DA_FROM_CASH_FLOW",
+      message:
+        "D&A is the filing's reported D&A concept, usually from the cash-flow statement; it may include items outside operating expenses",
+      severity: "info",
+    });
   });
 
   it("falls back to Depreciation + AmortizationOfIntangibleAssets over the same periods", () => {

@@ -1013,7 +1013,7 @@ function tradingComps(
   // Notes
   putText(ws.getCell(r++, 1), "Notes", { bold: true });
   const notes = [
-    'EBITDA (standardized, unadjusted) = operating income + D&A from the cash-flow statement. No add-backs; never "Adjusted EBITDA".',
+    'EBITDA (standardized, unadjusted) = operating income + D&A as reported, usually on the cash-flow statement. No add-backs; never "Adjusted EBITDA".',
     `NM (not meaningful): revenue, EBITDA or EPS ≤ 0, EV ≤ 0, or a multiple above ${NM_MULTIPLE_CAP.toFixed(1)}x. "—" = an input is missing. Unsupported = the method can't apply; the reason is in the cell note and on Calculations.`,
     "Equity value uses basic shares outstanding from each filing's cover page, not diluted shares (treasury stock method not applied).",
     "Statistics are over peers only; the target is excluded. NM, — and Unsupported are text, so Excel's statistics skip them.",
@@ -1197,7 +1197,7 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
   ]);
   section("Definitions", [
     "LTM after a 10-Q = FY(prior) + YTD(current) − YTD(prior year); after a 10-K = that fiscal year. Q4 is never derived.",
-    "EBITDA (standardized, unadjusted) = operating income + D&A (cash-flow statement). EBITDA margin = EBITDA ÷ revenue.",
+    "EBITDA (standardized, unadjusted) = operating income + D&A (the filing's reported D&A concept, usually the cash-flow statement). EBITDA margin = EBITDA ÷ revenue.",
     "Equity value = Σ over share classes of price × cover-page shares. EV = equity value + total debt − cash and short-term investments.",
     "Total debt and cash are the sums of the lines the company presents on its balance sheet (methodology §7–§8). If the face can't be read, the 0.2.1 tag rules are used (W_FACE_UNAVAILABLE). No debt lines, or debt lines with no amount, is a reported 0.",
     "EV/Revenue = EV ÷ LTM revenue · EV/EBITDA = EV ÷ LTM EBITDA · P/E = price ÷ LTM diluted EPS (single-class companies only); from continuing operations when an LTM period reports discontinued operations (methodology 0.4.0 §5).",
@@ -1210,7 +1210,7 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
   ]);
   section("Limitations", [
     "Shares are basic (cover page), not diluted by the treasury stock method.",
-    "Preferred stock, noncontrolling interests and equity-method investments are not in EV; a warning flags material ones.",
+    "Preferred stock, noncontrolling interests and equity-method investments are not in EV; a warning flags material ones, and a caution names temporary-equity lines that can't be classified (W_NOT_IN_EV_UNCLASSIFIED).",
     "EBITDA is unadjusted: no restructuring, stock-compensation or acquisition add-backs.",
     "Peers are screened by SIC code and revenue size; SIC misses business-model differences.",
     "USD filers with 10-K/10-Q only. Figures are first-pass and not a substitute for analyst review.",

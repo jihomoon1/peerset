@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.4.2";
+export const METHODOLOGY_VERSION = "0.4.3";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
@@ -322,6 +322,24 @@ export const CASH_LIKE_LABEL =
 // §8: a restricted-only label ("Restricted cash", "Restricted cash and cash
 // equivalents"); "cash … and restricted cash" also holds unrestricted cash.
 export const RESTRICTED_ONLY_LABEL = /^restricted\b/i;
+// §9 (0.4.3): temporary-equity carrying amounts. They count as preferred stock or as
+// NCI only when the label says which (redeemable common stock is neither).
+export const TEMPORARY_EQUITY_BY_LABEL = usGaap(
+  "TemporaryEquityCarryingAmountAttributableToParent",
+  "TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests",
+);
+// §9 (0.4.3): a temporary-equity face line, for the W_NOT_IN_EV_UNCLASSIFIED caution:
+// any monetary us-gaap TemporaryEquity… concept, or redeemable NCI.
+export function isTemporaryEquityConcept(concept: string): boolean {
+  if (
+    concept === "us-gaap:RedeemableNoncontrollingInterestEquityCarryingAmount"
+  )
+    return true;
+  return (
+    concept.startsWith("us-gaap:TemporaryEquity") &&
+    !/Shares|PerShare|Abstract$/.test(concept)
+  );
+}
 // §9: unclassified lines that look like preferred stock or NCI.
 export const PREFERRED_LIKE_LABEL = /preferred/i;
 export const NCI_LIKE_LABEL = /non-?controlling|minority interest/i;

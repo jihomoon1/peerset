@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { computeCash } from "@/domain/cash";
 import { computeDebt } from "@/domain/debt";
+import { computeEnterpriseValue } from "@/domain/enterpriseValue";
 import { computeNci, computePreferred } from "@/domain/evAdjustments";
 import type {
   BalanceSheetFace,
@@ -793,6 +794,117 @@ describe("preferred stock and NCI from the face (§9)", () => {
       status: "unsupported",
       reason: { code: "UNRECOGNIZED_EQUITY_LINE" },
     });
+  });
+});
+
+describe("temporary equity (§9, methodology 0.4.3)", () => {
+  const TEMP = "us-gaap:TemporaryEquityCarryingAmountAttributableToParent";
+  const usd = (v: number): Metric => ({
+    status: "derived",
+    value: v,
+    unit: "USD",
+    period: { kind: "instant", end: DATE },
+    formula: "test",
+    inputs: [],
+    warnings: [],
+  });
+  const item = (metric: Metric) => ({
+    metric,
+    lines: [],
+    method: "face" as const,
+  });
+  const ev = (input: BalanceSheetInput) =>
+    computeEnterpriseValue({
+      marketCap: usd(10_000 * M),
+      debt: item(usd(100 * M)),
+      cash: item(usd(50 * M)),
+      preferred: computePreferred(input),
+      nci: computeNci(input),
+      balanceSheetDate: DATE,
+    }).enterpriseValue;
+
+  it("classifies a temporary-equity line labelled preferred as preferred stock", () => {
+    const input = sheet(
+      [CASH],
+      [[TEMP, "Series A redeemable convertible preferred stock", 300 * M]],
+    );
+    expect(value(computePreferred(input).metric)).toBe(300 * M);
+    expect(computeNci(input).metric.status).toBe("missing");
+    // classified and usable: only the existing warning speaks
+    expect(ev(input).warnings.map((w) => w.code)).toEqual(["W_NOT_IN_EV"]);
+  });
+
+  it("names the line when preferred is Unsupported (Lucid shape)", () => {
+    const input = sheet(
+      [CASH],
+      [
+        [
+          "us-gaap:DerivativeLiabilitiesNoncurrent",
+          "Derivative liabilities associated with redeemable convertible preferred stock (related party)",
+          163.655 * M,
+        ],
+        ["us-gaap:Liabilities", "Total liabilities", 5_850.532 * M],
+        [
+          TEMP,
+          "Redeemable convertible preferred stock, (related party)",
+          2_906.257 * M,
+        ],
+      ],
+    );
+    expect(computePreferred(input).metric).toMatchObject({
+      status: "unsupported",
+      reason: {
+        code: "UNRECOGNIZED_EQUITY_LINE",
+        message: expect.stringContaining("Derivative liabilities"),
+      },
+    });
+    const e = ev(input);
+    expect(value(e)).toBe(10_050 * M); // EV unchanged: preferred never enters it
+    expect(e.warnings).toEqual([
+      {
+        code: "W_NOT_IN_EV_UNCLASSIFIED",
+        message:
+          "possible preferred stock not in EV: Redeemable convertible preferred stock, (related party) 2,906.3M",
+        severity: "caution",
+      },
+    ]);
+  });
+
+  it("names an NCI-looking temporary-equity line when NCI is Unsupported", () => {
+    const input = sheet(
+      [CASH],
+      [
+        ["co:OtherNci", "Noncontrolling interest in subsidiary", 2 * M],
+        [
+          "us-gaap:RedeemableNoncontrollingInterestEquityCarryingAmount",
+          "Redeemable noncontrolling interests",
+          40 * M,
+        ],
+      ],
+    );
+    expect(computeNci(input).metric.status).toBe("unsupported");
+    expect(ev(input).warnings.map((w) => w.message)).toEqual([
+      "possible noncontrolling interest not in EV: Redeemable noncontrolling interests 40.0M",
+    ]);
+  });
+
+  it("counts redeemable common stock as neither", () => {
+    const input = sheet([CASH], [[TEMP, "Redeemable common stock", 25 * M]]);
+    expect(computePreferred(input).metric.status).toBe("missing");
+    expect(computeNci(input).metric.status).toBe("missing");
+    expect(ev(input).warnings).toEqual([]);
+  });
+
+  it("says nothing for a temporary-equity line that shows no amount", () => {
+    const input = sheet(
+      [CASH],
+      [
+        ["co:PrefDerivative", "Preferred stock warrants", 1 * M],
+        [TEMP, "Redeemable preferred stock", undefined],
+      ],
+    );
+    expect(computePreferred(input).metric.status).toBe("unsupported");
+    expect(ev(input).warnings).toEqual([]);
   });
 });
 

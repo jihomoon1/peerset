@@ -241,7 +241,7 @@ Tag choices differ even among close peers \[obs\]: LII tags revenue as `Revenues
 
 - Labeled "EBITDA (standardized, unadjusted)" everywhere; never "Adjusted EBITDA".
 - No add-backs: no restructuring, stock compensation or acquisition costs.
-- D&A comes from the cash-flow statement and may include items that are not in operating expenses. Example: finance-lease right-of-use amortization, which LII tags separately (19.3M USD in FY2025) \[obs\]. Golden fixtures check each company's D&A against the filing text.
+- D&A is the filing's reported D&A concept, usually from the cash-flow statement (methodology 0.4.3 §3), and may include items that are not in operating expenses. Example: finance-lease right-of-use amortization, which LII tags separately (19.3M USD in FY2025) \[obs\]. Golden fixtures check each company's D&A against the filing text.
 - Operating income and D&A are shown separately in the drawer.
 
 ### 7.5 Diluted EPS and P/E
@@ -715,9 +715,10 @@ Each warning has a code, a plain message and a severity, shown in the drawer and
 | --- | --- |
 | `W_FILING_PARSED` | companyfacts was behind; values parsed from the filing |
 | `W_REVENUE_CONCEPTS_DIFFER` | Two revenue concepts disagree for the same period |
-| `W_DA_FROM_CASH_FLOW` | D&A taken from the cash-flow statement |
+| `W_DA_FROM_CASH_FLOW` | D&A is the reported D&A concept, usually from the cash-flow statement |
 | `W_RESTRICTED_CASH_INCLUDED` | Only a cash tag including restricted cash exists |
 | `W_NOT_IN_EV` | Material preferred or noncontrolling interest not in EV |
+| `W_NOT_IN_EV_UNCLASSIFIED` | A temporary-equity line that looks like preferred or NCI, while that item is Unsupported (methodology 0.4.3) |
 | `W_DEBT_COMPONENTS_MISMATCH` | Debt components don't sum to the reported total |
 | `W_PERIOD_LAG` | LTM end more than 75 days from the peer median |
 | `W_53_WEEKS` | LTM window contains a 53-week fiscal year |

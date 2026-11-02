@@ -120,7 +120,7 @@ describe("buildFromFiles on the synthetic bulk files", async () => {
   it("writes metadata: sources, methodology version and counts", () => {
     expect(index.meta).toEqual({
       generatedAt: "2026-11-01T04:27:22.000Z", // newest Last-Modified
-      methodologyVersion: "0.4.2",
+      methodologyVersion: "0.4.3",
       sources: SOURCES,
       counts: {
         total: 9,

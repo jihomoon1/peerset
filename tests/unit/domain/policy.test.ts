@@ -8,7 +8,7 @@ import * as policy from "@/domain/policy";
 // without a version bump.
 describe("policy matches methodology §14 (v0.4.0)", () => {
   it("has the approved methodology version", () => {
-    expect(policy.METHODOLOGY_VERSION).toBe("0.4.2");
+    expect(policy.METHODOLOGY_VERSION).toBe("0.4.3");
   });
 
   it("matches the version written in docs/methodology.md", () => {
