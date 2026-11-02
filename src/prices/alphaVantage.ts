@@ -1,7 +1,9 @@
 // Alpha Vantage TIME_SERIES_DAILY adapter (blueprint §9): compact output, the latest
 // row's close and date. Errors and rate limits come back as HTTP 200 with a message
-// key instead of the series. Server-side only; the key never reaches a log, an error
-// detail or the browser.
+// key instead of the series. Isomorphic: the server provider below (off in
+// production) and the browser's bring-your-own-key fill (`browserAlphaVantage.ts`,
+// v1.1) share this parser. Either way the key never reaches a log or an error detail;
+// the server provider's key never reaches the browser.
 
 import * as z from "zod";
 import { isIsoDate } from "@/domain/dates";
@@ -12,7 +14,7 @@ import type { QuoteProvider } from "./provider";
 import { PRICE_LIMIT } from "./userEntered";
 
 export const ALPHA_VANTAGE_HOST = "www.alphavantage.co"; // CLAUDE.md allow-list
-const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
+export const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
 const TIMEOUT_MS = 10_000;
 // The free tier answers a second request within the same second with a burst notice
 // (recorded 2026-10-26), so calls go one at a time, at least this far apart.
@@ -41,11 +43,34 @@ const DailySeriesSchema = z.object({
   ),
 });
 
-const MessageSchema = z.union([
+export const MessageSchema = z.union([
   z.object({ "Error Message": z.string() }),
   z.object({ Information: z.string() }),
   z.object({ Note: z.string() }),
 ]);
+
+// What a message payload means. Recorded texts (tests/fixtures/prices/alphavantage):
+// the daily cap names "per day" ("25 requests per day"); the burst notice asks for
+// "1 request per second". An invalid key is an "Error Message" naming the apikey
+// parameter; any other "Error Message" is an invalid call, i.e. a symbol Alpha
+// Vantage doesn't know. null when the body is not a message.
+export type AlphaVantageMessage =
+  "daily_limit" | "burst" | "invalid_key" | "unknown_symbol";
+
+export function classifyMessage(body: unknown): AlphaVantageMessage | null {
+  const parsed = MessageSchema.safeParse(body);
+  if (!parsed.success) return null;
+  const m = parsed.data;
+  if ("Error Message" in m)
+    return /api\s*key/i.test(m["Error Message"])
+      ? "invalid_key"
+      : "unknown_symbol";
+  const text = "Information" in m ? m.Information : m.Note;
+  if (/per second|spreading out|sparingly/i.test(text)) return "burst";
+  if (/api\s*key/i.test(text) && /invalid|missing/i.test(text))
+    return "invalid_key";
+  return "daily_limit";
+}
 
 // `symbol` is the ticker the caller asked for; the snapshot carries it unchanged. The
 // latest row whose trading day had finished at `retrievedAt` is used, so a bar for a
@@ -55,6 +80,7 @@ export function parseDailySeries(
   symbol: string,
   retrievedAt: string,
   providerSymbol = toProviderSymbol(symbol),
+  source: QuoteSnapshot["source"] = "alpha_vantage",
 ): QuoteSnapshot {
   const message = MessageSchema.safeParse(body);
   if (message.success) {
@@ -92,7 +118,7 @@ export function parseDailySeries(
     close,
     currency: "USD",
     asOfDate: latest,
-    source: "alpha_vantage",
+    source,
     retrievedAt,
   };
 }

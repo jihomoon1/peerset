@@ -86,7 +86,11 @@ export interface QuoteSnapshot {
   close: number;
   currency: "USD";
   asOfDate: string; // trading date of the close
-  source: "user_entered" | "alpha_vantage";
+  // user_entered: typed by the user. alpha_vantage: the server provider (off in
+  // production, blueprint §9). alpha_vantage_user_key: fetched by the user's own
+  // browser with the user's own key (v1.1, docs/licensing.md); a user input like
+  // a typed price.
+  source: "user_entered" | "alpha_vantage" | "alpha_vantage_user_key";
   retrievedAt: string; // ISO timestamp
 }
 
