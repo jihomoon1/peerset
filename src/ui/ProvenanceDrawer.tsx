@@ -33,10 +33,10 @@ export function ProvenanceDrawer({
   onClose: () => void;
 }) {
   const m = f.metrics[metricKey];
-  // Net income uses its own component periods (v1.1); EPS uses EPS's (§5).
+  // Net income uses only its own component periods (§3, v1.1); EPS uses EPS's (§5).
   const discOps =
     metricKey === "netIncome"
-      ? (f.netIncomeDiscontinuedOps ?? f.eps.discontinuedOps)
+      ? f.netIncomeDiscontinuedOps
       : metricKey === "dilutedEps"
         ? f.eps.discontinuedOps
         : undefined;

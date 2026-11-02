@@ -1,6 +1,7 @@
 // D&A (methodology §3, §4): the priority list, then Depreciation +
-// AmortizationOfIntangibleAssets over the same periods. Always from the cash-flow
-// statement, so always warned.
+// AmortizationOfIntangibleAssets over the same periods. The concept is read wherever
+// the filing tags it, usually the cash-flow statement, so the note is always attached
+// (0.4.3).
 
 import { computeLtm, ltmForConcept, type LtmInput } from "../ltm";
 import { CONCEPTS } from "../policy";
