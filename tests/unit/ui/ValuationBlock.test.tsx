@@ -96,7 +96,13 @@ describe("before any price", () => {
     expect(html).toContain("June 30, 2026");
     expect(html).toContain("July 22, 2026");
     expect(html).toContain("October 26, 2026, 15:30 UTC");
-    expect(html).not.toContain("Alpha Vantage");
+    // No price attribution in the as-of strip without prices (the v1.1 autofill
+    // panel elsewhere on the page names Alpha Vantage for the key input).
+    const strip = html.slice(
+      html.indexOf('aria-label="As of"'),
+      html.indexOf("</section>", html.indexOf('aria-label="As of"')),
+    );
+    expect(strip).not.toContain("Alpha Vantage");
   });
 
   it("WSO: two price inputs, one per listed class", () => {

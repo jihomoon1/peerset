@@ -72,7 +72,7 @@ function throwingStorage(): KeyValueStorage {
 function harness(answers: Record<string, unknown>, startMs = START) {
   let t = startMs;
   const starts: { symbol: string; at: number; url: string }[] = [];
-  const fetch = (async (input: URL | RequestInfo) => {
+  const fetch: typeof globalThis.fetch = (async (input: URL | RequestInfo) => {
     const url = new URL(String(input));
     const symbol = url.searchParams.get("symbol")!;
     starts.push({ symbol, at: t, url: url.toString() });

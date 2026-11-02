@@ -15,6 +15,9 @@ export function userQuote(input: {
   asOfDate: string;
   analysisDate: string;
   retrievedAt: string;
+  // A price filled by the user's own browser with the user's own Alpha Vantage key
+  // (v1.1) is still a user input, validated the same way; only its label differs.
+  source?: "user_entered" | "alpha_vantage_user_key";
 }): UserQuoteResult {
   const { close, asOfDate, analysisDate } = input;
   const invalid = (message: string): UserQuoteResult => ({
@@ -37,7 +40,7 @@ export function userQuote(input: {
       close,
       currency: "USD",
       asOfDate,
-      source: "user_entered",
+      source: input.source ?? "user_entered",
       retrievedAt: input.retrievedAt,
     },
   };

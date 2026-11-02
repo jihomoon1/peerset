@@ -31,6 +31,7 @@ import type {
   FaceLineProvenance,
   LTMCalculation,
   Metric,
+  QuoteSnapshot,
   ReportedFinancialFact,
 } from "@/domain/types";
 import { DISCLAIMER } from "@/lib/site";
@@ -45,6 +46,32 @@ import {
   type NumFmt,
   type Role,
 } from "./styles";
+
+// How each quote source reads in the workbook (v1.1 adds the user's own key).
+export const QUOTE_SOURCE_WORDS: Record<QuoteSnapshot["source"], string> = {
+  user_entered: "entered by user",
+  alpha_vantage: "Alpha Vantage",
+  alpha_vantage_user_key: "Alpha Vantage via the user's own key",
+};
+
+// The Trading Comps header line about prices (row 5). Filled prices carry the
+// attribution the licensing rules require (docs/licensing.md, rule 5).
+export function priceHeader(
+  quotes: readonly QuoteSnapshot[],
+  priceDate: string | null,
+): string {
+  if (!priceDate || quotes.length === 0)
+    return "Prices: none entered · valuation cells show —";
+  const byKey = quotes.filter((q) => q.source === "alpha_vantage_user_key");
+  const typed = quotes.filter((q) => q.source === "user_entered").length;
+  const server = quotes.length - byKey.length - typed;
+  if (byKey.length === quotes.length)
+    return `Prices: Alpha Vantage via the user's own key, close of ${priceDate}; entered by the user's browser.`;
+  if (byKey.length > 0)
+    return `Prices: Alpha Vantage via the user's own key (${byKey.length}) and entered by the user (${typed + server}), earliest close ${priceDate}; entered by the user's browser.`;
+  if (server > 0) return `Prices as of ${priceDate} · source: Alpha Vantage`;
+  return `Prices as of ${priceDate} · source: entered by user`;
+}
 
 export const SHEET_NAMES = {
   comps: "Trading Comps",
@@ -484,9 +511,7 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
         row.getCell(4),
         c.quote.close,
         "perShare",
-        c.quote.source === "user_entered"
-          ? `close on ${c.quote.asOfDate}, entered by user`
-          : `close on ${c.quote.asOfDate}, Alpha Vantage`,
+        `close on ${c.quote.asOfDate}, ${QUOTE_SOURCE_WORDS[c.quote.source]}`,
       );
     else putDash(row.getCell(4), "needs price");
     if (usable(c.equityValue) && c.quote) {
@@ -768,12 +793,7 @@ function tradingComps(
   });
   putText(ws.getCell("A3"), `SIC ${t.sic} · ${t.sicDescription}`);
   putText(ws.getCell("A4"), `Analysis date: ${s.analysisDate}`);
-  putText(
-    ws.getCell("A5"),
-    s.priceDate
-      ? `Prices as of ${s.priceDate} · source: entered by user`
-      : "Prices: none entered · valuation cells show —",
-  );
+  putText(ws.getCell("A5"), priceHeader(s.quotes, s.priceDate));
   putText(ws.getCell("A6"), "USD in millions, except per-share data", {
     italic: true,
   });
@@ -998,7 +1018,7 @@ function tradingComps(
     "Equity value uses basic shares outstanding from each filing's cover page, not diluted shares (treasury stock method not applied).",
     "Statistics are over peers only; the target is excluded. NM, — and Unsupported are text, so Excel's statistics skip them.",
     "Blue = hardcoded input (on Calculations) · black = formula · green = link to Calculations. USD millions at full precision; formats do the rounding.",
-    "Prices are end-of-day closes entered by the user; PeerSet doesn't supply market data.",
+    "Prices are end-of-day closes the user entered, typed or fetched by the user's own browser with the user's own Alpha Vantage key; PeerSet doesn't supply market data.",
   ];
   notes.forEach((n, i) => putMuted(ws.getCell(r++, 1), `${i + 1}. ${n}`));
   if (s.missing.length > 0) {
@@ -1159,10 +1179,7 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
     row.getCell(4).value = isoDate(q.asOfDate);
     row.getCell(4).numFmt = NUM_FMT.date;
     row.getCell(4).font = font("input");
-    putText(
-      row.getCell(5),
-      q.source === "user_entered" ? "entered by user" : "Alpha Vantage",
-    );
+    putText(row.getCell(5), QUOTE_SOURCE_WORDS[q.source]);
   }
   if (s.quotes.length === 0) putMuted(ws.getCell(r++, 2), "No prices entered");
 
@@ -1200,6 +1217,11 @@ function sources(wb: ExcelJS.Workbook, s: ExportSnapshot) {
   ]);
   section("Price source", [
     "Prices are end-of-day closes entered by the user in PeerSet; they are inputs, not data from SEC or PeerSet.",
+    ...(s.quotes.some((q) => q.source === "alpha_vantage_user_key")
+      ? [
+          "Prices marked \"Alpha Vantage via the user's own key\" were fetched from Alpha Vantage by the user's browser with the user's own key, then entered by the browser. PeerSet's servers never received the key or the quotes.",
+        ]
+      : []),
   ]);
   section("Versions", [
     `PeerSet app version ${s.appVersion} · methodology version ${s.methodologyVersion}`,

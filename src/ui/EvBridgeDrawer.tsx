@@ -154,6 +154,12 @@ export function EvBridgeDrawer({
                   </th>
                   <td className="py-1 pr-2 text-right">
                     {c.quote ? formatPrice(c.quote.close) : "—"}
+                    {c.quote?.source === "alpha_vantage_user_key" && (
+                      <div className="text-xs text-muted">
+                        Alpha Vantage, fetched with your key · close of{" "}
+                        {formatDate(c.quote.asOfDate)}
+                      </div>
+                    )}
                   </td>
                   <td className="py-1 pr-2 text-right">
                     {formatShares(c.shares)}

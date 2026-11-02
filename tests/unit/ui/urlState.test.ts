@@ -120,3 +120,36 @@ describe("urlQuery", () => {
     expect(parse(urlQuery(state).slice(1))).toEqual(state);
   });
 });
+
+describe("pxav: prices filled with the user's own key (v1.1)", () => {
+  it("round-trips the filled tickers and their bar dates", () => {
+    const state = parse(
+      "px=LII:376.01,WSO-B:450&pxdate=2026-10-23&pxav=LII:2026-10-23",
+    );
+    expect(state.filled).toEqual({ LII: "2026-10-23" });
+    expect(urlQuery(state)).toBe(
+      "?px=LII:376.01,WSO-B:450&pxdate=2026-10-23&pxav=LII:2026-10-23",
+    );
+  });
+
+  it("drops entries without a price, a real date or a clean shape", () => {
+    expect(
+      parse("px=LII:376.01&pxav=LII:2026-02-30,WSO:2026-10-23,lii:2026-10-23:x")
+        .filled,
+    ).toBeUndefined();
+  });
+
+  it("old links without pxav read as before", () => {
+    expect(parse("px=LII:500&pxdate=2026-10-28")).not.toHaveProperty("filled");
+  });
+
+  it("never writes anything but tickers and dates", () => {
+    const q = urlQuery({
+      add: [],
+      remove: [],
+      prices: { LII: "376.01" },
+      filled: { LII: "2026-10-23", "MYKEY<>": "2026-10-23" },
+    });
+    expect(q).toBe("?px=LII:376.01&pxav=LII:2026-10-23");
+  });
+});

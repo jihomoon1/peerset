@@ -12,6 +12,9 @@ export interface ExportRequestBody {
   remove: string[];
   prices: Record<string, number>;
   priceDate?: string;
+  // v1.1: prices the browser filled from Alpha Vantage with the user's own key, each
+  // with its bar's date. Still user inputs; the server labels them, never trusts more.
+  filled?: Record<string, string>;
 }
 
 export interface ExportState {
@@ -36,6 +39,11 @@ export function exportState(input: {
   const prices = Object.fromEntries(
     input.quotes.map((q) => [q.symbol, q.close]),
   );
+  const filled = Object.fromEntries(
+    input.quotes
+      .filter((q) => q.source === "alpha_vantage_user_key")
+      .map((q) => [q.symbol, q.asOfDate]),
+  );
   const rows = [table.target, ...table.peers].filter((r) => r.cells);
   const cells = rows.flatMap((r) =>
     COMPS_COLUMNS.map((c) => r.cells![c].status),
@@ -55,6 +63,7 @@ export function exportState(input: {
       remove: [...input.removed],
       prices,
       ...(input.quotes.length > 0 ? { priceDate: input.priceDate } : {}),
+      ...(Object.keys(filled).length > 0 ? { filled } : {}),
     },
     disabledReason,
     notANumber: cells.filter((s) => !usable(s)).length,
