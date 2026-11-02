@@ -888,6 +888,41 @@ describe("temporary equity (§9, methodology 0.4.3)", () => {
     ]);
   });
 
+  it("a label naming both counts as NCI only: one line, at most one warning (NCI wins)", () => {
+    const input = sheet(
+      [CASH],
+      [
+        [
+          TEMP.replace(
+            "AttributableToParent",
+            "IncludingPortionAttributableToNoncontrollingInterests",
+          ),
+          "Redeemable noncontrolling interest in preferred units",
+          600 * M,
+        ],
+      ],
+    );
+    expect(computePreferred(input).metric.status).toBe("missing");
+    expect(value(computeNci(input).metric)).toBe(600 * M);
+    expect(ev(input).warnings.map((w) => w.code)).toEqual(["W_NOT_IN_EV"]);
+  });
+
+  it("a redeemable-NCI line mentioning preferred doesn't make preferred Unsupported", () => {
+    const input = sheet(
+      [CASH],
+      [
+        [
+          "us-gaap:RedeemableNoncontrollingInterestEquityCarryingAmount",
+          "Redeemable noncontrolling interest (preferred units of a subsidiary)",
+          20 * M,
+        ],
+      ],
+    );
+    expect(computePreferred(input).metric.status).toBe("missing");
+    expect(value(computeNci(input).metric)).toBe(20 * M);
+    expect(ev(input).warnings).toEqual([]); // 2% of market cap: below 5%
+  });
+
   it("counts redeemable common stock as neither", () => {
     const input = sheet([CASH], [[TEMP, "Redeemable common stock", 25 * M]]);
     expect(computePreferred(input).metric.status).toBe("missing");

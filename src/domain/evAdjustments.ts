@@ -15,6 +15,7 @@ import {
   CONCEPTS,
   FACE,
   NCI_LIKE_LABEL,
+  isTemporaryEquityNci,
   PREFERRED_LIKE_LABEL,
   TEMPORARY_EQUITY_BY_LABEL,
 } from "./policy";
@@ -53,6 +54,9 @@ function compute(input: BalanceSheetInput, kind: Kind): BalanceSheetItem {
   const counted = new Set<string>();
   let unsupported: MetricUnsupportedReason | undefined;
   for (const line of input.face.lines) {
+    // §9 tie-break (0.4.3): a temporary-equity NCI line is never preferred stock.
+    if (kind === PREFERRED && isTemporaryEquityNci(line.concept, line.label))
+      continue;
     const classified =
       kind.concepts.has(line.concept) ||
       (TEMPORARY_EQUITY_BY_LABEL.has(line.concept) &&

@@ -15,6 +15,7 @@ import { daysBetween } from "./dates";
 import { isUsable, mergeWarnings, unusableInputs } from "./metrics/common";
 import {
   isTemporaryEquityConcept,
+  isTemporaryEquityNci,
   NCI_LIKE_LABEL,
   NCI_MATERIALITY,
   PREFERRED_LIKE_LABEL,
@@ -272,6 +273,9 @@ function unclassifiedNotInEv(
       (l) =>
         isTemporaryEquityConcept(l.concept) &&
         looksLike.test(l.label) &&
+        // §9 tie-break: a temporary-equity NCI line is never named as preferred
+        (noun !== "preferred stock" ||
+          !isTemporaryEquityNci(l.concept, l.label)) &&
         l.value !== null &&
         l.value !== 0,
     )

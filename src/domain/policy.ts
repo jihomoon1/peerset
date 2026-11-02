@@ -340,6 +340,16 @@ export function isTemporaryEquityConcept(concept: string): boolean {
     !/Shares|PerShare|Abstract$/.test(concept)
   );
 }
+// §9 (0.4.3, tie-break): a temporary-equity line that is NCI by concept or by label
+// counts as NCI only, even when its label also says "preferred".
+export function isTemporaryEquityNci(concept: string, label: string): boolean {
+  return (
+    isTemporaryEquityConcept(concept) &&
+    (concept ===
+      "us-gaap:RedeemableNoncontrollingInterestEquityCarryingAmount" ||
+      NCI_LIKE_LABEL.test(label))
+  );
+}
 // §9: unclassified lines that look like preferred stock or NCI.
 export const PREFERRED_LIKE_LABEL = /preferred/i;
 export const NCI_LIKE_LABEL = /non-?controlling|minority interest/i;
