@@ -67,16 +67,16 @@
             "price": 60
           }
         ],
-        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "totalDebt": 11952000000,
         "cash": 1344000000,
         "balanceSheetSource": "tests/golden/CARR-2026Q2-balance.json",
         "revenue": 22108000000,
-        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "ebitda": 3006000000,
-        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "dilutedEps": 1.4,
-        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "epsBasis": "continuing operations (methodology 0.4.0: discontinued operations reported)"
       },
       "marketCap": 49459503420,
@@ -113,16 +113,16 @@
             "price": 100
           }
         ],
-        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "totalDebt": 435000000,
         "cash": 13000,
         "balanceSheetSource": "tests/golden/AAON-2026Q2-balance.json",
         "revenue": 1932367000,
-        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "ebitda": 298526000,
-        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "dilutedEps": 1.9,
-        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)"
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)"
       },
       "marketCap": 8245363900,
       "marketCapMath": "100 × 82,453,639 = 8,245,363,900",
@@ -151,16 +151,16 @@
             "price": 400
           }
         ],
-        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "sharesSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "totalDebt": 4616800000,
         "cash": 1318300000,
         "balanceSheetSource": "tests/golden/TT-2026Q2-balance.json",
         "revenue": 22209900000,
-        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "revenueSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "ebitda": 4374900000,
-        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "ebitdaSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "dilutedEps": 13.42,
-        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "epsSource": "cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "epsBasis": "continuing operations (methodology 0.4.0: discontinued operations reported)"
       },
       "marketCap": 88009270800,
@@ -241,10 +241,10 @@
             "price": 80
           }
         ],
-        "sharesSource": "10-Q cover page dei:EntityCommonStockSharesOutstanding, cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "sharesSource": "10-Q cover page dei:EntityCommonStockSharesOutstanding, cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "totalDebt": 9475000000,
         "cash": 641000000,
-        "balanceSheetSource": "balance-sheet face (R4) of the 10-Q, cited from the rendered filings in docs/reconciliation/comps-golden.md (Awaiting Jiho)",
+        "balanceSheetSource": "balance-sheet face (R4) of the 10-Q, cited from the rendered filings in docs/reconciliation/comps-golden.md (Confirmed 2026-11-02 by Jiho via the planning chat)",
         "revenue": 24995000000,
         "revenueSource": "tests/golden/JCI-2026Q2.json",
         "ebitda": null,

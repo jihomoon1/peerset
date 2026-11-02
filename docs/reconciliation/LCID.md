@@ -15,26 +15,26 @@ No Q3 2026 10-Q had been filed when the fixture was captured (November 1, 2026).
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025.
 
-| Input              | FY2025      | 6M 2026     | 6M 2025     | LTM         | Line                                                                                                 | Status        |
-| ------------------ | ----------- | ----------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------- | ------------- |
-| Revenue            | 1,353,790   | 687,812     | 494,480     | 1,547,122   | "Revenue (including … from a related party …)"                                                       | Awaiting Jiho |
-| Operating income   | (3,501,753) | (2,071,653) | (1,494,980) | (4,078,426) | "Loss from operations"                                                                               | Awaiting Jiho |
-| D&A (USD millions) | 451.2       | 238.6       | 209.0       | 480.8       | Segment narrative, "Depreciation and amortization expenses"                                          | Awaiting Jiho |
-| EBITDA             |             |             |             | (3,597,626) | (4,078,426) + 480,800                                                                                | Awaiting Jiho |
-| EBITDA margin      |             |             |             | (232.54)%   | (3,597,626) ÷ 1,547,122                                                                              | Awaiting Jiho |
-| Net income         | (2,698,051) | (2,063,195) | (905,603)   | (3,855,643) | "Net loss"                                                                                           | Awaiting Jiho |
-| Diluted EPS (USD)  | (12.09)     | (6.74)      | (5.18)      | (13.65)     | "Net loss per share attributable to common stockholders, Diluted"                                    | Awaiting Jiho |
-| EPS cross-check    |             |             |             | 9.9% gap    | (3,855,643,000) ÷ 313,400,136 FY diluted shares = (12.30) vs (13.65): over 5%, so `W_EPS_CROSSCHECK` | Awaiting Jiho |
+| Input              | FY2025      | 6M 2026     | 6M 2025     | LTM         | Line                                                                                                 | Status    |
+| ------------------ | ----------- | ----------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------- | --------- |
+| Revenue            | 1,353,790   | 687,812     | 494,480     | 1,547,122   | "Revenue (including … from a related party …)"                                                       | Confirmed |
+| Operating income   | (3,501,753) | (2,071,653) | (1,494,980) | (4,078,426) | "Loss from operations"                                                                               | Confirmed |
+| D&A (USD millions) | 451.2       | 238.6       | 209.0       | 480.8       | Segment narrative, "Depreciation and amortization expenses"                                          | Confirmed |
+| EBITDA             |             |             |             | (3,597,626) | (4,078,426) + 480,800                                                                                | Confirmed |
+| EBITDA margin      |             |             |             | (232.54)%   | (3,597,626) ÷ 1,547,122                                                                              | Confirmed |
+| Net income         | (2,698,051) | (2,063,195) | (905,603)   | (3,855,643) | "Net loss"                                                                                           | Confirmed |
+| Diluted EPS (USD)  | (12.09)     | (6.74)      | (5.18)      | (13.65)     | "Net loss per share attributable to common stockholders, Diluted"                                    | Confirmed |
+| EPS cross-check    |             |             |             | 9.9% gap    | (3,855,643,000) ÷ 313,400,136 FY diluted shares = (12.30) vs (13.65): over 5%, so `W_EPS_CROSSCHECK` | Confirmed |
 
 ## EV inputs at 2026-06-30 (balance sheet R2)
 
-| Input        | Value                        | Filing                                                                                                                                                                                          | Status        |
-| ------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Total debt   | 3,361,428                    | "Finance lease liabilities, current portion" 5,045 + "Current portion of debt" 707,142 + "Finance lease liabilities, net of current portion" 102,685 + "Debt, net of current portion" 2,546,556 | Awaiting Jiho |
-| Cash         | 761,313                      | "Cash and cash equivalents" 732,601 + "Short-term investments" 28,712                                                                                                                           | Awaiting Jiho |
-| Cover shares | 394,070,176 as of 2026-07-29 | 10-Q cover page                                                                                                                                                                                 | Awaiting Jiho |
-| Preferred    | Unsupported                  | "Redeemable convertible preferred stock, (related party)" 2,906,257 in temporary equity                                                                                                         | Awaiting Jiho |
-| NCI          | Missing                      | no noncontrolling-interest line                                                                                                                                                                 | Awaiting Jiho |
+| Input        | Value                        | Filing                                                                                                                                                                                          | Status    |
+| ------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Total debt   | 3,361,428                    | "Finance lease liabilities, current portion" 5,045 + "Current portion of debt" 707,142 + "Finance lease liabilities, net of current portion" 102,685 + "Debt, net of current portion" 2,546,556 | Confirmed |
+| Cash         | 761,313                      | "Cash and cash equivalents" 732,601 + "Short-term investments" 28,712                                                                                                                           | Confirmed |
+| Cover shares | 394,070,176 as of 2026-07-29 | 10-Q cover page                                                                                                                                                                                 | Confirmed |
+| Preferred    | Unsupported                  | "Redeemable convertible preferred stock, (related party)" 2,906,257 in temporary equity                                                                                                         | Confirmed |
+| NCI          | Missing                      | no noncontrolling-interest line                                                                                                                                                                 | Confirmed |
 
 ## Valuation at the test price 20.00 (a test input, not market data)
 
@@ -55,6 +55,10 @@ LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025
 ## How to check (about 15 minutes)
 
 Open each link and find the named line. For the 10-Q, use the **6 Months Ended** columns. If a row matches, change its Status to **Confirmed**.
+
+## Review record
+
+**November 2, 2026, M6 rows confirmed.** The planning chat checked every row that was marked "Awaiting Jiho" (LTM, EV inputs, preferred and NCI) against SEC's rendered statements; all values and arithmetic matched. Status: Confirmed, verified against rendered filings 2026-11-02 (planning chat); approved by Jiho.
 
 ## Golden change log
 
