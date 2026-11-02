@@ -1,6 +1,6 @@
 # GGG reconciliation — LTM at September 25, 2026
 
-Graco Inc. · CIK 0000042888 · methodology 0.4.1 (rows checked under 0.3.5; 0.4.0 changes no GGG value: no discontinued operations) · golden file `tests/golden/GGG-2026Q3.json` · test `tests/golden/peers-ltm.test.ts`
+Graco Inc. · CIK 0000042888 · methodology 0.4.2 (rows checked under 0.3.5; 0.4.0 changes no GGG value: no discontinued operations) · golden file `tests/golden/GGG-2026Q3.json` · test `tests/golden/peers-ltm.test.ts`
 
 LTM = FY2025 + nine months ended September 25, 2026 − nine months ended September 26, 2025 (methodology §2). Graco reports in **USD thousands**, so every amount below is in USD thousands except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-26). "Filing input or manual calc" is read from the documents below.
 
@@ -47,3 +47,4 @@ Diff is PeerSet minus the manual calculation, at the precision the filing shows 
 ## Golden change log
 
 - **November 1, 2026 — definition change, methodology 0.4.1.** The `methodologyVersion` field in every golden file moved from 0.4.0 to 0.4.1 (§5 split detection: a restatement explained by a split on or before the last fiscal year end is not a split since the 10-K). GGG has no split, so no value changed.
+- **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for GGG no value changed.

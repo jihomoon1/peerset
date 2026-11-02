@@ -13,7 +13,7 @@
     "end": "2026-09-30"
   },
   "freshness": "current",
-  "methodologyVersion": "0.4.1",
+  "methodologyVersion": "0.4.2",
   "note": "Values are read from the rendered filings (10-K R5 and R9; 10-Q R4 and R8, saved under tests/fixtures/sec/LII/2026Q3/evidence/), not from the engine. The filings show USD millions to one decimal; the XBRL facts carry decimals=-5, so each value times 1,000,000 is exact to the dollar. FY2025 components are the same 10-K figures as the Q2 golden (Confirmed by Jiho 2026-10-26). The 10-Q was filed 2026-10-28, after the fixture analysis date 2026-10-26, so this golden's test uses analysis date 2026-11-01. Companyfacts already had this 10-Q when the fixture was captured (2026-11-01), so freshness is current and no W_FILING_PARSED.",
   "metrics": {
     "revenue": {

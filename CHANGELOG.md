@@ -6,6 +6,7 @@ PeerSet was built in milestones, one pull request each. Before 1.0.0 the app ver
 
 - Methodology 0.4.0: P/E uses continuing-operations diluted EPS when an LTM period reports discontinued operations (JCI 14.06x → 22.54x at its test price); D&A carries a caution in that case; the implied price is Unsupported when implied equity is not positive.
 - Methodology 0.4.1: a reverse split already reflected in the last 10-K is no longer treated as a split since the 10-K (found with Lucid).
+- Methodology 0.4.2: wording only, no value changes. Writes down rules the code already applied: LTM search bounds and the 53-week threshold, where D&A is read from, discontinued-operations details and the EPS cross-check formula.
 - New goldens: LII through September 30, 2026 (Q3 10-Q) and Lucid (LCID) as the negative-EBITDA case: EV/EBITDA and P/E NM.
 - `/methodology` page rendered from `docs/methodology.md`, linked from every comps-table header.
 - Every blueprint §6 UX state built and tested end to end: identity card before analysis, loading lines that name the filing, unsupported 20-F filers, rate limits, and shared links whose ticker has moved or been delisted.

@@ -34,7 +34,7 @@ Every value carries a status (Reported, Derived, NM, Missing or Unsupported). **
 - **Golden tests** run the pipeline on frozen SEC filings for 8 companies (LII, WSO, GGG, AAON, Carrier, Trane, JCI, Lucid) and check results to the dollar (`tests/golden/`).
 - **Reconciliation tables** compare PeerSet to the rendered filing, row by row: [`docs/reconciliation/`](docs/reconciliation/) ([LII](docs/reconciliation/LII.md), [WSO](docs/reconciliation/WSO.md), [GGG](docs/reconciliation/GGG.md), [JCI](docs/reconciliation/JCI.md), [LCID](docs/reconciliation/LCID.md), [comps golden](docs/reconciliation/comps-golden.md)).
 - Golden values change only with a written reconciliation note saying why (new filing, definition change or bug), never to make a test pass.
-- **Methodology:** every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.4.1) and shown on the site at [/methodology](https://peerset.vercel.app/methodology).
+- **Methodology:** every financial definition is written down in [`docs/methodology.md`](docs/methodology.md) (version 0.4.2) and shown on the site at [/methodology](https://peerset.vercel.app/methodology).
 - **Tests:** unit, golden, integration and workbook tests (Vitest), plus browser tests with accessibility checks (Playwright and axe). CI never calls live SEC. See [`tests/README.md`](tests/README.md).
 
 Green CI means the code builds and the tests pass. It is not proof the numbers are right; the reconciliation tables are.

@@ -1,6 +1,6 @@
 # LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.4.1 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.5 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.4.2 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.5 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -139,3 +139,4 @@ Preferred stock is 0.0 on the face; there is no noncontrolling-interest line. Th
 - **October 30, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.4 to 0.3.5. Methodology 0.3.5 only writes down when the implied price is Unsupported (§13); no LTM, balance-sheet, valuation or implied-valuation value, period or concept in any golden changed.
 - **November 1, 2026 — definition change, methodology 0.4.0.** The `methodologyVersion` field in every golden file moved from 0.3.5 to 0.4.0. LII reports no discontinued operations in any LTM component period, so its diluted EPS, P/E and D&A are unchanged; a test asserts this for LII. In the comps golden, CARR, TT and JCI's P/E changed (continuing-operations EPS).
 - **November 1, 2026 — definition change, methodology 0.4.1.** The `methodologyVersion` field in every golden file moved from 0.4.0 to 0.4.1 (§5 split detection: a restatement explained by a split on or before the last fiscal year end is not a split since the 10-K). LII has no split, so no value changed.
+- **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for LII no value changed.

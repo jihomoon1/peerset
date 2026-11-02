@@ -1,6 +1,6 @@
 # JCI reconciliation — LTM at June 30, 2026 (fiscal Q3 2026)
 
-Johnson Controls International plc · CIK 0000833444 · methodology 0.4.1 · golden file `tests/golden/JCI-2026Q2.json` · test `tests/golden/peers-ltm.test.ts`
+Johnson Controls International plc · CIK 0000833444 · methodology 0.4.2 · golden file `tests/golden/JCI-2026Q2.json` · test `tests/golden/peers-ltm.test.ts`
 
 JCI's fiscal year ends September 30, so the 10-Q for June 30, 2026 is **fiscal Q3 2026**. The fixture and golden are named `2026Q2` after the calendar quarter of the period end, like every other fixture. LTM = FY2025 (October 1, 2024 – September 30, 2025) + nine months ended June 30, 2026 − nine months ended June 30, 2025 (methodology §2). Amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-26).
 
@@ -51,3 +51,4 @@ Diff is PeerSet minus the manual calculation, at the precision the filing shows 
 
 - **November 1, 2026 — definition change, methodology 0.4.0.** `tests/golden/JCI-2026Q2.json`: diluted EPS moved from total EPS (5.03 + 3.08 − 2.42 = 5.69) to continuing-operations EPS (2.63 + 3.12 − 2.20 = 3.55), cited from the rendered 10-K R3 and 10-Q R2. The EPS cross-check numerator is now LTM continuing-operations income attributable to JCI, 2,180; the gap is 6.1%, so `W_EPS_CROSSCHECK` now fires. The 0.3.5 values are kept in the golden under `supersededDilutedEps`. In `comps-LII-2026Q2.json`, JCI's P/E at 80 moved from 14.0598x to 22.5352x.
 - **November 1, 2026 — definition change, methodology 0.4.1.** The `methodologyVersion` field in every golden file moved from 0.4.0 to 0.4.1 (§5 split detection: a restatement explained by a split on or before the last fiscal year end is not a split since the 10-K). JCI has no split, so no value changed.
+- **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for JCI no value changed.

@@ -1,6 +1,6 @@
 # Comps-golden inputs reconciliation (M5 note 2)
 
-Golden file `tests/golden/comps-LII-2026Q2.json` · test `tests/golden/comps.test.ts` · methodology 0.4.1
+Golden file `tests/golden/comps-LII-2026Q2.json` · test `tests/golden/comps.test.ts` · methodology 0.4.2
 
 Until M6, the comps golden took CARR's, AAON's and TT's LTM revenue, EBITDA and EPS, and JCI's debt, cash and shares, from the engine without citing a filing. This file cites each one against the rendered statements (the SEC "R" pages, saved under `tests/fixtures/sec/<ticker>/2026Q2/evidence/<accession>/`). Every value below matched the engine's input exactly; no golden value changed. LII's, WSO's and JCI's LTM rows are reconciled in their own files.
 

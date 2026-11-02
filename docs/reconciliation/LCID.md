@@ -1,6 +1,6 @@
 # Lucid Group (LCID) reconciliation
 
-Lucid Group, Inc. · CIK 0001811210 · Nasdaq · SIC 3711 · methodology 0.4.1 · golden files `tests/golden/LCID-2026Q2.json`, `LCID-2026Q2-balance.json`, `LCID-2026Q2-valuation.json` · tests `tests/golden/peers-ltm.test.ts`, `balance.test.ts`, `valuation.test.ts`, `e2e/negative-ebitda.spec.ts`
+Lucid Group, Inc. · CIK 0001811210 · Nasdaq · SIC 3711 · methodology 0.4.2 · golden files `tests/golden/LCID-2026Q2.json`, `LCID-2026Q2-balance.json`, `LCID-2026Q2-valuation.json` · tests `tests/golden/peers-ltm.test.ts`, `balance.test.ts`, `valuation.test.ts`, `e2e/negative-ebitda.spec.ts`
 
 PeerSet's negative-EBITDA fixture (ADR 0004). Every value below is read from the rendered filings saved under `tests/fixtures/sec/LCID/2026Q2/evidence/`, not from the engine. USD thousands unless noted.
 
@@ -59,3 +59,4 @@ Open each link and find the named line. For the 10-Q, use the **6 Months Ended**
 ## Golden change log
 
 - **November 1, 2026 — new golden (M6).** First version, methodology 0.4.1.
+- **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for LCID no value changed.

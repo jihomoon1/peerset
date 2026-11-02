@@ -14,7 +14,7 @@
     "end": "2026-06-30"
   },
   "freshness": "current",
-  "methodologyVersion": "0.4.1",
+  "methodologyVersion": "0.4.2",
   "note": "Negative-EBITDA fixture (M6). Values are read from the rendered filings (R pages saved under tests/fixtures/sec/LCID/2026Q2/evidence/), not from the engine. Lucid reports in USD thousands, except D&A: its cash-flow line uses its own extension concept lcid:DepreciationAndAmortizationExcludingDebtDiscountsAndInsurancePremiums (451,243 / 238,634 / 209,047 thousand), which methodology §3 does not read, so D&A is us-gaap:DepreciationDepletionAndAmortization as shown in the segment note in USD millions (451.2 / 238.6 / 209.0; decimals −5). LTM D&A from the cash-flow line would be 480,830 thousand, 30 thousand more. Lucid's 1-for-10 reverse split of August 29, 2025 predates the FY2025 10-K, so every EPS component is post-split and, under methodology 0.4.1, it is not a split since the last 10-K. No discontinued operations.",
   "metrics": {
     "revenue": {
