@@ -197,3 +197,30 @@ describe("buildFundamentals", () => {
     expect(g.cash.metric.status).toBe("missing");
   });
 });
+
+describe("net income's discontinued operations (M6 review edge case, v1.1)", () => {
+  it("are found on net income's own LTM periods even when no EPS concept has a full LTM", () => {
+    const base = input("current");
+    const facts = [
+      ...base.facts.filter(
+        (f) => f.concept !== "us-gaap:EarningsPerShareDiluted",
+      ),
+      ...series(
+        "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax",
+        [30, 0, 0],
+      ),
+    ];
+    const f = buildFundamentals({ ...base, facts });
+    expect(f.metrics.dilutedEps.status).toBe("unsupported");
+    expect(f.eps.discontinuedOps).toBeUndefined(); // EPS found no periods
+    expect(f.netIncomeDiscontinuedOps?.periods).toEqual([
+      expect.objectContaining({ role: "fy", value: 30 }),
+    ]);
+  });
+
+  it("are absent when no component period reports them", () => {
+    expect(buildFundamentals(input("current")).netIncomeDiscontinuedOps).toBe(
+      undefined,
+    );
+  });
+});
