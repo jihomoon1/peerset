@@ -1,0 +1,55 @@
+{
+  "cik": "0001466258",
+  "accession": "0001628280-26-051117",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:23:15.879Z",
+      "sha256": "1f75b08e3906c6d9770f31b46d49e83a46df433be49dd9e6b4fba5f673d7cd06"
+    },
+    {
+      "file": "R2.htm.gz",
+      "statement": "Condensed Consolidated Statements of Earnings",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R2.htm",
+      "retrievedAt": "2026-11-01T21:23:16.273Z",
+      "sha256": "3045664d70f5a1ace09bb47cbf949395bb25adab604304ca5cb706589fa2181b"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "Consolidated Statements of Earnings - Alternative Calc (Details)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R3.htm",
+      "retrievedAt": "2026-11-01T21:23:16.471Z",
+      "sha256": "491152a8342e98d13cc0a13b34ef20b2243ff51e37d319e4ffddce4414451379"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "Condensed Consolidated Statements of Comprehensive Income (Loss)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R4.htm",
+      "retrievedAt": "2026-11-01T21:23:16.702Z",
+      "sha256": "2cb77e4e284696bba3a32b304e02542e34068fcf992be3aaf64dd56cd65dc86e"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "Condensed Consolidated Balance Sheets",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R5.htm",
+      "retrievedAt": "2026-11-01T21:23:17.209Z",
+      "sha256": "a77f9f55a58ccd88c099af861cccaef007a330f658b01469da80783bf59b074b"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "Condensed Consolidated Statements of Stockholders' Equity",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R6.htm",
+      "retrievedAt": "2026-11-01T21:23:17.464Z",
+      "sha256": "e32b2e2b26e96245936c7d07786430e2fc3890270e03e2566de852faec671595"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "Condensed Consolidated Statements of Cash Flows",
+      "url": "https://www.sec.gov/Archives/edgar/data/1466258/000162828026051117/R7.htm",
+      "retrievedAt": "2026-11-01T21:23:17.731Z",
+      "sha256": "675371b3d84082a888e1f74b36643d0594133614d7df7986da4682521093145f"
+    }
+  ]
+}

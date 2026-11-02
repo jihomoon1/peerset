@@ -11,6 +11,7 @@ import {
   mergeWarnings,
   type LtmMetricResult,
 } from "./common";
+import { findDiscontinuedOps } from "./discontinuedOps";
 
 const FROM_CASH_FLOW: MetricWarning = {
   code: "W_DA_FROM_CASH_FLOW",
@@ -28,7 +29,26 @@ const periodsOf = (c: LTMCalculation) =>
     .map((f) => `${f.period.start}/${f.period.end}`)
     .join(",");
 
+// §4 (0.4.0): the value is not changed; the caution carries through to EBITDA.
+const INCLUDES_DISC_OPS: MetricWarning = {
+  code: "W_DA_INCLUDES_DISC_OPS",
+  message: "cash-flow D&A may include discontinued operations",
+  severity: "caution",
+};
+
 export function computeDa(input: LtmInput): DaResult {
+  const r = computeDaValue(input);
+  const calc = r.ltm ?? r.ltmParts[0];
+  // A conflict can't rule discontinued operations out, so it cautions too.
+  if (calc && findDiscontinuedOps(input.facts, calc).kind !== "none")
+    r.metric = {
+      ...r.metric,
+      warnings: [...r.metric.warnings, INCLUDES_DISC_OPS],
+    } as typeof r.metric;
+  return r;
+}
+
+function computeDaValue(input: LtmInput): DaResult {
   const main = computeLtm(input, CONCEPTS.da);
   if (
     main.kind === "ok" ||

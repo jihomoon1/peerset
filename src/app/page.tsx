@@ -17,7 +17,7 @@ export default function Home() {
           filings, with every number traced to its filing, period and XBRL
           concept.
         </p>
-        <TickerSearch />
+        <TickerSearch lookup />
         <p className="text-[13px]">
           <span className="text-muted">Examples: </span>
           {EXAMPLES.map((t, i) => (

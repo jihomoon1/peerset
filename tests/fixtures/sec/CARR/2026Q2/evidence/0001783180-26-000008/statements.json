@@ -1,0 +1,62 @@
+{
+  "cik": "0001783180",
+  "accession": "0001783180-26-000008",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:22:54.679Z",
+      "sha256": "17bb5e2795edb5b1c4b93b5184d68f0b566b9801c591f2b655575e1a2b4e5b81"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "CONSOLIDATED STATEMENT OF OPERATIONS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R3.htm",
+      "retrievedAt": "2026-11-01T21:22:55.000Z",
+      "sha256": "ada24969993236af7b7873e614f5bdc62ac71f45e7b94ab4d38396d717e3fb63"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "CONSOLIDATED STATEMENT OF COMPREHENSIVE INCOME (LOSS)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R4.htm",
+      "retrievedAt": "2026-11-01T21:22:55.276Z",
+      "sha256": "4e36fce35a6f9659e1bf18a9af355715046056d054bae2e7c8edd56e53b85396"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "CONSOLIDATED BALANCE SHEET",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R5.htm",
+      "retrievedAt": "2026-11-01T21:22:55.558Z",
+      "sha256": "d95887a35ded27c592e470d6d7c795d496af61642b8728f59b05fc304a81ddd0"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "CONSOLIDATED BALANCE SHEET (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R6.htm",
+      "retrievedAt": "2026-11-01T21:22:55.728Z",
+      "sha256": "8dd6d0a62f657cc5b825bff864155a106cb76e250ea1304849b987fa8343db4f"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "CONSOLIDATED STATEMENT OF CHANGES IN EQUITY",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R7.htm",
+      "retrievedAt": "2026-11-01T21:22:56.124Z",
+      "sha256": "2adf87c908dcb9f4fe76c4b91d7b06d495496c3482c97da8b9ba467d58487c28"
+    },
+    {
+      "file": "R8.htm.gz",
+      "statement": "CONSOLIDATED STATEMENT OF CHANGES EQUITY (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R8.htm",
+      "retrievedAt": "2026-11-01T21:22:56.286Z",
+      "sha256": "0b864ac6d1caab6d169c3c08a374e3b2f96bc387c42cd5f9fe64b4e673ecb1f7"
+    },
+    {
+      "file": "R9.htm.gz",
+      "statement": "CONSOLIDATED STATEMENT OF CASH FLOWS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783180/000178318026000008/R9.htm",
+      "retrievedAt": "2026-11-01T21:22:56.550Z",
+      "sha256": "6eceede4ec1be551b45180084f5768666aed4df7dbce7e2722b7fa3764b694f5"
+    }
+  ]
+}

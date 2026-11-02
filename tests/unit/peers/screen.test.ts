@@ -282,6 +282,17 @@ describe("screenPeers", () => {
     expect(tickers(r.selected)).toEqual(["ONLY"]);
   });
 
+  it("each selected peer names its latest filing, for the loading line (M6)", () => {
+    const target = co("TGT", "3585", 1_000);
+    const r = screenPeers(index([target, co("ONLY", "3500", 1_000)]), target, {
+      analysisDate: DAY,
+    });
+    expect(r.selected[0].latest).toEqual({
+      form: "10-Q",
+      filedDate: "2026-07-29",
+    });
+  });
+
   it("selects 8 by default, and the caller may keep 5 to 12", () => {
     const target = co("TGT", "3585", 1_000);
     const peers = Array.from({ length: 14 }, (_, i) =>

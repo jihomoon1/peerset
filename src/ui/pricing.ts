@@ -126,8 +126,10 @@ export function displayValuationCell(
       return {
         text: "NM",
         kind: "nm",
+        // "NM: EBITDA ≤ 0; computed (2.9x)": the computed value, if any, without
+        // nesting a negative's parentheses inside another pair.
         note: `NM: ${NM_REASON_TEXT[m.reason]}${
-          m.value === null ? "" : ` (${formatMultiple(m.value)})`
+          m.value === null ? "" : `; computed ${formatMultiple(m.value)}`
         }`,
       };
     case "missing":

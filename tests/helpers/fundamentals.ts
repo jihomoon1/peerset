@@ -7,12 +7,15 @@ import { fixtureFetch } from "./fixtures";
 
 export const FIXTURES = {
   LII: { fixture: "LII/2026Q2", cik: "0001069202", asOf: "2026-10-26" },
+  // The Q3 10-Q was filed 2026-10-28, after the default fixture date.
+  "LII-Q3": { fixture: "LII/2026Q3", cik: "0001069202", asOf: "2026-11-01" },
   WSO: { fixture: "WSO/2026Q2", cik: "0000105016", asOf: "2026-10-26" },
   AAON: { fixture: "AAON/2026Q2", cik: "0000824142", asOf: "2026-10-26" },
   CARR: { fixture: "CARR/2026Q2", cik: "0001783180", asOf: "2026-10-26" },
   GGG: { fixture: "GGG/2026Q3", cik: "0000042888", asOf: "2026-10-26" },
   TT: { fixture: "TT/2026Q2", cik: "0001466258", asOf: "2026-10-26" },
   JCI: { fixture: "JCI/2026Q2", cik: "0000833444", asOf: "2026-10-26" },
+  LCID: { fixture: "LCID/2026Q2", cik: "0001811210", asOf: "2026-10-26" },
 } as const;
 
 export async function fixtureFundamentals(ticker: keyof typeof FIXTURES) {

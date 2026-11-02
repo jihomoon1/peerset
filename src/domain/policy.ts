@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.3.5";
+export const METHODOLOGY_VERSION = "0.4.2";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
@@ -56,8 +56,16 @@ const SHARE_COUNT_CONCEPTS: ReadonlySet<string> = new Set([
   "dei:EntityCommonStockSharesOutstanding",
 ]);
 
+// §1.2 (0.4.0): EPS and other per-share facts in USD/shares.
+const PER_SHARE_CONCEPTS: ReadonlySet<string> = new Set([
+  "us-gaap:EarningsPerShareDiluted",
+  "us-gaap:IncomeLossFromContinuingOperationsPerDilutedShare",
+  "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxPerDilutedShare",
+  "us-gaap:DiscontinuedOperationIncomeLossFromDiscontinuedOperationNetOfTaxPerDilutedShare",
+]);
+
 export function requiredUnit(concept: string): string {
-  if (concept === "us-gaap:EarningsPerShareDiluted") return "USD/shares";
+  if (PER_SHARE_CONCEPTS.has(concept)) return "USD/shares";
   if (SHARE_COUNT_CONCEPTS.has(concept)) return "shares";
   if (PURE_UNIT_CONCEPTS.has(concept)) return "pure";
   return "USD";
@@ -92,6 +100,22 @@ export const CONCEPTS = {
   ],
   netIncome: ["us-gaap:NetIncomeLoss"],
   dilutedEps: ["us-gaap:EarningsPerShareDiluted"],
+  // §5 (0.4.0): used instead of total EPS when a component period reports
+  // discontinued operations; the cross-check then uses continuing-ops income.
+  continuingOpsEps: [
+    "us-gaap:IncomeLossFromContinuingOperationsPerDilutedShare",
+  ],
+  continuingOpsIncome: ["us-gaap:IncomeLossFromContinuingOperations"],
+  // §5 (0.4.0): any of these, nonzero for a component period, means that period
+  // reports discontinued operations. The order only decides which amount the note
+  // names: the parent's share first (what NetIncomeLoss includes), then the total,
+  // then per-share amounts.
+  discontinuedOps: [
+    "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxAttributableToReportingEntity",
+    "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTax",
+    "us-gaap:IncomeLossFromDiscontinuedOperationsNetOfTaxPerDilutedShare",
+    "us-gaap:DiscontinuedOperationIncomeLossFromDiscontinuedOperationNetOfTaxPerDilutedShare",
+  ],
 
   // §7.F / §8.F fallback tag rules (methodology 0.2.1), used only when the
   // balance-sheet face is unavailable. The face classification is FACE below.

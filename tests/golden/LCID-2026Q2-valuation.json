@@ -1,0 +1,56 @@
+{
+  "ticker": "LCID",
+  "fixture": "LCID",
+  "methodologyVersion": "0.4.2",
+  "analysisDate": "2026-10-26",
+  "note": "Negative-EBITDA fixture (M6). The price is a test input, not market data, chosen so EV > 0 and the EV/EBITDA NM reason is 'EBITDA ≤ 0', not 'EV ≤ 0'. Shares come from the 10-Q cover page; debt, cash, revenue, EBITDA and EPS are the values in LCID-2026Q2.json and LCID-2026Q2-balance.json, read from the rendered filings.",
+  "prices": [
+    {
+      "symbol": "LCID",
+      "close": 20.0,
+      "asOfDate": "2026-10-23"
+    }
+  ],
+  "shareClasses": [
+    {
+      "classMember": "single",
+      "ticker": "LCID",
+      "shares": 394070176,
+      "sharesAsOf": "2026-07-29",
+      "source": "10-Q cover page, dei:EntityCommonStockSharesOutstanding, accession 0001628280-26-052606"
+    }
+  ],
+  "marketCap": {
+    "value": 7881403520,
+    "math": "20.00 × 394,070,176 = 7,881,403,520"
+  },
+  "totalDebt": 3361428000,
+  "cash": 761313000,
+  "enterpriseValue": {
+    "value": 10481518520,
+    "math": "7,881,403,520 + 3,361,428,000 − 761,313,000 = 10,481,518,520"
+  },
+  "dates": {
+    "price": "2026-10-23",
+    "balanceSheet": "2026-06-30",
+    "sharesAsOf": "2026-07-29"
+  },
+  "notInEvWarning": false,
+  "multiples": {
+    "evRevenue": {
+      "status": "derived",
+      "value": 6.77,
+      "math": "10,481,518,520 ÷ 1,547,122,000 = 6.7748 → 6.77x"
+    },
+    "evEbitda": {
+      "status": "nm",
+      "code": "EBITDA_NOT_POSITIVE",
+      "math": "EBITDA (3,597,626,000) ≤ 0 → NM (methodology §10); the (232.54)% margin is still shown"
+    },
+    "pe": {
+      "status": "nm",
+      "code": "EPS_NOT_POSITIVE",
+      "math": "LTM diluted EPS (13.65) ≤ 0 → NM"
+    }
+  }
+}

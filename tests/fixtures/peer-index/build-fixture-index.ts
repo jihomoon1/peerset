@@ -5,7 +5,7 @@
 //   npx tsx tests/fixtures/peer-index/build-fixture-index.ts
 // tests/integration/fixturePeerIndex.test.ts fails if the committed file is stale.
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
 import { screeningRevenue } from "@/domain/screeningRevenue";
@@ -13,6 +13,8 @@ import { assembleIndex, companyRecord, listedUniverse } from "@/peers/buildIndex
 import { encodeIndex } from "@/peers/indexFormat";
 import type { PeerIndex } from "@/peers/indexTypes";
 import { trimCompanyFacts } from "@/sec/companyFacts";
+import { allFixtureDirs } from "@/sec/fixtureFetch";
+import { FIXTURE_PINS } from "../../helpers/fixturePins";
 import { parseSubmissions } from "@/sec/submissions";
 
 const SEC = path.join("tests", "fixtures", "sec");
@@ -31,15 +33,12 @@ interface Manifest {
 const readGz = (file: string) =>
   JSON.parse(gunzipSync(readFileSync(file)).toString("utf8"));
 
-// The newest as-of per ticker, as fixture mode itself picks (src/sec/fixtureFetch.ts).
+// The same one filing per ticker as the e2e suite (tests/helpers/fixturePins.ts),
+// chosen by fixture mode's own rule (src/sec/fixtureFetch.ts).
 function fixtureDirs(): string[] {
-  return readdirSync(SEC)
-    .filter((t) => t !== "_shared")
-    .sort()
-    .map((t) => {
-      const asOfs = readdirSync(path.join(SEC, t)).sort();
-      return path.join(SEC, t, asOfs[asOfs.length - 1]);
-    });
+  return allFixtureDirs({ root: SEC, pins: FIXTURE_PINS })
+    .filter((d) => d !== "_shared")
+    .map((d) => path.join(SEC, d));
 }
 
 export function buildFixtureIndex(): PeerIndex {
@@ -61,6 +60,9 @@ export function buildFixtureIndex(): PeerIndex {
       if (f.retrievedAt > newest) newest = f.retrievedAt;
       return path.join(dir, f.file);
     };
+    // A submissions-only fixture (TM, a 20-F filer) is rejected before any filing is
+    // read, so it has no companyfacts and never screens as a peer.
+    if (!manifest.files.some((x) => x.role === "companyfacts")) continue;
     const listed = universe.listed.get(manifest.cik);
     if (!listed) throw new Error(`${dir}: CIK ${manifest.cik} is not listed`);
     companies.push(

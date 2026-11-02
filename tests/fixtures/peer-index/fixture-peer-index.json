@@ -1,7 +1,7 @@
 {
 "format": "peerset-peer-index/1",
-"meta": {"generatedAt":"2026-10-29T19:11:46.420Z","methodologyVersion":"0.3.5","sources":{"tickers":{"url":"fixture","lastModified":"2026-10-24T21:09:03.751Z"},"submissions":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"},"companyfacts":{"url":"fixture","lastModified":"2026-10-29T19:11:46.420Z"}},"counts":{"total":8024,"listed":7,"withRevenue":7,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
-"sicDescriptions": {"3561":"Pumps & Pumping Equipment","3585":"Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip","3822":"Auto Controls For Regulating Residential & Comml Environments","5070":"Wholesale-Hardware & Plumbing & Heating Equipment & Supplies"},
+"meta": {"generatedAt":"2026-11-01T21:26:48.140Z","methodologyVersion":"0.4.2","sources":{"tickers":{"url":"fixture","lastModified":"2026-10-24T21:09:03.751Z"},"submissions":{"url":"fixture","lastModified":"2026-11-01T21:26:48.140Z"},"companyfacts":{"url":"fixture","lastModified":"2026-11-01T21:26:48.140Z"}},"counts":{"total":8024,"listed":8,"withRevenue":8,"byExclusionReason":{},"unreadable":{"submissions":0,"companyfacts":0}}},
+"sicDescriptions": {"3561":"Pumps & Pumping Equipment","3585":"Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip","3711":"Motor Vehicles & Passenger Car Bodies","3822":"Auto Controls For Regulating Residential & Comml Environments","5070":"Wholesale-Hardware & Plumbing & Heating Equipment & Supplies"},
 "concepts": ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax","us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax","us-gaap:Revenues"],
 "fields": ["cik","name","listings","sic","fiscalYearEnd","incorporation","latest","revenue","revenueNote"],
 "rows": [
@@ -11,7 +11,8 @@
 ["0000833444","Johnson Controls International plc",[["JCI","NYSE"]],"3585","0930","L2",["10-Q","2026-07-29","2026-06-30","0000833444-26-000087"],[23596000000,"2025-09-30",0,"0000833444-25-000097"],null],
 ["0001069202","LENNOX INTERNATIONAL INC",[["LII","NYSE"]],"3585","1231","DE",["10-Q","2026-07-29","2026-06-30","0001069202-26-000087"],[5195300000,"2025-12-31",2,"0001069202-26-000028"],null],
 ["0001466258","Trane Technologies plc",[["TT","NYSE"]],"3822","1231","L2",["10-Q","2026-07-30","2026-06-30","0001628280-26-051117"],[21321900000,"2025-12-31",0,"0001628280-26-005731"],null],
-["0001783180","CARRIER GLOBAL Corp",[["CARR","NYSE"]],"3585","1231","DE",["10-Q","2026-07-28","2026-06-30","0001783180-26-000032"],[21747000000,"2025-12-31",0,"0001783180-26-000008"],null]
+["0001783180","CARRIER GLOBAL Corp",[["CARR","NYSE"]],"3585","1231","DE",["10-Q","2026-07-28","2026-06-30","0001783180-26-000032"],[21747000000,"2025-12-31",0,"0001783180-26-000008"],null],
+["0001811210","Lucid Group, Inc.",[["LCID","Nasdaq"]],"3711","1231","DE",["10-Q","2026-08-04","2026-06-30","0001628280-26-052606"],[1353790000,"2025-12-31",0,"0001628280-26-011053"],null]
 ],
 "unlisted": [
 

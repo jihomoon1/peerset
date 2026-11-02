@@ -10,6 +10,7 @@ import {
   IMPLIED_MULTIPLES,
   IMPLIED_POINTS,
   impliedValuationOf,
+  type ImpliedValue,
 } from "@/domain/impliedValuation";
 import { formatMillions, formatMultiple, formatPrice } from "@/lib/format";
 
@@ -18,6 +19,18 @@ const POINT_LABEL = {
   median: "Median",
   p75: "75th percentile",
 } as const;
+
+// §13 (0.4.0): implied equity ≤ 0 shows "Unsupported" with the reason, never a
+// negative price.
+function priceText(x: ImpliedValue) {
+  if (x.impliedPrice !== null) return formatPrice(x.impliedPrice);
+  return (
+    <span className="text-muted" title={x.impliedPriceReason}>
+      Unsupported
+      <span className="sr-only">: {x.impliedPriceReason}</span>
+    </span>
+  );
+}
 
 export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
   const { target } = table;
@@ -67,7 +80,7 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
                 {r.status === "ok" ? (
                   IMPLIED_POINTS.map((p) => (
                     <td key={p} className="pr-3 text-right">
-                      {formatPrice(r.points[p].impliedPrice)}
+                      {priceText(r.points[p])}
                     </td>
                   ))
                 ) : (
@@ -97,7 +110,10 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
                   {formatMillions(r.totalDebt)} debt + {formatMillions(r.cash)}{" "}
                   cash = {formatMillions(x.impliedEquity)} equity; ÷{" "}
                   {r.shares.toLocaleString("en-US")} shares ={" "}
-                  {formatPrice(x.impliedPrice)} (USD m except shares and price)
+                  {x.impliedPrice === null
+                    ? `no price: ${x.impliedPriceReason}`
+                    : formatPrice(x.impliedPrice)}{" "}
+                  (USD m except shares and price)
                 </li>
               );
             });

@@ -1,0 +1,69 @@
+{
+  "cik": "0001069202",
+  "accession": "0001069202-26-000028",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:16:24.227Z",
+      "sha256": "724522eca8d7c2ac614d0a69b86a2743dddb4a258f4b4ca993d09750d56737cf"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "Consolidated Balance Sheets",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R3.htm",
+      "retrievedAt": "2026-11-01T21:16:24.500Z",
+      "sha256": "15ad036d9a96ffc21ab8ef0b76ebd65c9d09b664e61800c3eed93bc80e45002c"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "Consolidated Balance Sheets (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R4.htm",
+      "retrievedAt": "2026-11-01T21:16:24.634Z",
+      "sha256": "f11287d792bb88a0bf082c3c39da1b5358f204e447b45b18c8362b06ecb0916c"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "Consolidated Statements of Operations",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R5.htm",
+      "retrievedAt": "2026-11-01T21:16:25.120Z",
+      "sha256": "a3b41a553b1bb9fae19dda4c621ea767af293665b223f190c8b9412621702480"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "Consolidated Statements of Comprehensive Income",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R6.htm",
+      "retrievedAt": "2026-11-01T21:16:25.501Z",
+      "sha256": "eee6761cee48cb15858a1ca1845652f7b6f3b1e31f0bba4e471419b8f873e6bf"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "Consolidated Statements of Stockholders' Equity",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R7.htm",
+      "retrievedAt": "2026-11-01T21:16:25.685Z",
+      "sha256": "08b8af93ae62d84267aa799cc1199cbfb9d5b9f3e94da42438c34c20d943c5de"
+    },
+    {
+      "file": "R8.htm.gz",
+      "statement": "Consolidated Statements of Stockholders' Equity (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R8.htm",
+      "retrievedAt": "2026-11-01T21:16:26.051Z",
+      "sha256": "7ad57739d9a4d5ed81ea2fa9c50c54d4c8a0252633548c5872f182ed947b5ce7"
+    },
+    {
+      "file": "R9.htm.gz",
+      "statement": "Consolidated Statements of Cash Flows",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R9.htm",
+      "retrievedAt": "2026-11-01T21:16:26.283Z",
+      "sha256": "cbd30f5adab059f351582ee55233fba85ddbea4edc90e272b5fa31b0be4e3a02"
+    },
+    {
+      "file": "R10.htm.gz",
+      "statement": "Stock Repurchases",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/R10.htm",
+      "retrievedAt": "2026-11-01T21:16:26.477Z",
+      "sha256": "cebabfec66d9cef8bdc2fdc59107a90f9692489e8efbd02ca184a5b6f211ac7b"
+    }
+  ]
+}

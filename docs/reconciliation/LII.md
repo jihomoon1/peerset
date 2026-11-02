@@ -1,6 +1,6 @@
 # LII reconciliation — LTM, EV inputs and valuation at June 30, 2026
 
-Lennox International Inc. · CIK 0001069202 · methodology 0.3.5 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.5 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
+Lennox International Inc. · CIK 0001069202 · methodology 0.4.2 (LTM rows checked under 0.2.1; 0.3.0 to 0.3.5 changed no LTM value) · golden files `tests/golden/LII-2026Q2.json`, `tests/golden/LII-2026Q2-valuation.json`
 
 LTM = FY2025 + six months ended June 30, 2026 − six months ended June 30, 2025 (methodology §2). All amounts in USD millions except EPS (USD per share). "PeerSet" is the engine's value from the frozen fixtures (as of 2026-10-23). "Filing input or manual calc" is read from the documents below.
 
@@ -87,6 +87,52 @@ Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/LII-2026Q2-valuati
 
 **How to check (about 5 minutes).** Open the 10-Q link at the top of this file. On the cover page, find the line saying how many shares of common stock were outstanding as of July 22, 2026, and compare it with 34,560,675. Then redo the multiplications and divisions above on a calculator. If a row matches, change its Status to **Confirmed**.
 
+## LTM through 2026-09-30 (added in M6)
+
+Golden file `tests/golden/LII-2026Q3.json` · test `tests/golden/LII.test.ts` · fixture `tests/fixtures/sec/LII/2026Q3` (rendered statements saved under `evidence/`). LTM = FY2025 + nine months ended September 30, 2026 − nine months ended September 30, 2025. USD millions except EPS.
+
+- **10-K** for 2025, accession 0001069202-26-000028: [document](https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm) (the same FY2025 figures as the Q2 section, Confirmed 2026-10-26)
+- **10-Q** for the quarter ended September 30, 2026, filed October 28, 2026, accession 0001069202-26-000096: [document](https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm) · [filing index](https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/0001069202-26-000096-index.htm)
+
+| Metric                                 | PeerSet  | Filing input or manual calc                    | Source (10-Q, nine-month columns)                                           | Diff | Status    |
+| -------------------------------------- | -------- | ---------------------------------------------- | --------------------------------------------------------------------------- | ---- | --------- |
+| Revenue, LTM                           | 5,447.9  | 5,195.3 + 4,252.9 − 4,000.3 = 5,447.9          | Consolidated Statements of Operations (R4), "Net sales"                     | 0.0  | Confirmed |
+| Operating income, LTM                  | 1,026.3  | 1,041.5 + 830.6 − 845.8 = 1,026.3              | R4, "Operating income"                                                      | 0.0  | Confirmed |
+| D&A, LTM                               | 129.5    | 112.5 + 96.4 − 79.4 = 129.5                    | Consolidated Statements of Cash Flows (R8), "Depreciation and amortization" | 0.0  | Confirmed |
+| EBITDA (standardized, unadjusted), LTM | 1,155.8  | 1,026.3 + 129.5 = 1,155.8                      | The two rows above                                                          | 0.0  | Confirmed |
+| EBITDA margin, LTM                     | 21.2%    | 1,155.8 ÷ 5,447.9 = 21.22%                     | The EBITDA and revenue rows                                                 | 0.0  | Confirmed |
+| Net income, LTM                        | 749.8    | 805.8 + 607.4 − 663.4 = 749.8                  | R4, "Net income"                                                            | 0.0  | Confirmed |
+| Diluted EPS, LTM (USD)                 | 21.56    | 22.79 + 17.47 − 18.70 = 21.56                  | R4, "Earnings per share - Diluted"                                          | 0.00 | Confirmed |
+| EPS cross-check (no warning expected)  | 1.8% gap | 749.8 ÷ 35.4 = 21.18 vs 21.56: gap 1.8% (< 5%) | 10-K diluted weighted average shares 35.4 million                           | —    | Confirmed |
+
+Freshness: companyfacts already had this 10-Q when the fixture was captured (2026-11-01), so there is no `W_FILING_PARSED`. No discontinued operations, so methodology 0.4.0 changes nothing for LII.
+
+## EV inputs at 2026-09-30 (added in M6)
+
+Golden files `tests/golden/LII-2026Q3-balance.json` and `LII-2026Q3-valuation.json`. Consolidated Balance Sheets (R2) of the 10-Q above, column September 30, 2026, USD millions.
+
+| Line (as labeled on the balance sheet)     | Concept                                         | PeerSet                 | Filing                                                   | In total? | Rule                                            | Status    |
+| ------------------------------------------ | ----------------------------------------------- | ----------------------- | -------------------------------------------------------- | --------- | ----------------------------------------------- | --------- |
+| Commercial paper                           | `CommercialPaper`                               | 455.1                   | 455.1                                                    | Yes       | §7 rule 2                                       | Confirmed |
+| Current maturities of long-term debt       | `LongTermDebtAndCapitalLeaseObligationsCurrent` | 319.2                   | 319.2                                                    | Yes       | §7 rule 2                                       | Confirmed |
+| Current operating lease liabilities        | `OperatingLeaseLiabilityCurrent`                | 87.3                    | 87.3                                                     | No        | §7 rule 2: never debt                           | Confirmed |
+| Long-term debt                             | `LongTermDebtAndCapitalLeaseObligations`        | 847.1                   | 847.1                                                    | Yes       | §7 rule 2                                       | Confirmed |
+| Long-term operating lease liabilities      | `OperatingLeaseLiabilityNoncurrent`             | 375.9                   | 375.9                                                    | No        | §7 rule 2: never debt                           | Confirmed |
+| **Total debt**                             |                                                 | **1,621.4**             | 455.1 + 319.2 + 847.1 = 1,621.4                          |           |                                                 | Confirmed |
+| Cash and cash equivalents                  | `CashAndCashEquivalentsAtCarryingValue`         | 43.3                    | 43.3                                                     | Yes       | §8                                              | Confirmed |
+| Short-term investments                     | `ShortTermInvestments`                          | 2.2                     | 2.2                                                      | Yes       | §8                                              | Confirmed |
+| Restricted cash equivalents                | `RestrictedCashNoncurrent`                      | 22.4                    | 22.4                                                     | No        | §8: restricted cash on its own line is excluded | Confirmed |
+| **Cash and short-term investments**        |                                                 | **45.5**                | 43.3 + 2.2 = 45.5                                        |           |                                                 | Confirmed |
+| Cover-page shares (as of October 21, 2026) | `dei:EntityCommonStockSharesOutstanding`        | 34,208,431              | 10-Q cover page                                          |           | §6                                              | Confirmed |
+| EV at test price 500.00                    |                                                 | 18,680.1                | 500 × 34,208,431 = 17,104.2; + 1,621.4 − 45.5 = 18,680.1 |           | §9                                              | Confirmed |
+| EV/EBITDA, EV/Revenue, P/E                 |                                                 | 16.16x · 3.43x · 23.19x | 18,680.1 ÷ 1,155.8; ÷ 5,447.9; 500 ÷ 21.56               |           | §10                                             | Confirmed |
+
+Preferred stock is 0.0 on the face; there is no noncontrolling-interest line. The Q2 sections above stay as they are: the fixture loader picks one filing per ticker on purpose, and the app's e2e tests stay pinned to Q2.
+
+## Review record
+
+**November 2, 2026, M6 rows confirmed.** The planning chat checked every row that was marked "Awaiting Jiho" (the LTM and EV-input sections through 2026-09-30) against SEC's rendered statements; all values and arithmetic matched. Status: Confirmed, verified against rendered filings 2026-11-02 (planning chat); approved by Jiho.
+
 ## Golden change log
 
 - **October 26, 2026 — definition change (version only).** `tests/golden/LII-2026Q2.json` `methodologyVersion` moved from 0.2.1 to 0.3.0. Methodology 0.3.0 changes debt and cash (§7–§9) only; no LTM value, period or concept in the golden changed.
@@ -95,3 +141,6 @@ Methodology 0.3.1 §6, §9, §10 · golden file `tests/golden/LII-2026Q2-valuati
 - **October 28, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.2 to 0.3.3. Methodology 0.3.3 adds peer screening (§13A) only; no LTM, balance-sheet or valuation value, period or concept in any golden changed.
 - **October 29, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.3 to 0.3.4. Methodology 0.3.4 only clarifies statistics (§11) and the lag flag (§12) for the comps table; no LTM, balance-sheet or valuation value, period or concept in any golden changed.
 - **October 30, 2026 — definition change (version only).** The `methodologyVersion` field in every golden file moved from 0.3.4 to 0.3.5. Methodology 0.3.5 only writes down when the implied price is Unsupported (§13); no LTM, balance-sheet, valuation or implied-valuation value, period or concept in any golden changed.
+- **November 1, 2026 — definition change, methodology 0.4.0.** The `methodologyVersion` field in every golden file moved from 0.3.5 to 0.4.0. LII reports no discontinued operations in any LTM component period, so its diluted EPS, P/E and D&A are unchanged; a test asserts this for LII. In the comps golden, CARR, TT and JCI's P/E changed (continuing-operations EPS).
+- **November 1, 2026 — definition change, methodology 0.4.1.** The `methodologyVersion` field in every golden file moved from 0.4.0 to 0.4.1 (§5 split detection: a restatement explained by a split on or before the last fiscal year end is not a split since the 10-K). LII has no split, so no value changed.
+- **November 2, 2026 — definition change (wording only), methodology 0.4.2.** The `methodologyVersion` field in every golden file moved from 0.4.1 to 0.4.2. 0.4.2 writes down rules the code already applied (LTM search bounds, D&A source wording, discontinued-operations details, the cross-check gap formula), so for LII no value changed.

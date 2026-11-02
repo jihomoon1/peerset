@@ -82,9 +82,62 @@ function parsePins(raw: string | undefined): Map<string, string> {
   return pins;
 }
 
+export interface FixtureFault {
+  cik: string; // 10 digits
+  status: number;
+}
+
+// Test-only fault switch (M6), read in fixture mode only:
+// PEERSET_FIXTURE_FAULTS="GM:429" answers every SEC URL for GM's CIK with HTTP 429, so
+// the e2e suite can show the "rate-limited" state. The ticker is resolved with the
+// shared SEC ticker list, so it needs no saved filing (and shouldn't have one).
+export function fixtureFaults(
+  raw: string | undefined,
+  root = FIXTURE_ROOT,
+): FixtureFault[] {
+  const parts = (raw ?? "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return [];
+  const tickers = JSON.parse(
+    fixtureText("_shared", "company_tickers_exchange.json.gz", root),
+  ) as { fields: string[]; data: (string | number)[][] };
+  const cikAt = tickers.fields.indexOf("cik");
+  const tickerAt = tickers.fields.indexOf("ticker");
+  return parts.map((part) => {
+    const m = /^([A-Z][A-Z0-9.-]*):([1-5]\d\d)$/.exec(part.toUpperCase());
+    if (!m)
+      throw new Error(
+        `PEERSET_FIXTURE_FAULTS: expected TICKER:STATUS, got "${part}"`,
+      );
+    const row = tickers.data.find((r) => r[tickerAt] === m[1]);
+    if (!row)
+      throw new Error(`PEERSET_FIXTURE_FAULTS: SEC doesn't list ${m[1]}`);
+    return {
+      cik: String(row[cikAt]).padStart(10, "0"),
+      status: Number(m[2]),
+    };
+  });
+}
+
+// The fault for a URL: SEC's JSON APIs name the padded CIK, the archive the plain one.
+function faultFor(url: string, faults: FixtureFault[]): number | undefined {
+  return faults.find(
+    (f) =>
+      url.includes(`CIK${f.cik}`) ||
+      url.includes(`/edgar/data/${Number(f.cik)}/`),
+  )?.status;
+}
+
 // A fetch that answers each URL listed in the given fixture manifests and 404s the
 // rest. Two directories listing the same URL is an error, never a silent overwrite.
-export function fixtureFetch(dirs: string[], root = FIXTURE_ROOT) {
+export function fixtureFetch(
+  dirs: string[],
+  root = FIXTURE_ROOT,
+  options: { faults?: FixtureFault[] } = {},
+) {
+  const faults = options.faults ?? [];
   const byUrl = new Map<string, { dir: string; file: string }>();
   for (const dir of dirs) {
     const manifest = JSON.parse(
@@ -106,6 +159,8 @@ export function fixtureFetch(dirs: string[], root = FIXTURE_ROOT) {
   const fetchFn = (async (input: string | URL | Request) => {
     const url = String(input);
     requested.push(url);
+    const fault = faultFor(url, faults);
+    if (fault !== undefined) return new Response("fault", { status: fault });
     const hit = byUrl.get(url);
     if (!hit) return new Response("not found", { status: 404 });
     return new Response(fixtureText(hit.dir, hit.file, root), { status: 200 });

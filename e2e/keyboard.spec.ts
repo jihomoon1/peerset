@@ -20,6 +20,10 @@ test("keyboard only: search, drawer, price", async ({ page }) => {
   await tabTo(page, search);
   await page.keyboard.type("lii");
   await page.keyboard.press("Enter");
+  const analyze = page.getByRole("link", { name: "Analyze LII" });
+  await expect(analyze).toBeVisible();
+  await tabTo(page, analyze);
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/c\/LII$/);
 
   const cell = page.getByRole("button", {

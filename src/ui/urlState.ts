@@ -1,6 +1,8 @@
 // The workbench's state in the URL (M4b), so a whole analysis is shareable by link
 // and nothing is stored on a server:
-//   /c/LII?add=TT,WSO&remove=HAYW&px=LII:500,CARR:52.1,WSO-B:450&pxdate=2026-10-28
+//   /c/LII?cik=0001069202&add=TT,WSO&remove=HAYW&px=LII:500,CARR:52.1,WSO-B:450&pxdate=2026-10-28
+// cik (M6) is the target's CIK when the link was made, so a ticker that later maps to
+// another company, or to none, is reported instead of silently remapped.
 // add/remove are tickers; px is ticker:price per listed class; pxdate is the shared
 // price date. Parsing is defensive: anything malformed is dropped, never guessed.
 // Prices for removed peers stay in the URL but aren't applied.
@@ -11,6 +13,7 @@ import { PRICE_LIMIT } from "@/prices/userEntered";
 import { TICKER_PATTERN } from "@/lib/ticker";
 
 export interface WorkbenchUrlState {
+  cik?: string; // 10 digits
   add: string[];
   remove: string[];
   prices: Record<string, string>; // ticker → price text, as typed
@@ -53,7 +56,9 @@ export function parseUrlState(params: Params): WorkbenchUrlState {
       prices[ticker] = text.trim();
   }
   const date = param(params, "pxdate");
+  const cik = param(params, "cik");
   return {
+    ...(/^\d{10}$/.test(cik) ? { cik } : {}),
     add: tickerList(param(params, "add"), PEERS.max),
     // Removed peers can be any suggested peer; 12 more than covers them.
     remove: tickerList(param(params, "remove"), PEERS.max * 2),
@@ -62,10 +67,11 @@ export function parseUrlState(params: Params): WorkbenchUrlState {
   };
 }
 
-// "?add=…&remove=…&px=…&pxdate=…", or "" for an empty state. Commas and colons stay
+// "?cik=…&add=…&remove=…&px=…&pxdate=…", or "" for an empty state. Commas and colons stay
 // readable; tickers and prices never need escaping once validated.
 export function urlQuery(state: WorkbenchUrlState): string {
   const parts: string[] = [];
+  if (state.cik && /^\d{10}$/.test(state.cik)) parts.push(`cik=${state.cik}`);
   if (state.add.length) parts.push(`add=${state.add.join(",")}`);
   if (state.remove.length) parts.push(`remove=${state.remove.join(",")}`);
   const px = Object.entries(state.prices)

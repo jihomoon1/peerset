@@ -1,0 +1,94 @@
+{
+  "ticker": "LCID",
+  "cik": "0001811210",
+  "company": "Lucid Group, Inc.",
+  "fixture": "LCID/2026Q2",
+  "asOf": "2026-10-26",
+  "filing": {
+    "form": "10-Q",
+    "accession": "0001628280-26-052606",
+    "filed": "2026-08-04",
+    "reportDate": "2026-06-30",
+    "document": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/lcid-20260630.htm"
+  },
+  "statement": {
+    "name": "CONDENSED CONSOLIDATED BALANCE SHEETS",
+    "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R2.htm",
+    "scale": "Thousands"
+  },
+  "methodologyVersion": "0.4.2",
+  "note": "Every value is read from the filing's rendered balance sheet ('CONDENSED CONSOLIDATED BALANCE SHEETS', column Jun. 30, 2026), USD thousands as displayed, times the scale. Not engine output. Preferred is Unsupported: the face shows 'Redeemable convertible preferred stock, (related party)' 2,906,257 in temporary equity (us-gaap:TemporaryEquityCarryingAmountAttributableToParent), which methodology §9 does not classify yet; the derivative-liability line whose label mentions preferred stock is the first unclassified line the engine names. So EV leaves the preferred out without the 'material item not in EV' warning: a known limitation.",
+  "debt": {
+    "lines": [
+      {
+        "label": "Finance lease liabilities, current portion",
+        "concept": "us-gaap:FinanceLeaseLiabilityCurrent",
+        "displayed": "5,045",
+        "value": 5045000,
+        "included": true
+      },
+      {
+        "label": "Current portion of debt ($503,088 and $467,963 associated with a related party as of June 30, 2026 and December 31, 2025, respectively)",
+        "concept": "us-gaap:LongTermDebtCurrent",
+        "displayed": "707,142",
+        "value": 707142000,
+        "included": true
+      },
+      {
+        "label": "Finance lease liabilities, net of current portion",
+        "concept": "us-gaap:FinanceLeaseLiabilityNoncurrent",
+        "displayed": "102,685",
+        "value": 102685000,
+        "included": true
+      },
+      {
+        "label": "Debt, net of current portion (including $497,426 and nil associated with a related party as of June 30, 2026 and December 31, 2025, respectively)",
+        "concept": "us-gaap:LongTermDebtNoncurrent",
+        "displayed": "2,546,556",
+        "value": 2546556000,
+        "included": true
+      }
+    ],
+    "total": 3361428000,
+    "warnings": ["W_DEBT_TOTAL_TAG_DIFFERS"],
+    "crossCheck": {
+      "concept": "us-gaap:DebtLongtermAndShorttermCombinedAmount",
+      "value": 3253700000,
+      "source": "XBRL instance fact at the balance-sheet date (not a face line); it leaves out the finance leases: 3,361,428 − 3,253,700 = 107,728 ≈ 5,045 + 102,685 = 107,730"
+    }
+  },
+  "cash": {
+    "lines": [
+      {
+        "label": "Cash and cash equivalents",
+        "concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+        "displayed": "732,601",
+        "value": 732601000,
+        "included": true
+      },
+      {
+        "label": "Short-term investments (including nil and $50,000 associated with a related party as of June 30, 2026 and December 31, 2025, respectively)",
+        "concept": "us-gaap:ShortTermInvestments",
+        "displayed": "28,712",
+        "value": 28712000,
+        "included": true
+      }
+    ],
+    "total": 761313000,
+    "warnings": []
+  },
+  "preferred": {
+    "status": "unsupported",
+    "code": "UNRECOGNIZED_EQUITY_LINE",
+    "note": "temporary-equity redeemable convertible preferred 2,906,257 is not classified (methodology §9)"
+  },
+  "nci": {
+    "status": "missing",
+    "note": "no noncontrolling interest line on the balance sheet"
+  },
+  "notDebt": [
+    {
+      "concept": "us-gaap:DerivativeLiabilitiesNoncurrent"
+    }
+  ]
+}

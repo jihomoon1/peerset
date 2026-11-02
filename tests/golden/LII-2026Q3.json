@@ -1,0 +1,323 @@
+{
+  "ticker": "LII",
+  "cik": "0001069202",
+  "asOf": "2026-11-01",
+  "latestFiling": {
+    "form": "10-Q",
+    "accession": "0001069202-26-000096",
+    "filed": "2026-10-28",
+    "reportDate": "2026-09-30"
+  },
+  "ltmPeriod": {
+    "start": "2025-10-01",
+    "end": "2026-09-30"
+  },
+  "freshness": "current",
+  "methodologyVersion": "0.4.2",
+  "note": "Values are read from the rendered filings (10-K R5 and R9; 10-Q R4 and R8, saved under tests/fixtures/sec/LII/2026Q3/evidence/), not from the engine. The filings show USD millions to one decimal; the XBRL facts carry decimals=-5, so each value times 1,000,000 is exact to the dollar. FY2025 components are the same 10-K figures as the Q2 golden (Confirmed by Jiho 2026-10-26). The 10-Q was filed 2026-10-28, after the fixture analysis date 2026-10-26, so this golden's test uses analysis date 2026-11-01. Companyfacts already had this 10-Q when the fixture was captured (2026-11-01), so freshness is current and no W_FILING_PARSED.",
+  "metrics": {
+    "revenue": {
+      "concept": "us-gaap:Revenues",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 5195300000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Net sales",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 4252900000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Net sales",
+            "column": "9 Months Ended Sep. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 4000300000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Net sales",
+            "column": "9 Months Ended Sep. 30, 2025"
+          }
+        }
+      },
+      "ltm": 5447900000,
+      "math": "5,195.3 + 4,252.9 − 4,000.3 = 5,447.9"
+    },
+    "operatingIncome": {
+      "concept": "us-gaap:OperatingIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 1041500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Operating income",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 830600000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Operating income",
+            "column": "9 Months Ended Sep. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 845800000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Operating income",
+            "column": "9 Months Ended Sep. 30, 2025"
+          }
+        }
+      },
+      "ltm": 1026300000,
+      "math": "1,041.5 + 830.6 − 845.8 = 1,026.3"
+    },
+    "da": {
+      "concept": "us-gaap:DepreciationAndAmortization",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 112500000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Cash Flows",
+            "line": "Depreciation and amortization",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 96400000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Cash Flows (R8)",
+            "line": "Depreciation and amortization",
+            "column": "9 Months Ended Sep. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 79400000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Cash Flows (R8)",
+            "line": "Depreciation and amortization",
+            "column": "9 Months Ended Sep. 30, 2025"
+          }
+        }
+      },
+      "ltm": 129500000,
+      "math": "112.5 + 96.4 − 79.4 = 129.5"
+    },
+    "netIncome": {
+      "concept": "us-gaap:NetIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 805800000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Net income",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 607400000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Net income",
+            "column": "9 Months Ended Sep. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 663400000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Net income",
+            "column": "9 Months Ended Sep. 30, 2025"
+          }
+        }
+      },
+      "ltm": 749800000,
+      "math": "805.8 + 607.4 − 663.4 = 749.8"
+    },
+    "dilutedEps": {
+      "concept": "us-gaap:EarningsPerShareDiluted",
+      "unit": "USD/shares",
+      "components": {
+        "fy": {
+          "value": 22.79,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the year ended December 31, 2025",
+            "accession": "0001069202-26-000028",
+            "filed": "2026-02-17",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+            "statement": "Consolidated Statements of Operations (page 40)",
+            "line": "Earnings per share Diluted",
+            "column": "2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 17.47,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Earnings per share - Diluted",
+            "column": "9 Months Ended Sep. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 18.7,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-09-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended September 30, 2026",
+            "accession": "0001069202-26-000096",
+            "filed": "2026-10-28",
+            "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000096/lii-20260930.htm",
+            "statement": "Consolidated Statements of Operations (R4)",
+            "line": "Earnings per share - Diluted",
+            "column": "9 Months Ended Sep. 30, 2025"
+          }
+        }
+      },
+      "ltm": 21.56,
+      "math": "22.79 + 17.47 − 18.70 = 21.56"
+    },
+    "ebitda": {
+      "ltm": 1155800000,
+      "math": "Operating income 1,026.3 + D&A 129.5 = 1,155.8"
+    },
+    "ebitdaMargin": {
+      "ltmNumerator": 1155800000,
+      "ltmDenominator": 5447900000,
+      "math": "1,155.8 ÷ 5,447.9 = 21.22%"
+    }
+  },
+  "epsCrossCheck": {
+    "fyDilutedShares": 35400000,
+    "source": {
+      "document": "Form 10-K for the year ended December 31, 2025",
+      "accession": "0001069202-26-000028",
+      "filed": "2026-02-17",
+      "url": "https://www.sec.gov/Archives/edgar/data/1069202/000106920226000028/lii-20251231.htm",
+      "statement": "Consolidated Statements of Operations (page 40)",
+      "line": "Weighted Average Number of Shares Outstanding - Diluted",
+      "column": "2025"
+    },
+    "math": "749.8 ÷ 35.4 = 21.18; gap vs 21.56 is 1.8%, under the 5% warning threshold"
+  },
+  "fixture": "LII/2026Q3"
+}

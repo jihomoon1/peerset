@@ -12,6 +12,7 @@ import { fixtureFetch } from "../helpers/fixtures";
 // in the JSON), never from the engine. GGG has a 52/53-week year ending the last
 // Friday of December; JCI has a September year-end and no OperatingIncomeLoss tag,
 // so its operating income, EBITDA and margin are Unsupported (methodology §3).
+// LCID (M6) is the negative-EBITDA fixture.
 
 interface Component {
   value: number;
@@ -30,88 +31,122 @@ function value(m: Metric): number {
   return m.value;
 }
 
-describe.each(["GGG-2026Q3", "JCI-2026Q2"])("%s golden", async (name) => {
-  const golden = JSON.parse(
-    readFileSync(path.join(import.meta.dirname, `${name}.json`), "utf8"),
-  );
-  const fake = fixtureFetch([golden.fixture]);
-  const client = createSecClient({
-    fetch: fake.fetch,
-    env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
-    logger: () => {},
-    limiter: createLimiter(0),
-  });
-  const f = buildFundamentals(
-    await getCompanyFacts(golden.cik, { asOf: golden.asOf, client }),
-  );
-  const keys = Object.keys(golden.metrics).filter(
-    (k) => k !== "dilutedEps",
-  ) as ("revenue" | "operatingIncome" | "da" | "netIncome")[];
-
-  it("uses the expected latest filing and freshness path", () => {
-    expect(f.freshness.status).toBe(golden.freshness);
-    expect(f.freshness.latestAccession).toBe(golden.latestFiling.accession);
-    expect(f.ltmEnd).toBe(golden.latestFiling.reportDate);
-    expect(f.methodologyVersion).toBe(golden.methodologyVersion);
-  });
-
-  it.each(keys)("%s: concept and components, to the dollar", (key) => {
-    const g: GoldenMetric = golden.metrics[key];
-    const calc = f.ltmDetail[key];
-    expect(calc.concept).toBe(g.concept);
-    expect(calc.method).toBe("fy_plus_ytd_minus_prior_ytd");
-    for (const part of ["fy", "ytdCurrent", "ytdPrior"] as const) {
-      const fact = calc[part]!;
-      const want = g.components[part];
-      expect(fact.value, `${key} ${part}`).toBe(want.value);
-      expect(fact.period).toMatchObject(want.period);
-      expect(fact.filing.accession).toBe(want.source.accession);
-    }
-    expect(calc.checks.every((c) => c.passed)).toBe(true);
-  });
-
-  it.each(keys)("%s: LTM value, to the dollar", (key) => {
-    expect(value(f.metrics[key])).toBe(golden.metrics[key].ltm);
-    expect(f.metrics[key]).toMatchObject({
-      period: { start: golden.ltmPeriod.start, end: golden.ltmPeriod.end },
-    });
-  });
-
-  it("diluted EPS components and LTM, to the cent", () => {
-    const g: GoldenMetric = golden.metrics.dilutedEps;
-    const calc = f.ltmDetail.dilutedEps;
-    expect(calc.concept).toBe(g.concept);
-    for (const part of ["fy", "ytdCurrent", "ytdPrior"] as const)
-      expect(calc[part]!.value).toBe(g.components[part].value);
-    expect(Math.abs(value(f.metrics.dilutedEps) - g.ltm)).toBeLessThan(0.005);
-  });
-
-  it("EPS cross-check passes (no warning)", () => {
-    expect(f.eps.crossCheck).toMatchObject({
-      status: "checked",
-      dilutedShares: golden.epsCrossCheck.fyDilutedShares,
-    });
-    expect(f.metrics.dilutedEps.warnings.map((w) => w.code)).not.toContain(
-      "W_EPS_CROSSCHECK",
+describe.each(["GGG-2026Q3", "JCI-2026Q2", "LCID-2026Q2"])(
+  "%s golden",
+  async (name) => {
+    const golden = JSON.parse(
+      readFileSync(path.join(import.meta.dirname, `${name}.json`), "utf8"),
     );
-    expect(f.eps.splitSinceLastAnnual).toBe(false);
-  });
+    const fake = fixtureFetch([golden.fixture]);
+    const client = createSecClient({
+      fetch: fake.fetch,
+      env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },
+      logger: () => {},
+      limiter: createLimiter(0),
+    });
+    const f = buildFundamentals(
+      await getCompanyFacts(golden.cik, { asOf: golden.asOf, client }),
+    );
+    const keys = Object.keys(golden.metrics).filter(
+      (k) => k !== "dilutedEps",
+    ) as ("revenue" | "operatingIncome" | "da" | "netIncome")[];
 
-  if (golden.ebitda)
-    it("EBITDA and margin, to the dollar", () => {
-      expect(value(f.metrics.ebitda)).toBe(golden.ebitda.ltm);
-      expect(value(f.metrics.ebitdaMargin)).toBe(
-        golden.ebitdaMargin.ltmNumerator / golden.ebitdaMargin.ltmDenominator,
-      );
+    it("uses the expected latest filing and freshness path", () => {
+      expect(f.freshness.status).toBe(golden.freshness);
+      expect(f.freshness.latestAccession).toBe(golden.latestFiling.accession);
+      expect(f.ltmEnd).toBe(golden.latestFiling.reportDate);
+      expect(f.methodologyVersion).toBe(golden.methodologyVersion);
     });
 
-  it.each(Object.entries(golden.unsupported as Record<string, string>))(
-    "%s is Unsupported (%s)",
-    (key, code) => {
-      expect(f.metrics[key as "ebitda"]).toMatchObject({
-        status: "unsupported",
-        reason: { code },
+    it.each(keys)("%s: concept and components, to the dollar", (key) => {
+      const g: GoldenMetric = golden.metrics[key];
+      const calc = f.ltmDetail[key];
+      expect(calc.concept).toBe(g.concept);
+      expect(calc.method).toBe("fy_plus_ytd_minus_prior_ytd");
+      for (const part of ["fy", "ytdCurrent", "ytdPrior"] as const) {
+        const fact = calc[part]!;
+        const want = g.components[part];
+        expect(fact.value, `${key} ${part}`).toBe(want.value);
+        expect(fact.period).toMatchObject(want.period);
+        expect(fact.filing.accession).toBe(want.source.accession);
+      }
+      expect(calc.checks.every((c) => c.passed)).toBe(true);
+    });
+
+    it.each(keys)("%s: LTM value, to the dollar", (key) => {
+      expect(value(f.metrics[key])).toBe(golden.metrics[key].ltm);
+      expect(f.metrics[key]).toMatchObject({
+        period: { start: golden.ltmPeriod.start, end: golden.ltmPeriod.end },
       });
-    },
-  );
-});
+    });
+
+    it("diluted EPS components and LTM, to the cent", () => {
+      const g: GoldenMetric = golden.metrics.dilutedEps;
+      const calc = f.ltmDetail.dilutedEps;
+      expect(calc.concept).toBe(g.concept);
+      for (const part of ["fy", "ytdCurrent", "ytdPrior"] as const)
+        expect(calc[part]!.value).toBe(g.components[part].value);
+      expect(Math.abs(value(f.metrics.dilutedEps) - g.ltm)).toBeLessThan(0.005);
+    });
+
+    it("EPS cross-check: checked, warning only when the golden expects one", () => {
+      const cc = golden.epsCrossCheck;
+      expect(f.eps.crossCheck).toMatchObject({
+        status: "checked",
+        dilutedShares: cc.fyDilutedShares,
+        ...(cc.numerator
+          ? {
+              numeratorConcept: cc.numerator.concept,
+              netIncome: cc.numerator.ltm,
+            }
+          : {}),
+      });
+      const codes = f.metrics.dilutedEps.warnings.map((w) => w.code);
+      if (cc.expectWarning) expect(codes).toContain("W_EPS_CROSSCHECK");
+      else expect(codes).not.toContain("W_EPS_CROSSCHECK");
+      expect(f.eps.splitSinceLastAnnual).toBe(false);
+    });
+
+    it("discontinued operations (methodology 0.4.0): notes only when reported", () => {
+      const d = golden.discontinuedOperations;
+      const epsCodes = f.metrics.dilutedEps.warnings.map((w) => w.code);
+      const daCodes = f.metrics.da.warnings.map((w) => w.code);
+      if (d) {
+        expect(f.eps.basis).toBe(d.basis);
+        const got = f.eps.discontinuedOps!.periods;
+        expect(got.map((p) => p.role)).toEqual(Object.keys(d.periods));
+        for (const p of got) {
+          const want = d.periods[p.role];
+          expect(p.concept, p.role).toBe(d.concept);
+          expect(p.value, p.role).toBe(want.value);
+          expect(p.fact.period).toMatchObject(want.period);
+          expect(p.fact.filing.accession).toBe(want.accession);
+        }
+        expect(epsCodes).toContain(d.expectedWarnings.dilutedEps);
+        expect(daCodes).toContain(d.expectedWarnings.da);
+      } else {
+        expect(f.eps.basis).toBe("total");
+        expect(epsCodes).not.toContain("W_EPS_CONTINUING_OPS");
+        expect(daCodes).not.toContain("W_DA_INCLUDES_DISC_OPS");
+      }
+    });
+
+    if (golden.ebitda)
+      it("EBITDA and margin, to the dollar", () => {
+        expect(value(f.metrics.ebitda)).toBe(golden.ebitda.ltm);
+        expect(value(f.metrics.ebitdaMargin)).toBe(
+          golden.ebitdaMargin.ltmNumerator / golden.ebitdaMargin.ltmDenominator,
+        );
+      });
+
+    it.each(Object.entries(golden.unsupported as Record<string, string>))(
+      "%s is Unsupported (%s)",
+      (key, code) => {
+        expect(f.metrics[key as "ebitda"]).toMatchObject({
+          status: "unsupported",
+          reason: { code },
+        });
+      },
+    );
+  },
+);

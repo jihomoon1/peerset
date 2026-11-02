@@ -218,6 +218,10 @@ export function screenPeers(
       cik: q.company.cik,
       ticker: q.company.ticker,
       reason: reasonFor(q, target, tier),
+      latest: {
+        form: q.company.latest!.form,
+        filedDate: q.company.latest!.filedDate,
+      },
     })),
     excluded,
     indexGeneratedAt: index.meta.generatedAt,

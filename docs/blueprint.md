@@ -794,9 +794,9 @@ The export is a banker-style three-sheet workbook whose every number equals the 
 ### Sheet 1: Trading Comps
 
 - **Header block (rows 1–6):** "PeerSet — Trading Comparables"; target name and ticker; SIC and description; analysis date; prices as of and source; "USD in millions, except per-share data".
-- **Table:** headers on row 8, target on row 9 (bold, light fill), peers from row 11, then Mean, Median, High, Low and n after a blank row.
+- **Table:** headers on row 8, target on row 9 (bold, light fill), peers from row 11, then Mean, Median, High, Low, 25th percentile, 75th percentile, n and n excluded after a blank row.
 - **Columns:** Company · Ticker · Fin. through · Price · Equity value · EV · LTM revenue · LTM EBITDA · EBITDA margin · EV/Revenue · EV/EBITDA · P/E.
-- **Statistics** are formulas (`AVERAGE`, `MEDIAN`, `MAX`, `MIN`, `COUNT`) over peer rows only. Excel skips text cells, so "NM" and "—" fall out automatically.
+- **Statistics** are formulas (`AVERAGE`, `MEDIAN`, `MAX`, `MIN`, `PERCENTILE.INC` at 0.25 and 0.75, `COUNT`, and `COUNTA − COUNT` for n excluded) over peer rows only. Excel skips text cells, so "NM" and "—" fall out automatically.
 - **Footnotes** under the table: EBITDA definition, NM policy, basic-share note, active warnings.
 
 ### Sheet 2: Calculations
@@ -821,6 +821,9 @@ Trading Comps cells link here, shown in green.
 | Element | Format |
 | --- | --- |
 | USD millions | `#,##0.0_);(#,##0.0)` |
+| USD millions, nonzero amount under 0.05M | `#,##0.000_);(#,##0.000)` (so it never reads as 0.0) |
+| Shares, in millions | `#,##0.000_);(#,##0.000)` |
+| Full USD or shares (Sources sheet) | `#,##0_);(#,##0)` |
 | Share price, EPS | `#,##0.00_);(#,##0.00)` |
 | Multiples | `0.0"x"` |
 | Percentages | `0.0%_);(0.0%)` |

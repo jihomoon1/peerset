@@ -160,7 +160,7 @@ describe("displayValuationCell", () => {
     ).toEqual({
       text: "NM",
       kind: "nm",
-      note: "NM: above 100x policy (188.1x)",
+      note: "NM: above 100x policy; computed 188.1x",
     });
   });
 });

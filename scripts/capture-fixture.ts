@@ -4,6 +4,10 @@
 //   npx tsx scripts/capture-fixture.ts --ticker LII --cik 0001069202 \
 //     --accession 0001069202-26-000087 --asof 2026Q2
 //
+// --submissions-only saves only SEC's submissions JSON, for a company PeerSet rejects
+// before reading any filing (a 20-F filer, for the "target unsupported" state, M6).
+// --accession then names that company's latest annual report, for the manifest.
+//
 // --add-statements adds only FilingSummary.xml and the balance-sheet R file to an
 // existing fixture and lists them in its manifest.json, leaving its other frozen
 // files (and the goldens built on them) untouched.
@@ -51,10 +55,12 @@ function readArgs() {
       asof: { type: "string" },
       force: { type: "boolean", default: false },
       "add-statements": { type: "boolean", default: false },
+      "submissions-only": { type: "boolean", default: false },
     },
   });
   const { ticker, cik, accession, asof, force } = values;
   const addStatements = values["add-statements"] ?? false;
+  const submissionsOnly = values["submissions-only"] ?? false;
   if (!ticker || !/^[A-Z][A-Z0-9.-]{0,9}$/.test(ticker))
     fail("--ticker must look like LII");
   if (!cik || !/^\d{10}$/.test(cik))
@@ -70,6 +76,7 @@ function readArgs() {
     asof,
     force: force ?? false,
     addStatements,
+    submissionsOnly,
   };
 }
 
@@ -111,7 +118,15 @@ async function secGet(
 }
 
 async function main() {
-  const { ticker, cik, accession, asof, force, addStatements } = readArgs();
+  const {
+    ticker,
+    cik,
+    accession,
+    asof,
+    force,
+    addStatements,
+    submissionsOnly,
+  } = readArgs();
   const userAgent = loadUserAgent();
 
   const outDir = path.join("tests", "fixtures", "sec", ticker, asof);
@@ -169,6 +184,18 @@ async function main() {
     filedDate: recent.filingDate[row],
     reportDate: recent.reportDate[row],
   };
+  if (submissionsOnly) {
+    mkdirSync(outDir, { recursive: true });
+    for (const { file, gz } of toWrite)
+      writeFileSync(path.join(outDir, file), gz);
+    const manifest = { ticker, cik, accession, ...filing, asof, files };
+    writeFileSync(
+      path.join(outDir, "manifest.json"),
+      JSON.stringify(manifest, null, 2) + "\n",
+    );
+    console.log(`Wrote submissions only (${filing.form}) to ${outDir}`);
+    return;
+  }
   if (!PERIODIC_FORMS.has(filing.form))
     fail(`${accession} is a ${filing.form}, not a 10-K/10-Q`);
   reportNewerPeriodic(recent, accession, filing.filedDate);

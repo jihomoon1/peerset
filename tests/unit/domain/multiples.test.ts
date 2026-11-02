@@ -206,4 +206,21 @@ describe("computeMultiples", () => {
       expect(m.evEbitda.status).toBe("derived");
     });
   });
+
+  describe("P/E basis (methodology 0.4.0 §5)", () => {
+    it("names continuing-operations EPS in the formula when that basis is used", () => {
+      const m = computeMultiples(input({ epsBasis: "continuingOperations" }));
+      expect(m.pe.status).toBe("derived");
+      if (m.pe.status !== "derived") return;
+      expect(m.pe.formula).toBe(
+        "price ÷ continuing-operations diluted EPS (LTM)",
+      );
+    });
+
+    it("keeps the total-EPS wording otherwise", () => {
+      const m = computeMultiples(input());
+      if (m.pe.status !== "derived") throw new Error("expected derived");
+      expect(m.pe.formula).toBe("price ÷ diluted EPS (LTM)");
+    });
+  });
 });

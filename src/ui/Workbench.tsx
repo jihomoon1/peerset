@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { buildComps, type CompsPeer } from "@/domain/comps";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import type { QuoteSnapshot } from "@/domain/types";
+import { formatDate } from "@/lib/format";
 import type { QuoteError } from "@/lib/quotes";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
@@ -108,6 +109,20 @@ export function Workbench({
     .filter((p) => !notAPeer.some((n) => n.ticker === p.ticker))
     .map((p) => ({ ...p, state: states[p.ticker] ?? { kind: "loading" } }));
 
+  // Blueprint §6 "Loading": the progress line names a filing being read (M6). A
+  // suggested peer's latest filing comes from the peer index; an added one is named
+  // only by ticker until its fundamentals arrive.
+  const reading = compsPeers.find((p) => p.state.kind === "loading");
+  const readingFiling =
+    reading && selection.ok
+      ? selection.data.selected.find((s) => s.ticker === reading.ticker)?.latest
+      : undefined;
+  const readingText = reading
+    ? readingFiling
+      ? `Reading ${reading.ticker}'s ${readingFiling.form} filed ${formatDate(readingFiling.filedDate)}…`
+      : `Reading ${reading.ticker}'s latest 10-K or 10-Q…`
+    : "";
+
   // Cheap (at most 13 rows), so recomputed on every render: always in step with the
   // inputs, the peer states and the active set.
   const q = quotesFromInputs({
@@ -128,16 +143,20 @@ export function Workbench({
     const prices = Object.fromEntries(
       Object.entries(inputs).filter(([, v]) => v.trim()),
     );
-    const query = urlQuery({
+    const state = {
       add: peerSet.added,
       remove: peerSet.removed,
       prices,
       ...(Object.keys(prices).length ? { priceDate } : {}),
-    });
+    };
+    // A link that carries an analysis also names the company it was made for (M6).
+    const query = urlQuery(
+      urlQuery(state) ? { cik: f.identity.cik, ...state } : state,
+    );
     const url = `${window.location.pathname}${query}`;
     if (url !== `${window.location.pathname}${window.location.search}`)
       window.history.replaceState(window.history.state, "", url);
-  }, [peerSet.added, peerSet.removed, inputs, priceDate]);
+  }, [f.identity.cik, peerSet.added, peerSet.removed, inputs, priceDate]);
 
   const pasteTickers = [
     ...targetTickers,
@@ -210,7 +229,7 @@ export function Workbench({
           ) : counts.loading > 0 ? (
             <span className="text-muted">
               Loading peers: {counts.loaded + counts.failed} of {counts.peers}{" "}
-              done.
+              done. {readingText}
             </span>
           ) : counts.failed > 0 ? (
             <span className="text-warn">

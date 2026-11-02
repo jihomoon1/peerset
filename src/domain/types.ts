@@ -99,6 +99,8 @@ export type WarningCode =
   | "W_DA_FROM_CASH_FLOW"
   | "W_53_WEEKS"
   | "W_EPS_CROSSCHECK"
+  | "W_EPS_CONTINUING_OPS" // §5 (0.4.0): P/E on continuing-operations EPS (info)
+  | "W_DA_INCLUDES_DISC_OPS" // §4 (0.4.0): cash-flow D&A may include disc ops
   | "W_SOURCE_CONFLICT" // same filing, same period, companyfacts and filing disagree
   | "W_FACE_UNAVAILABLE" // §7 rule 7: balance-sheet face unreadable, tag rules used
   | "W_NO_DEBT_LINES" // §7 rule 4: no debt lines, debt is a reported 0
@@ -266,7 +268,12 @@ export interface ScreeningFunnelStep {
 export interface PeerSelectionResult {
   tier: "sic4" | "sic3" | "sic2";
   funnel: ScreeningFunnelStep[]; // every tier tried, narrowest first
-  selected: { cik: string; ticker: string; reason: string }[];
+  selected: {
+    cik: string;
+    ticker: string;
+    reason: string;
+    latest: { form: string; filedDate: string }; // named while it loads (M6)
+  }[];
   excluded: {
     cik: string;
     ticker: string;

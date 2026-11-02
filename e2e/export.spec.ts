@@ -55,6 +55,15 @@ test("export: the downloaded workbook carries the golden key cells", async ({
   expect(
     result(ws.getCell(rowLabeled(ws, "Implied price (USD per share)"), 4)),
   ).toBeCloseTo(726.2003134600196, 6);
+
+  // Blueprint §6 "Export with missing values": allowed, and a note lists what is
+  // shown as text. JCI has no operating income, so its EV/EBITDA is Unsupported.
+  const columnA: string[] = [];
+  ws.eachRow((row) => columnA.push(String(row.getCell(1).value ?? "")));
+  expect(columnA).toContain("Shown as text, not numbers");
+  expect(columnA.some((t) => /^JCI EV\/EBITDA: Unsupported/.test(t))).toBe(
+    true,
+  );
 });
 
 test("the Export button sits in the header and enables once peers load", async ({

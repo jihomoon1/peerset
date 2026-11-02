@@ -1,0 +1,325 @@
+{
+  "ticker": "LCID",
+  "cik": "0001811210",
+  "fixture": "LCID/2026Q2",
+  "asOf": "2026-10-26",
+  "latestFiling": {
+    "form": "10-Q",
+    "accession": "0001628280-26-052606",
+    "filed": "2026-08-04",
+    "reportDate": "2026-06-30"
+  },
+  "ltmPeriod": {
+    "start": "2025-07-01",
+    "end": "2026-06-30"
+  },
+  "freshness": "current",
+  "methodologyVersion": "0.4.2",
+  "note": "Negative-EBITDA fixture (M6). Values are read from the rendered filings (R pages saved under tests/fixtures/sec/LCID/2026Q2/evidence/), not from the engine. Lucid reports in USD thousands, except D&A: its cash-flow line uses its own extension concept lcid:DepreciationAndAmortizationExcludingDebtDiscountsAndInsurancePremiums (451,243 / 238,634 / 209,047 thousand), which methodology §3 does not read, so D&A is us-gaap:DepreciationDepletionAndAmortization as shown in the segment note in USD millions (451.2 / 238.6 / 209.0; decimals −5). LTM D&A from the cash-flow line would be 480,830 thousand, 30 thousand more. Lucid's 1-for-10 reverse split of August 29, 2025 predates the FY2025 10-K, so every EPS component is post-split and, under methodology 0.4.1, it is not a split since the last 10-K. No discontinued operations.",
+  "metrics": {
+    "revenue": {
+      "concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 1353790000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 31, 2025",
+            "accession": "0001628280-26-011053",
+            "filed": "2026-02-24",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+            "statement": "Consolidated Statements of Operations and Comprehensive Loss (R5)",
+            "line": "Revenue (including … from a related party …)",
+            "column": "12 Months Ended Dec. 31, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 687812000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Revenue (including … from a related party …)",
+            "column": "6 Months Ended Jun. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 494480000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Revenue (including … from a related party …)",
+            "column": "6 Months Ended Jun. 30, 2025"
+          }
+        }
+      },
+      "ltm": 1547122000,
+      "math": "1,353,790 + 687,812 − 494,480 = 1,547,122 (USD thousands)"
+    },
+    "operatingIncome": {
+      "concept": "us-gaap:OperatingIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": -3501753000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 31, 2025",
+            "accession": "0001628280-26-011053",
+            "filed": "2026-02-24",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+            "statement": "Consolidated Statements of Operations and Comprehensive Loss (R5)",
+            "line": "Loss from operations",
+            "column": "12 Months Ended Dec. 31, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": -2071653000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Loss from operations",
+            "column": "6 Months Ended Jun. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": -1494980000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Loss from operations",
+            "column": "6 Months Ended Jun. 30, 2025"
+          }
+        }
+      },
+      "ltm": -4078426000,
+      "math": "(3,501,753) + (2,071,653) − (1,494,980) = (4,078,426) (USD thousands)"
+    },
+    "da": {
+      "concept": "us-gaap:DepreciationDepletionAndAmortization",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": 451200000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 31, 2025",
+            "accession": "0001628280-26-011053",
+            "filed": "2026-02-24",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R120.htm",
+            "statement": "Segment Reporting - Narrative (Details) (R120)",
+            "line": "Depreciation and amortization expenses",
+            "column": "12 Months Ended Dec. 31, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": 238600000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R103.htm",
+            "statement": "Segment Reporting - Narrative (Details) (R103)",
+            "line": "Depreciation and amortization expenses",
+            "column": "6 Months Ended Jun. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": 209000000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R103.htm",
+            "statement": "Segment Reporting - Narrative (Details) (R103)",
+            "line": "Depreciation and amortization expenses",
+            "column": "6 Months Ended Jun. 30, 2025"
+          }
+        }
+      },
+      "ltm": 480800000,
+      "math": "451.2 + 238.6 − 209.0 = 480.8 (USD millions)"
+    },
+    "netIncome": {
+      "concept": "us-gaap:NetIncomeLoss",
+      "unit": "USD",
+      "components": {
+        "fy": {
+          "value": -2698051000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 31, 2025",
+            "accession": "0001628280-26-011053",
+            "filed": "2026-02-24",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+            "statement": "Consolidated Statements of Operations and Comprehensive Loss (R5)",
+            "line": "Net loss",
+            "column": "12 Months Ended Dec. 31, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": -2063195000,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Net loss",
+            "column": "6 Months Ended Jun. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": -905603000,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Net loss",
+            "column": "6 Months Ended Jun. 30, 2025"
+          }
+        }
+      },
+      "ltm": -3855643000,
+      "math": "(2,698,051) + (2,063,195) − (905,603) = (3,855,643) (USD thousands)"
+    },
+    "dilutedEps": {
+      "concept": "us-gaap:EarningsPerShareDiluted",
+      "unit": "USD/shares",
+      "components": {
+        "fy": {
+          "value": -12.09,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-12-31"
+          },
+          "source": {
+            "document": "Form 10-K for the fiscal year ended December 31, 2025",
+            "accession": "0001628280-26-011053",
+            "filed": "2026-02-24",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+            "statement": "Consolidated Statements of Operations and Comprehensive Loss (R5)",
+            "line": "Net loss per share attributable to common stockholders, Diluted",
+            "column": "12 Months Ended Dec. 31, 2025"
+          }
+        },
+        "ytdCurrent": {
+          "value": -6.74,
+          "period": {
+            "start": "2026-01-01",
+            "end": "2026-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Net loss per share attributable to common stockholders, Diluted",
+            "column": "6 Months Ended Jun. 30, 2026"
+          }
+        },
+        "ytdPrior": {
+          "value": -5.18,
+          "period": {
+            "start": "2025-01-01",
+            "end": "2025-06-30"
+          },
+          "source": {
+            "document": "Form 10-Q for the quarter ended June 30, 2026",
+            "accession": "0001628280-26-052606",
+            "filed": "2026-08-04",
+            "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+            "statement": "Condensed Consolidated Statements of Operations and Comprehensive Loss (R4)",
+            "line": "Net loss per share attributable to common stockholders, Diluted",
+            "column": "6 Months Ended Jun. 30, 2025"
+          }
+        }
+      },
+      "ltm": -13.65,
+      "math": "(12.09) + (6.74) − (5.18) = (13.65)"
+    }
+  },
+  "ebitda": {
+    "ltm": -3597626000,
+    "math": "Operating loss (4,078,426) + D&A 480,800 = (3,597,626) (USD thousands)"
+  },
+  "ebitdaMargin": {
+    "ltmNumerator": -3597626000,
+    "ltmDenominator": 1547122000,
+    "math": "(3,597,626) ÷ 1,547,122 = (232.54)%"
+  },
+  "epsCrossCheck": {
+    "fyDilutedShares": 313400136,
+    "expectWarning": true,
+    "source": {
+      "document": "Form 10-K for the fiscal year ended December 31, 2025",
+      "accession": "0001628280-26-011053",
+      "filed": "2026-02-24",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+      "statement": "Consolidated Statements of Operations and Comprehensive Loss (R5)",
+      "line": "Weighted-average shares outstanding attributable to common stockholders, Diluted",
+      "column": "12 Months Ended Dec. 31, 2025"
+    },
+    "math": "(3,855,643,000) ÷ 313,400,136 = (12.30); gap vs (13.65) is 9.9%, over 5%, so W_EPS_CROSSCHECK (a warning). The gap is real: EPS uses net loss attributable to common stockholders, which adds the preferred stock's deemed dividends and fair-value effects (FY2025 diluted (3,789,155) vs net loss (2,698,051))."
+  },
+  "unsupported": {}
+}

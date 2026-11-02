@@ -49,3 +49,86 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
+
+/* /methodology: the rendered docs/methodology.md (M6). Wide tables scroll inside the
+   article so the page never scrolls sideways on a phone. */
+.methodology-doc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.methodology-doc h2:first-child {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+.methodology-doc h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 2rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 1rem;
+}
+.methodology-doc h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  scroll-margin-top: 1rem;
+}
+.methodology-doc p,
+.methodology-doc ul,
+.methodology-doc ol,
+.methodology-doc blockquote {
+  margin: 0 0 0.75rem;
+  max-width: 48rem;
+}
+.methodology-doc ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.methodology-doc ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.methodology-doc li {
+  margin: 0.25rem 0;
+}
+.methodology-doc a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.methodology-doc code {
+  font-size: 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0 0.2rem;
+}
+.methodology-doc pre {
+  overflow-x: auto;
+  background: var(--surface);
+  padding: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+.methodology-doc table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+}
+.methodology-doc th,
+.methodology-doc td {
+  border: 1px solid var(--rule);
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: normal;
+  min-width: 6rem;
+}
+.methodology-doc th {
+  background: var(--surface);
+  font-weight: 600;
+}

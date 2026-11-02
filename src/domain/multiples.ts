@@ -12,6 +12,8 @@ export interface MultiplesInput {
   ebitda: Metric; // LTM
   price: Metric; // the single class's price, USD/shares
   eps: Metric; // LTM diluted
+  // §5 (0.4.0): which EPS the metric is; only changes the formula's wording.
+  epsBasis?: "total" | "continuingOperations";
   singleClass: boolean;
   splitSinceLastAnnual: boolean;
 }
@@ -89,9 +91,16 @@ export function computeMultiples(input: MultiplesInput): Multiples {
         : ratio(
             "P/E",
             ["price", input.price],
-            ["diluted EPS", input.eps],
+            [
+              input.epsBasis === "continuingOperations"
+                ? "continuing-operations diluted EPS"
+                : "diluted EPS",
+              input.eps,
+            ],
             { evNumerator: false, notPositive: "EPS_NOT_POSITIVE" },
-            "price ÷ diluted EPS (LTM)",
+            input.epsBasis === "continuingOperations"
+              ? "price ÷ continuing-operations diluted EPS (LTM)"
+              : "price ÷ diluted EPS (LTM)",
           ),
   };
 }

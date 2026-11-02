@@ -31,6 +31,7 @@ interface Golden {
     "evRevenue" | "evEbitda" | "pe",
     | { status: "derived"; value: number }
     | { status: "unsupported"; code: string }
+    | { status: "nm"; code: string }
   >;
 }
 
@@ -47,11 +48,16 @@ function value(m: Metric): number {
   return m.value;
 }
 
-it("covers LII and WSO", () => {
-  expect(goldens.map((g) => g.ticker)).toEqual(["LII", "WSO"]);
+it("covers LCID (negative EBITDA), LII (Q2 and Q3) and WSO", () => {
+  expect(goldens.map((g) => g.fixture)).toEqual([
+    "LCID",
+    "LII",
+    "LII-Q3",
+    "WSO",
+  ]);
 });
 
-describe.each(goldens)("$ticker valuation at test prices", (g) => {
+describe.each(goldens)("$fixture valuation at test prices", (g) => {
   const quotes: QuoteSnapshot[] = g.prices.map((p) => ({
     ...p,
     currency: "USD",
@@ -107,7 +113,9 @@ describe.each(goldens)("$ticker valuation at test prices", (g) => {
       const f = await fixtureFundamentals(g.fixture);
       const m = priceCompany(f, quotes, g.analysisDate).multiples[key];
       const want = g.multiples[key];
-      if (want.status === "unsupported") {
+      if (want.status === "nm") {
+        expect(m).toMatchObject({ status: "nm", reason: want.code });
+      } else if (want.status === "unsupported") {
         expect(m).toMatchObject({
           status: "unsupported",
           reason: { code: want.code },

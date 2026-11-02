@@ -1,0 +1,83 @@
+{
+  "cik": "0001811210",
+  "accession": "0001628280-26-011053",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:26:49.868Z",
+      "sha256": "08cf6a1447e79fea5992a7d376b11ced112b5f6dbfa8f8fb7ca7651145217623"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "CONSOLIDATED BALANCE SHEETS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R3.htm",
+      "retrievedAt": "2026-11-01T21:26:49.971Z",
+      "sha256": "55b19a28112cbfab6a4a88a8347808b9a461fbe08377f9e2735be3f0ae650faf"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "CONSOLIDATED BALANCE SHEETS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R4.htm",
+      "retrievedAt": "2026-11-01T21:26:50.419Z",
+      "sha256": "0f28a212753b8faf4ec3f97b64528363723a0a8e2a812faf98c5502ef4703496"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE LOSS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R5.htm",
+      "retrievedAt": "2026-11-01T21:26:52.398Z",
+      "sha256": "158e9256554544da400f5931ce9e22a7c03e854094c042eaaea1b4b3837d3f91"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE LOSS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R6.htm",
+      "retrievedAt": "2026-11-01T21:26:52.574Z",
+      "sha256": "841db398758af01a2e530577fb7a227f5ba782050f110d06d525e081a3b89c12"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "CONSOLIDATED STATEMENTS OF REDEEMABLE CONVERTIBLE PREFERRED STOCK AND STOCKHOLDERS??? EQUITY",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R7.htm",
+      "retrievedAt": "2026-11-01T21:26:52.909Z",
+      "sha256": "27195582d1d02b38aba1a80b781dd11846cdb4bcda6edaaa4e41c079ccb4ac2f"
+    },
+    {
+      "file": "R8.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF REDEEMABLE CONVERTIBLE PREFERRED STOCK AND STOCKHOLDERS??? EQUITY (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R8.htm",
+      "retrievedAt": "2026-11-01T21:26:53.067Z",
+      "sha256": "88b26dcffca1a103374a6f1a0232cc154ddd4d434dfb57338b34e632d1210ae8"
+    },
+    {
+      "file": "R9.htm.gz",
+      "statement": "CONSOLIDATED STATEMENTS OF CASH FLOWS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R9.htm",
+      "retrievedAt": "2026-11-01T21:26:53.320Z",
+      "sha256": "86acb7adc8cea897ce80f5a46910af2fb0805704407edc5ba320e69db31db47e"
+    },
+    {
+      "file": "R10.htm.gz",
+      "statement": "CONSOLIDATED STATEMENTS OF CASH FLOWS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R10.htm",
+      "retrievedAt": "2026-11-01T21:26:53.584Z",
+      "sha256": "f843aefbc3885bb6721dfa4ac4f9e10caafdc8045db38e5c69ed393c9f13d8de"
+    },
+    {
+      "file": "R122.htm.gz",
+      "statement": "SEGMENT REPORTING - Schedule of Segment Revenue, Segment Profit or Loss, and Significant Segment Expenses (Details)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R122.htm",
+      "retrievedAt": "2026-11-01T21:31:34.793Z",
+      "sha256": "94f9b04a8bf590d35b398506c4d2ea2ab6e1ff571b7c8072a81113f990d8de8f"
+    },
+    {
+      "file": "R120.htm.gz",
+      "statement": "SEGMENT REPORTING - Narrative (Details)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026011053/R120.htm",
+      "retrievedAt": "2026-11-01T21:31:54.505Z",
+      "sha256": "ebe0b4d4aaba80cf6b1e5286a7926105e30b354f199c4b18e0ed252cb48bfc8a"
+    }
+  ]
+}

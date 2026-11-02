@@ -1,6 +1,7 @@
 // The export's server path on the frozen fixtures (M5): the same deps fixture mode
 // uses, with fixed clocks, and the comps-golden request.
 
+import { FIXTURE_PINS } from "./fixturePins";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { memoryCache } from "@/lib/cache";
@@ -26,7 +27,7 @@ export function fixtureDeps(): ExportDeps {
       client: createSecClient({
         fetch: fixtureFetch(
           allFixtureDirs({
-            pins: "AAON:2026Q2,CARR:2026Q2,GGG:2026Q3,JCI:2026Q2,LII:2026Q2,TT:2026Q2,WSO:2026Q2",
+            pins: FIXTURE_PINS,
           }),
         ).fetch,
         env: { SEC_USER_AGENT: "PeerSet-Test test@example.invalid" },

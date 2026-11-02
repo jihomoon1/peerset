@@ -155,6 +155,7 @@ const selection = (over: Partial<PeersResponse>): PeersResponse => ({
       cik: "1",
       ticker: "MIDD",
       reason: "SIC 3580 · 3-digit group 358 · revenue 0.6x",
+      latest: { form: "10-Q", filedDate: "2026-07-29" },
     },
   ],
   excluded: [

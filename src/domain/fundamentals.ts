@@ -14,6 +14,7 @@ import { computeDa } from "./metrics/da";
 import { computeEbitda } from "./metrics/ebitda";
 import { computeEbitdaMargin } from "./metrics/ebitdaMargin";
 import { computeEps, type EpsCrossCheck } from "./metrics/eps";
+import type { DiscontinuedOps } from "./metrics/discontinuedOps";
 import { computeNetIncome } from "./metrics/netIncome";
 import { computeOperatingIncome } from "./metrics/operatingIncome";
 import { computeRevenue } from "./metrics/revenue";
@@ -60,6 +61,10 @@ export interface CompanyFundamentals {
   // Keyed by metric; the D&A fallback stores each line as "da:<concept>".
   ltmDetail: Record<string, LTMCalculation>;
   eps: {
+    // §5 (0.4.0): "continuingOperations" when a component period reports
+    // discontinued operations; discontinuedOps lists those periods' amounts.
+    basis: "total" | "continuingOperations";
+    discontinuedOps?: DiscontinuedOps;
     crossCheck: EpsCrossCheck;
     splitSinceLastAnnual: boolean;
     splitEvidence?: string;
@@ -135,6 +140,8 @@ export function buildFundamentals(
     },
     ltmDetail,
     eps: {
+      basis: eps.basis,
+      ...(eps.discontinuedOps ? { discontinuedOps: eps.discontinuedOps } : {}),
       crossCheck: eps.crossCheck,
       splitSinceLastAnnual: eps.splitSinceLastAnnual,
       ...(eps.splitEvidence ? { splitEvidence: eps.splitEvidence } : {}),

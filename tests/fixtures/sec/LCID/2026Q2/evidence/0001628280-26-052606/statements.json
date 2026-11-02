@@ -1,0 +1,83 @@
+{
+  "cik": "0001811210",
+  "accession": "0001628280-26-052606",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:26:54.355Z",
+      "sha256": "ab795c2531b0c612af678a74a33e361bb57d962c1b814c05644c8bef3f87d957"
+    },
+    {
+      "file": "R2.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED BALANCE SHEETS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R2.htm",
+      "retrievedAt": "2026-11-01T21:26:54.798Z",
+      "sha256": "5be61b87034d6d9c34c19457e700eb1b73f4df5b14143c7e7a097de323a2da0d"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED BALANCE SHEETS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R3.htm",
+      "retrievedAt": "2026-11-01T21:26:54.953Z",
+      "sha256": "330fad6b50e610af7d616f9dcb2b65a62a0b3f93273b843c39809213bfb4e295"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE LOSS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R4.htm",
+      "retrievedAt": "2026-11-01T21:26:55.112Z",
+      "sha256": "24edf2adc3ac5d1e0fd520d1f48249d43002f0ef89dbcf0f96846d958c9cd05f"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE LOSS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R5.htm",
+      "retrievedAt": "2026-11-01T21:26:55.409Z",
+      "sha256": "06c2b905d52dac22935874bbf640a8e2d4e5be5b260ae262185feb02cceb5d87"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF REDEEMABLE CONVERTIBLE PREFERRED STOCK AND STOCKHOLDERS’ EQUITY (DEFICIT)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R6.htm",
+      "retrievedAt": "2026-11-01T21:26:55.746Z",
+      "sha256": "7df3bc8b72ed0be1a9bd7467ba202eabefd8729c0bd43f569e54f337e8b02a18"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF REDEEMABLE CONVERTIBLE PREFERRED STOCK AND STOCKHOLDERS’ EQUITY (DEFICIT) (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R7.htm",
+      "retrievedAt": "2026-11-01T21:26:55.971Z",
+      "sha256": "f73c093e7536b2dc8e73e351b3a2b509d7f61631e057c039d8b741fb05e7eb31"
+    },
+    {
+      "file": "R8.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R8.htm",
+      "retrievedAt": "2026-11-01T21:26:56.143Z",
+      "sha256": "09baef5edaa45091e3d921a36ee853a3e5e473d7d747448f757135abe4ee21d8"
+    },
+    {
+      "file": "R9.htm.gz",
+      "statement": "CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R9.htm",
+      "retrievedAt": "2026-11-01T21:26:56.457Z",
+      "sha256": "4cda10d049460fa41b6777e1b23d31fcc3b5596211316dafee21a3ef7c786306"
+    },
+    {
+      "file": "R105.htm.gz",
+      "statement": "SEGMENT REPORTING - Schedule of Segment Revenue, Segment Profit or Loss, and Significant Segment Expenses (Details)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R105.htm",
+      "retrievedAt": "2026-11-01T21:31:35.903Z",
+      "sha256": "6047fbe1ae9de9be96391feb4f181c07df285b54058b1dc1d34b270312384186"
+    },
+    {
+      "file": "R103.htm.gz",
+      "statement": "SEGMENT REPORTING - Narrative (Details)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R103.htm",
+      "retrievedAt": "2026-11-01T21:31:55.237Z",
+      "sha256": "79686fc6f35c2006192633fa3153cce8a1da6bd1de352b37e73c980d74665a33"
+    }
+  ]
+}

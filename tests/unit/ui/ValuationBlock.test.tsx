@@ -131,10 +131,12 @@ describe("priced", () => {
 
   it("an NM cell shows NM with the reason as a tooltip and to screen readers", () => {
     const html = block(lii, [quote("LII", 2_300)]); // 2,300 ÷ 22.51 = 102.2x
-    expect(html).toContain('title="NM: above 100x policy (102.2x)"');
+    expect(html).toContain('title="NM: above 100x policy; computed 102.2x"');
+    // The reason is in the next cell, so screen readers don't hear it twice (M6).
     expect(html).toContain(
-      '<span class="sr-only"> (NM: above 100x policy (102.2x))</span>',
+      '<span class="text-muted">NM: above 100x policy; computed 102.2x</span>',
     );
+    expect(html).not.toContain('class="sr-only"> (NM:');
   });
 
   it("Alpha Vantage pre-fills are shown with their source and attribution", () => {

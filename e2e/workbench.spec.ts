@@ -159,10 +159,10 @@ test("7. axe: the full workbench has no serious or critical issues", async ({
   ).toEqual([]);
 });
 
-test("mobile: regions stack and only the table scrolls sideways", async ({
+test("mobile 375 px: regions stack, only the table scrolls sideways, Company stays put", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 375, height: 812 }); // iPhone SE/mini width
   await openLii(page);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
@@ -175,4 +175,11 @@ test("mobile: regions stack and only the table scrolls sideways", async ({
     (el) => el.scrollWidth > el.clientWidth,
   );
   expect(inner).toBe(true);
+  // The Company column stays visible while the table scrolls.
+  const companyHeader = table(page).getByRole("columnheader", {
+    name: /^Company/,
+  });
+  expect(
+    await companyHeader.evaluate((el) => getComputedStyle(el).position),
+  ).toBe("sticky");
 });

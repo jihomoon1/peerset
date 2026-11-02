@@ -1,0 +1,48 @@
+{
+  "cik": "0000824142",
+  "accession": "0000824142-26-000005",
+  "files": [
+    {
+      "file": "FilingSummary.xml.gz",
+      "statement": "FilingSummary",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/FilingSummary.xml",
+      "retrievedAt": "2026-11-01T21:23:46.630Z",
+      "sha256": "f96ba9bb192cb98c1c6f5c2e53630b047ac9be7fdfc031ffd4bbdf07c0abaf98"
+    },
+    {
+      "file": "R3.htm.gz",
+      "statement": "Consolidated Balance Sheets",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/R3.htm",
+      "retrievedAt": "2026-11-01T21:23:46.836Z",
+      "sha256": "fd9f5c65e66bfc6682aed378b2b8dfe4e436c1eaa6af4b0b3c5f6691ed51ac77"
+    },
+    {
+      "file": "R4.htm.gz",
+      "statement": "Consolidated Statements of Income",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/R4.htm",
+      "retrievedAt": "2026-11-01T21:23:47.186Z",
+      "sha256": "620bcbc0170e5b15eca2dab0d6c2c2e77de5760e4e96c320338b2a5175d57031"
+    },
+    {
+      "file": "R5.htm.gz",
+      "statement": "Consolidated Statements of Stockholders' Equity",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/R5.htm",
+      "retrievedAt": "2026-11-01T21:23:47.620Z",
+      "sha256": "40fbc8c56f125508c68c7875fbb8e3239dd24a167c8226171cf847b396285e39"
+    },
+    {
+      "file": "R6.htm.gz",
+      "statement": "Consolidated Statements of Cash Flows",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/R6.htm",
+      "retrievedAt": "2026-11-01T21:23:47.735Z",
+      "sha256": "bf83b48e111d9825a7a30d2c4d2d678f69ce211f4ce31d58a762aa8ed19c84f7"
+    },
+    {
+      "file": "R7.htm.gz",
+      "statement": "Consolidated Balance Sheets (Parenthetical)",
+      "url": "https://www.sec.gov/Archives/edgar/data/824142/000082414226000005/R7.htm",
+      "retrievedAt": "2026-11-01T21:23:49.109Z",
+      "sha256": "7f73935b409e057f8a42efc8b632b8cf516ed7e3a309ff3af372db6fc13f5733"
+    }
+  ]
+}
