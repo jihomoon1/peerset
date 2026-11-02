@@ -84,6 +84,31 @@ test("§6 Valid, not analyzed: identity card with Analyze", async ({ page }) => 
   await expect(page).toHaveURL(/\/c\/LII$/);
 });
 
+test("Two quick lookups never show the first ticker's card for the second (v1.1)", async ({
+  page,
+}) => {
+  // LII's answer is held until WSO's card is on screen, then let through late.
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route("**/api/identity?ticker=LII", async (route) => {
+    await held;
+    await route.continue().catch(() => {}); // the browser may have aborted it
+  });
+  await lookUp(page, "lii");
+  const input = homeSearch(page).getByLabel("Ticker", { exact: true });
+  await input.fill("wso");
+  await homeSearch(page).getByRole("button", { name: "Look up" }).click();
+  const wso = page.getByRole("region", { name: /WATSCO/i });
+  await expect(wso).toBeVisible();
+  release();
+  // Give the stale LII response time to arrive; the card must stay WSO's.
+  await page.waitForTimeout(750);
+  await expect(wso).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: /LENNOX INTERNATIONAL/i }),
+  ).toHaveCount(0);
+});
+
 test("§6 Target unsupported: the reason in one sentence and what PeerSet needs", async ({
   page,
 }) => {

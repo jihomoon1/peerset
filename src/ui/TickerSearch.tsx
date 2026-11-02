@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { CompanyIdentity } from "@/domain/types";
 import { parseTickerInput } from "@/lib/ticker";
 import { IdentityCard } from "./IdentityCard";
@@ -29,13 +29,25 @@ export function TickerSearch({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Lookup>({ kind: "idle" });
 
+  // Only the latest lookup may set the card: a new one aborts the one before, and a
+  // response that arrives late is ignored (v1.1: two quick lookups never show the
+  // first ticker's card for the second).
+  const latest = useRef<AbortController | null>(null);
+  useEffect(() => () => latest.current?.abort(), []);
+
   async function check(ticker: string) {
+    latest.current?.abort();
+    const ctrl = new AbortController();
+    latest.current = ctrl;
+    const current = () => latest.current === ctrl && !ctrl.signal.aborted;
     setResult({ kind: "checking", ticker });
     try {
       const res = await fetch(
         `/api/identity?ticker=${encodeURIComponent(ticker)}`,
+        { signal: ctrl.signal },
       );
       const body = await res.json();
+      if (!current()) return;
       if (res.ok) setResult({ kind: "found", ticker, identity: body });
       else {
         setResult({ kind: "idle" });
@@ -46,6 +58,7 @@ export function TickerSearch({
         );
       }
     } catch {
+      if (!current()) return;
       setResult({ kind: "idle" });
       setError(`Couldn't check ${ticker}; try again`);
     }
