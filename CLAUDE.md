@@ -93,3 +93,8 @@ Stop and ask Jiho when:
 ## Deploy and publish safeguards
 
 Always ask Jiho first before: `git push`, creating or changing a GitHub repo or its settings, merging a PR, any `vercel` command that links, deploys or changes env vars, and any change to global Claude settings. Never `vercel deploy --prod` unless Jiho explicitly asks in that milestone. Never `npm install -g` or `sudo`.
+
+## Closeout chores
+
+Delegate end-of-milestone chores to the `pr-closeout` subagent (Haiku, fresh context) instead of doing them here: merging a PR after Jiho's approval, marking a roadmap row done in `docs/prompts/README.md`, deleting already-merged local branches, and pulling `main`.
+Pass on Jiho's request and the facts only (PR number, any quoted approval); don't write steps or commands, because the subagent's own rules decide how. Keep planning, methodology and review decisions in the main conversation. Merge approval still comes only from Jiho.
