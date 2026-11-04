@@ -27,7 +27,7 @@ When a session ends, paste its final report into the planning chat. The next pro
 | M4b (done, PRs #14, #15, #16) | Peer panel, comps table, NM rules, statistics, lag flags, GGG and JCI fixtures, implied range if time allows | M4a merged | M4 gate |
 | M5 (done, PR #18) | Three-sheet Excel export, formats, formulas with cached values, workbook tests, LibreOffice recalculation | M4 merged | M5 gate |
 | M6 (done, PR #19) | UX states, accessibility, negative-EBITDA fixture, README and methodology page, interview pack | M5 merged | v1 release gate |
-| v1.1 | Fill prices with the visitor's own Alpha Vantage key (browser only), SEC pacing fix, methodology 0.4.3 warning, v1 follow-ups | v1.0.0 released | v1.1 gate |
+| v1.1 (done, PR #20) | Fill prices with the visitor's own Alpha Vantage key (browser only), SEC pacing fix, methodology 0.4.3 warning, v1 follow-ups | v1.0.0 released | v1.1 gate |
 
 ## Rules that hold for every session
 
