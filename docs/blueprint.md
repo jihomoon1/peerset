@@ -118,7 +118,7 @@ A user goes from ticker to downloaded workbook in about ten steps, and the syste
 2. **Search.** Autocomplete from a static ticker list (ticker, name, exchange). An unknown ticker says "No SEC-registered company uses XYZ". An unsupported one names the reason (e.g. "files 20-F").
 3. **Analyze target.** The page `/c/LII` resolves identity and checks the support matrix. It then finds the latest 10-K/10-Q, reads companyfacts, runs the freshness check and parses the filing if needed. A progress line narrates it: "Reading 10-Q filed Jul 29, 2026".
 4. **Target panel.** The operating block renders. The valuation block asks for a price: "Enter LII's closing price and its date". With Alpha Vantage approved, it fills itself.
-5. **Peers.** Suggestions and exclusions arrive from the peer index. Peer fundamentals load three at a time, and rows fill in as they finish.
+5. **Peers.** Suggestions and exclusions arrive from the peer index. Peer fundamentals load two at a time, and rows fill in as they finish.
 6. **Prices.** One price input per row plus one shared as-of date. Pasting a two-column block (ticker, price) is supported. Market cap, EV and multiples recompute instantly in the browser using the same domain code as the server.
 7. **Inspect.** Click any cell to open the provenance drawer: LTM bridge, EBITDA build, EV bridge, sources.
 8. **Edit peers.** Remove, restore, or add a ticker. An added ticker runs the same pipeline and shows its own status.
@@ -351,7 +351,7 @@ data.sec.gov paths use the CIK zero-padded to 10 digits. Archive paths use the u
 - **Identify.** Every request sends `User-Agent: PeerSet (Jiho Moon) <project email>` and `Accept-Encoding: gzip, deflate` \[doc\]. A missing User-Agent gets a 403 "Undeclared Automated Tool" page \[obs\].
 - **Limit.** 10 requests per second in total, however many machines \[doc\]. Above that, the IP is limited until the rate stays under the threshold for 10 minutes \[doc\]. A community report says the response is a 403 "Request Rate Threshold Exceeded", not a 429 \[unverified\].
 - **PeerSet policy \[call\].**
-  - Per-instance limiter: at most 2.5 requests per second and 3 in flight; the browser loads at most 3 peers at a time, so the worst case across instances is 7.5 requests per second (decision 0009).
+  - Per-instance limiter: request starts at least 600 ms apart (at most 2 in any 1-second window) and 3 in flight; the browser loads at most 2 peers at a time, so one user's worst case across instances is 8 requests per second (decisions 0009 and 0012).
   - Per-analysis load: at most 12 peers and about 8 SEC requests per cold company (about 104 in the worst case, spread over roughly 16 s). Amended in M4b: the earlier "40 SEC requests per analysis" could not hold for 8 peers and was never enforced.
   - Never retry a 403 or 404. On a 5xx or timeout, at most 2 retries with jittered backoff (about 0.5 s, then 1.5 s).
   - 10 s timeout; 15 MB response cap.
@@ -685,7 +685,7 @@ Operations:
 
 - **Logs:** one structured JSON line per request — category, ticker, CIK, accession, SEC calls made, cache hits, duration. No personal data.
 - **Smoke test:** after every production deploy and daily, a GitHub Action checks that the live site resolves LII, returns fundamentals with a filing accession, and serves an export. It checks presence and shape, not values, because values change with new filings.
-- **Quota guards:** at most 8 SEC requests per second in total (3 peers at a time × 2.5 per second per instance, decision 0009), 12 peers, the per-company request budget.
+- **Quota guards:** at most 8 SEC requests per second in total for one user (2 peers at a time, an export and a reload, × 2 per second per instance, decision 0012), 12 peers, the per-company request budget.
 - **Rollback:** Vercel's instant rollback to the previous production deployment.
 
 ## 15. Error handling, data quality and security

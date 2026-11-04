@@ -104,15 +104,28 @@ describe("SEC client", () => {
     expect(res.kind).toBe("ok");
   });
 
-  it("paces requests to at most 2 per second (ADR 0012)", async () => {
-    expect(MIN_GAP_MS).toBe(500);
+  it("paces request starts at least 600 ms apart (ADR 0012)", async () => {
+    expect(MIN_GAP_MS).toBe(600);
     const { client, callTimes } = setup([ok()]);
     await settle(
       Promise.all(Array.from({ length: 8 }, () => client.get(URL_OK))),
     );
     expect(callTimes.length).toBe(8);
     for (let k = 1; k < callTimes.length; k++)
-      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(500);
+      expect(callTimes[k] - callTimes[k - 1]).toBeGreaterThanOrEqual(600);
+  });
+
+  it("never starts more than 2 requests in any 1-second window, ends included (ADR 0012)", async () => {
+    const { client, callTimes } = setup([ok()]);
+    await settle(
+      Promise.all(Array.from({ length: 10 }, () => client.get(URL_OK))),
+    );
+    expect(callTimes.length).toBe(10);
+    // A closed window [t, t + 1000] starting at each call: at 500 ms this would be 3.
+    for (const t of callTimes)
+      expect(
+        callTimes.filter((c) => c >= t && c <= t + 1000).length,
+      ).toBeLessThanOrEqual(2);
   });
 
   it("keeps at most 3 requests in flight", async () => {
