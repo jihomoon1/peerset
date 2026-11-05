@@ -89,7 +89,7 @@ An export of already-loaded comps still adds 0 (section a).
 
 **Rejected:**
 
-- _Staggering the two loads' start times by 0.5 s._ It only offsets the first pair: with starts at 0, 0.5, 1.0 and 0.5, 1.0, 1.5, the window from 0.5 to 1.5 s still holds 6. Each later peer starts whenever an earlier one finishes, so the offset is lost.
+- _Staggering the two loads' start times by 0.5 s._ It only offsets the first pair: a cold load keeps starting calls every 0.5 s, so with one load at 0, 0.5, 1.0, 1.5 … and the other at 0.5, 1.0, 1.5 …, the window from 0.5 to 1.5 s still holds 3 + 3 = 6. Each later peer starts whenever an earlier one finishes, so the offset is lost.
 - _Locking peer changes while an export runs._ Gives 6 but leaves the reload and second-tab cases, and complicates the UI (as in b).
 - _1,000 ms per instance._ Caps the rate but slows every load, including a single company, by about 2×.
 
