@@ -1,6 +1,6 @@
-# 0012 — SEC pacing in v1.1: 2 requests per second per instance, exports reuse recent checks
+# 0012 — SEC pacing in v1.1: 2 peers at a time, 600 ms per instance, exports reuse recent checks
 
-Date: November 2, 2026 · Status: approved by Jiho Moon in v1.1 planning · Supersedes the pacing numbers of ADR 0009 (its 3-in-flight browser rule and cost model still hold)
+Date: November 2, 2026 · Status: approved by Jiho Moon in v1.1 planning · Supersedes the pacing numbers of ADR 0009 · **Amended November 4, 2026** after the v1.1 live check (section d), approved by Jiho Moon: the browser loads 2 peers at a time (was 3) and request starts are 600 ms apart (was 500 ms). Sections (b) and (c) keep their original reasoning; their numbers are replaced by (d)
 
 ## Context
 
@@ -62,6 +62,46 @@ The limit is per instance, and Vercel may run each request on its own instance. 
 - **How PeerSet reacts:** the affected row shows "SEC rate-limited" (blueprint §6), and PeerSet never retries a 403 (`CLAUDE.md`).
 - **Why it is rare:** PeerSet's traffic is low, warm companies cost at most 1–2 limiter slots, and most identity checks are answered by the fetch cache.
 - **Future work:** a hard global cap needs one limiter shared by every instance, which needs a datastore (for example Redis). That is out of scope for v1.1 (`CLAUDE.md`: no Redis).
+
+### (d) Amendment after the live check (November 4, 2026)
+
+**What production showed.** On 2026-11-04 the live check loaded `/c/LII` with 7 peers. All 42 SEC requests returned 200, with no 403s and no retries, but the peak was **9–10 requests in one second**, above the cap of 8.
+
+- At 04:45:27 UTC the browser started 3 peer loads together. Each sent the ticker list and its submissions request. Start times are the logged end time minus `ms`, which includes the wait for a limiter slot. Within each load the two starts were 0.5 s apart, as designed.
+- Six to seven starts landed within about one second, on top of the page's own two.
+
+**What (b) got wrong.** "2 per second per instance" counts starts in a half-open second. A limiter that spaces starts 500 ms apart can start at 0, 0.5 and 1.0 s, so a 1-second window with both ends included holds **3**. Counted that way, (b)'s worst case is 4 × 3 = 12, and 2 loads plus an export is 3 × 3 = 9.
+
+**Decision.**
+
+- **Browser:** at most **2** peer loads in flight (`PEER_LOAD_CONCURRENCY`).
+- **Server:** request starts at least **600 ms** apart (`MIN_GAP_MS`). Starts at 0 and 0.6 s mean the next falls at 1.2 s, so any 1-second window, ends included, holds at most **2** per instance (`tests/unit/sec/client.test.ts`).
+
+**Worst case for one user** (starts in any 1-second window, ends included):
+
+| Running at once                                  | Instances | 500 ms (before) | 600 ms (now) |
+| ------------------------------------------------ | --------- | --------------- | ------------ |
+| 2 peer loads                                     | 2         | 6               | 4            |
+| 2 peer loads + an export (peer added mid-export) | 3         | 9               | 6            |
+| … + a reload's server render of the page         | 4         | 12              | **8 ≤ 8**    |
+
+An export of already-loaded comps still adds 0 (section a).
+
+**Rejected:**
+
+- _Staggering the two loads' start times by 0.5 s._ It only offsets the first pair: a cold load keeps starting calls every 0.5 s, so with one load at 0, 0.5, 1.0, 1.5 … and the other at 0.5, 1.0, 1.5 …, the window from 0.5 to 1.5 s still holds 3 + 3 = 6. Each later peer starts whenever an earlier one finishes, so the offset is lost.
+- _Locking peer changes while an export runs._ Gives 6 but leaves the reload and second-tab cases, and complicates the UI (as in b).
+- _1,000 ms per instance._ Caps the rate but slows every load, including a single company, by about 2×.
+
+**Cost:**
+
+- Cold peer: 7 gaps × 0.6 s = 4.2 s of pacing plus about 1 s of SEC response time, ≈ **5.2 s**.
+- 8 cold peers at 2 in flight: 4 waves × ≈ 5.2 s ≈ **21 s** (was ≈ 13.5 s).
+- Warm peers: 1–2 limiter slots each (about 0.6–1 s), so 4 waves ≈ **2.5–4 s** for 8 (was 2–3 s).
+
+**Two users (c)** become 2 × 8 = 16 in theory, unchanged in kind: still above SEC's 10 per second, still needing a shared limiter.
+
+**Check:** confirm the peak in `vercel logs` after the next production deploy.
 
 ## Revisit when
 

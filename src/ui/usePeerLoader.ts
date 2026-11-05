@@ -1,16 +1,16 @@
 "use client";
 
 // Loads peer fundamentals in the browser through /api/fundamentals, at most
-// PEER_LOAD_CONCURRENCY at a time (ADR 0009: 3 in flight × 2.5 SEC requests per
-// second per instance stays under SEC's limit even if each lands on its own
-// instance). Each ticker is fetched once per page view; removing and restoring a
-// peer reuses its result. The browser never calls SEC.
+// PEER_LOAD_CONCURRENCY at a time. ADR 0012: the v1.1 live check saw 3 loads start
+// together and burst above 8 SEC requests per second, so the browser now keeps 2 in
+// flight. Each ticker is fetched once per page view; removing and restoring a peer
+// reuses its result. The browser never calls SEC.
 
 import { useEffect, useRef, useState } from "react";
 import type { PeerState } from "@/domain/comps";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 
-export const PEER_LOAD_CONCURRENCY = 3;
+export const PEER_LOAD_CONCURRENCY = 2;
 
 async function fetchPeer(
   ticker: string,
