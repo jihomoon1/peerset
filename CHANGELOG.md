@@ -2,6 +2,13 @@
 
 PeerSet was built in milestones, one pull request each. Before 1.0.0 the app version in `package.json` stayed at 0.x and no releases were tagged, so earlier entries are listed by milestone and merge date. Methodology versions are in [`docs/methodology.md`](docs/methodology.md) §15.
 
+## 1.1.0 (v1.1: fill prices with your own key, SEC pacing, warnings)
+
+- **Fill prices with your own key:** the visitor's browser calls Alpha Vantage with the visitor's own free key; PeerSet's servers never see the key or the quotes (`docs/licensing.md`). Sequential calls 1.2 s apart, at most 13 per click; daily-limit, burst, invalid-key and unknown-symbol messages; same-day cache in the browser. Filled prices carry their own source and date on the as-of strip, the EV bridge, the footer, the workbook header and the Sources sheet (#20, #24).
+- **SEC pacing (ADR 0012):** exports reuse identity checks from the last 10 minutes, so exporting loaded comps makes 0 SEC requests (#20). After the live check of November 4, 2026 peaked at 9–10 requests per second, the browser loads 2 peers at a time and SEC request starts are 600 ms apart; one user's worst case is 8 per second, and the November 6 production load peaked at 4 (#23).
+- **Methodology 0.4.3:** temporary-equity preferred stock and noncontrolling interest classified by concept and label; new caution `W_NOT_IN_EV_UNCLASSIFIED` (Lucid); `W_DA_FROM_CASH_FLOW` reworded. No EV, metric or multiple value changes (#20).
+- **Follow-ups:** the net-income drawer's discontinued operations, the split restatement test without a total-EPS LTM, the home-page lookup race, and the WSO golden notes (#20).
+
 ## 1.0.0 (M6: hardening, interview pack, v1 release)
 
 - Methodology 0.4.0: P/E uses continuing-operations diluted EPS when an LTM period reports discontinued operations (JCI 14.06x → 22.54x at its test price); D&A carries a caution in that case; the implied price is Unsupported when implied equity is not positive.
