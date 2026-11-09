@@ -15,7 +15,9 @@ export function SiteFooter() {
           Financial data: SEC EDGAR filings.{" "}
           {alphaVantage
             ? "Price data provided by Alpha Vantage."
-            : "Prices: entered by you."}
+            : // v1.1: the browser may fill prices with the visitor's own key, which
+              // the server never sees, so the footer names both sources.
+              "Prices: entered by you, or fetched in your browser with your own Alpha Vantage key."}
         </p>
         <p>
           <a href={REPO_URL} className="underline hover:text-foreground">

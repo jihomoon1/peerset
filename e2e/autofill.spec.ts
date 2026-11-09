@@ -111,6 +111,10 @@ test("1. enter a key, Fill: every row fills from the user's own key", async ({
   );
   expect(page.url()).toContain("pxav=");
   expect(page.url()).not.toContain(KEY);
+  // The footer must not contradict the as-of strip after a Fill.
+  await expect(page.locator("footer")).toContainText(
+    "Prices: entered by you, or fetched in your browser with your own Alpha Vantage key.",
+  );
   expect(await check()).toBeGreaterThan(0);
 });
 
