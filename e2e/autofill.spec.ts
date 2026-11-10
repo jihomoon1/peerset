@@ -98,6 +98,10 @@ test("1. enter a key, Fill: every row fills from the user's own key", async ({
   const check = watchOwnOrigin(page);
   const asked = await mockAlphaVantage(page);
   await openLii(page);
+  // A new visitor can get a key from the panel itself.
+  await expect(
+    panel(page).getByRole("link", { name: "Get a free Alpha Vantage key" }),
+  ).toHaveAttribute("href", "https://www.alphavantage.co/support/#api-key");
   await fill(page);
   await expect(summary(page)).toHaveText("Filled 5 of 5 prices.", {
     timeout: 20_000,
