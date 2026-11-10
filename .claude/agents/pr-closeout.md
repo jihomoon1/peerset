@@ -39,6 +39,24 @@ For each branch that counts, run `git branch -d <branch>`. Never delete `main` o
 
 Never use `git branch -D`, `git branch --delete --force`, `git update-ref -d`, or anything else that deletes without git's merge check. Never delete a remote branch.
 
+**Refusal evidence.** For every branch you did not delete (it fails both tests, or `git branch -d` refused), delete nothing and run these read-only checks, each on its own and exactly as written. Run no other commands for this. The checks gather facts for Jiho; they never change what you may delete.
+
+1. `git log -1 --format="%H %s" <branch>`: the tip SHA and subject.
+2. `git log --cherry-mark --left-right --format="%m %H %s" main...<branch>`: compares the branch's commits with `main`'s by patch. A line starting with `>` is a branch commit with no identical patch in `main`. A line starting with `=` is a change that exists on both sides as an identical patch. Lines starting with `<` are `main`'s own commits: ignore them. Type it exactly like this; `git cherry` and `--right-only` are not allowed by the permission rules.
+3. `git diff --stat main...<branch>`: the files the branch changed since it left `main`. This alone can't show whether `main` already has those changes, so run two more, each ending with exactly the file paths from that list:
+   - 3a. `git diff --stat main <branch> -- <files>`: no output means those files are identical on `main` and the branch today.
+   - 3b. `git diff --stat <branch>...main -- <files>`: no output means `main` has not changed those files since the branch left it.
+
+   If check 3 totals 10 changed lines or fewer, also run `git diff main...<branch>` so the report can show the change itself.
+
+4. `gh pr list --state all --search <tip SHA> --json number,state,title,headRefName,headRefOid`.
+
+Then choose the verdict with these rules, in this order. Never decide by reading a diff yourself.
+
+- `ALREADY_IN_MAIN` if any one holds: check 2 has no line starting with `>`; or 3a printed nothing; or the branch passed the merged-PR test (`git branch -d` refused it).
+- `HAS_UNIQUE_WORK` if check 2 has a `>` line, 3a printed something and 3b printed nothing (`main` never touched those files, so it can't contain the change). The `>` lines are the unique commits.
+- `UNKNOWN` in every other case. If 3a and 3b both printed something, say: "`main` has also changed <files> since the branch left it, so these checks can't tell whether it took the branch's change". If a command in checks 1 to 3 failed or was denied, name it and its error. If only check 4 failed, keep the verdict from checks 2 and 3 and note that the PR search failed.
+
 **(d) Pull main.** Run `git switch main`, then `git pull --ff-only`. If it isn't a fast-forward, stop and report.
 
 ## Never
@@ -57,3 +75,19 @@ End with a short report:
 1. **Commands:** each command you ran, in order, with its result (one line each).
 2. **Done:** what changed (branch names, commit SHA, PR state).
 3. **Not done:** anything you skipped or refused, and why.
+4. **Refused deletes** (only when a branch was not deleted): one block per branch, in exactly this shape, with the verdict line last. Copy command output as it was printed; write "(no output)" for empty output.
+
+```text
+Branch: <branch>
+Tip: <full SHA> <subject>
+Patch comparison (> only on the branch, = identical patch in main): <the > and = lines of check 2, or "(none)">
+Files changed: <output of check 3>
+Same on main today (3a): <output, or "(no output)">
+Changed on main since (3b): <output, or "(no output)">
+Branch's change: <output of git diff main...<branch> when 10 lines or fewer, else "not shown (more than 10 lines)">
+PRs for tip: <output of check 4>
+Unique commits: <the > lines, or "none">
+Force delete (Jiho must approve; never run by this agent): git branch -D <branch>
+Restore afterwards: git branch <branch> <full SHA>
+VERDICT: ALREADY_IN_MAIN | HAS_UNIQUE_WORK | UNKNOWN (pick one; for UNKNOWN add what could not be checked)
+```

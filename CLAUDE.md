@@ -98,3 +98,6 @@ Always ask Jiho first before: `git push`, creating or changing a GitHub repo or 
 
 Delegate end-of-milestone chores to the `pr-closeout` subagent (Haiku, fresh context) instead of doing them here: merging a PR after Jiho's approval, marking a roadmap row done in `docs/prompts/README.md`, deleting already-merged local branches, and pulling `main`.
 Pass on Jiho's request and the facts only (PR number, any quoted approval); don't write steps or commands, because the subagent's own rules decide how. Keep planning, methodology and review decisions in the main conversation. Merge approval still comes only from Jiho.
+
+**When `pr-closeout` refuses a delete**, its report gives each branch's tip SHA, evidence and a `VERDICT:` line. Don't redo the investigation (no git or gh commands of your own). Ask Jiho one yes/no question, covering every refused branch in one message: branch, tip SHA, verdict, the evidence, and the exact command `git branch -D <branch>`. For `HAS_UNIQUE_WORK`, show the unique commits and recommend keeping the branch; for `UNKNOWN`, say what could not be checked.
+Only after Jiho's explicit yes, run `git branch -D <branch>` yourself (the subagent never does). Your next message must state the tip SHA and the restore command `git branch <branch> <SHA>`.
