@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 
 // Jiho's own words, one paragraph per entry. The section stays hidden while empty, so
 // the page never ships with placeholder or invented reasons.
-const WHY_I_BUILT: string[] = [];
+const WHY_I_BUILT: string[] = [
+  "I built this because when I was doing my comps table it was annoying and repetitive, and it should be outsourced.",
+];
 
 const VALUE = [
   [

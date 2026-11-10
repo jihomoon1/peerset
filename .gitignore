@@ -52,3 +52,6 @@ next-env.d.ts
 
 # local reports and generated files (never committed)
 /output/
+
+# Playwright MCP browser snapshots and screenshots (local only)
+.playwright-mcp/
