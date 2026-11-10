@@ -14,8 +14,10 @@ export function IdentityLine({ identity }: { identity: CompanyIdentity }) {
     ["Exchange", identity.exchange || "—"],
   ];
   return (
-    <header className="flex flex-col gap-1">
-      <h1 className="text-xl font-semibold">{identity.name}</h1>
+    <header className="flex flex-col gap-2">
+      <h1 className="font-display text-3xl font-bold tracking-[-0.01em] sm:text-5xl">
+        {identity.name}
+      </h1>
       <dl className="flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
         {items.map(([term, value]) => (
           <div key={term} className="flex gap-1.5">

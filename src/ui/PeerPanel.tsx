@@ -80,10 +80,13 @@ export function PeerPanel({
       aria-labelledby="peer-panel-heading"
       className={`flex flex-col gap-4 text-[13px] ${collapsed ? "lg:w-auto" : "lg:w-80"}`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <h2 id="peer-panel-heading" className="text-base font-semibold">
+      <div className="flex items-center justify-between gap-2 border-t-2 border-foreground pt-2">
+        <h2
+          id="peer-panel-heading"
+          className="text-xs font-bold tracking-wide uppercase"
+        >
           Peers{" "}
-          <span className="text-sm font-normal text-muted">
+          <span className="font-normal text-muted normal-case">
             ({active.length} in table)
           </span>
         </h2>

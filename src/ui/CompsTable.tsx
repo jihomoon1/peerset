@@ -109,8 +109,7 @@ type Open =
   | { kind: "cell"; row: CompsRow; col: CompsColumn }
   | { kind: "stats"; col: StatColumn; stat: StatKey };
 
-const STICKY_COL =
-  "sticky left-0 z-[1] bg-background max-w-48 min-w-40 border-r border-rule";
+const STICKY_COL = "sticky left-0 z-[1] max-w-56 min-w-44 border-r border-rule";
 
 export function CompsTable({
   table,
@@ -176,7 +175,10 @@ export function CompsTable({
           </span>
         )}
         {row.lag && (
-          <span className="ml-1 text-warn" title={row.lag.message}>
+          <span
+            className="ml-1.5 border border-warn px-0.5 text-[10px] font-semibold text-warn uppercase"
+            title={row.lag.message}
+          >
             <span aria-hidden="true">lag</span>
             <span className="sr-only"> Lagging: {row.lag.message}</span>
           </span>
@@ -208,7 +210,7 @@ export function CompsTable({
             )}
             {cautions.length > 0 && (
               <span
-                className="ml-1 text-warn"
+                className="absolute top-[-3px] right-[-5px] text-[11px] font-bold text-warn"
                 title={cautions.map((w) => w.message).join("; ")}
               >
                 <span aria-hidden="true">!</span>
@@ -223,7 +225,7 @@ export function CompsTable({
         return (
           <td key={c.key} className="px-2 text-right whitespace-nowrap">
             {c.key === "price" ? (
-              <span className={tone(d.kind)}>{content}</span>
+              <span className={`relative ${tone(d.kind)}`}>{content}</span>
             ) : (
               <button
                 type="button"
@@ -231,7 +233,7 @@ export function CompsTable({
                 aria-label={`${row.ticker} ${c.label}: ${d.kind === "nm" && d.note ? d.note : `${d.text}${d.note && d.kind !== "value" ? ` (${d.note})` : ""}`}. Show calculation`}
                 title={d.kind === "value" ? undefined : d.note}
                 onClick={(e) => openFrom(e, { kind: "cell", row, col: c.key })}
-                className={`rounded-sm px-1 hover:bg-surface hover:underline focus-visible:outline-2 focus-visible:outline-accent ${tone(d.kind)}`}
+                className={`relative rounded-sm px-1 hover:underline focus-visible:outline-2 focus-visible:outline-accent ${tone(d.kind)}`}
               >
                 {content}
               </button>
@@ -247,10 +249,10 @@ export function CompsTable({
     return (
       <th
         scope="row"
-        className={`${STICKY_COL} px-2 text-left font-normal ${
+        className={`${STICKY_COL} px-2 text-left ${
           row.role === "target"
-            ? "border-l-4 border-l-accent"
-            : "border-l-4 border-l-transparent"
+            ? "border-l-4 border-l-accent bg-target font-semibold"
+            : "border-l-4 border-l-transparent bg-background font-normal group-hover:bg-surface"
         }`}
       >
         <span className="flex items-center gap-2">
@@ -258,7 +260,7 @@ export function CompsTable({
             {name}
           </span>
           {row.role === "target" && (
-            <span className="shrink-0 rounded-sm bg-accent px-1 text-[11px] font-medium text-background">
+            <span className="shrink-0 bg-accent px-1 text-[10px] font-bold tracking-wide text-background uppercase">
               Target
             </span>
           )}
@@ -295,7 +297,12 @@ export function CompsTable({
   );
 
   const dataRow = (row: CompsRow) => (
-    <tr key={row.ticker} className="h-8 border-b border-rule">
+    <tr
+      key={row.ticker}
+      className={`group h-8 border-b border-rule ${
+        row.role === "target" ? "bg-target font-semibold" : "hover:bg-surface"
+      }`}
+    >
       {companyCell(row)}
       <td className="px-2">{row.ticker}</td>
       {renderCells(row)}
@@ -303,10 +310,13 @@ export function CompsTable({
   );
 
   const statsRow = (stat: StatKey, label: string) => (
-    <tr key={stat} className="h-8 border-b border-rule">
+    <tr
+      key={stat}
+      className={`h-8 border-b border-rule ${stat === "median" ? "font-semibold" : ""}`}
+    >
       <th
         scope="row"
-        className={`${STICKY_COL} border-l-4 border-l-transparent px-2 text-left font-medium`}
+        className={`${STICKY_COL} border-l-4 border-l-transparent bg-surface px-2 text-left ${stat === "median" ? "font-semibold" : "font-normal"}`}
       >
         {label}
       </th>
@@ -330,7 +340,7 @@ export function CompsTable({
               onClick={(e) =>
                 openFrom(e, { kind: "stats", col: c.key as StatColumn, stat })
               }
-              className={`rounded-sm px-1 hover:bg-surface hover:underline focus-visible:outline-2 focus-visible:outline-accent ${text === "—" ? "text-muted" : ""}`}
+              className={`rounded-sm px-1 hover:underline focus-visible:outline-2 focus-visible:outline-accent ${text === "—" ? "text-muted" : ""}`}
             >
               {text}
             </button>
@@ -342,7 +352,7 @@ export function CompsTable({
 
   return (
     <div
-      className="relative max-h-[75vh] w-full overflow-auto rounded-sm border border-rule"
+      className="relative max-h-[80vh] w-full overflow-auto border border-foreground"
       aria-busy={busy ? true : undefined}
     >
       <table className="w-full min-w-[1180px] border-collapse text-[13px] tabular-nums">
@@ -350,25 +360,25 @@ export function CompsTable({
           Trading comps: the target, then its peers, then statistics over peers
           only. Money columns in USD millions; multiples on LTM financials.
         </caption>
-        <thead className="sticky top-0 z-[2] bg-background">
-          <tr className="border-b border-rule text-left">
+        <thead className="band sticky top-0 z-[2] text-[11px] tracking-wide uppercase">
+          <tr className="text-left">
             <th
               scope="col"
-              className={`${STICKY_COL} z-[3] px-2 py-1.5`}
+              className={`${STICKY_COL} z-[3] bg-background px-2 py-2`}
               aria-sort={ariaSort("company")}
             >
               {sortButton("company", "Company")}
             </th>
             <th
               scope="col"
-              className="px-2 py-1.5"
+              className="px-2 py-2"
               aria-sort={ariaSort("ticker")}
             >
               {sortButton("ticker", "Ticker")}
             </th>
             <th
               scope="col"
-              className="px-2 py-1.5 whitespace-nowrap"
+              className="px-2 py-2 whitespace-nowrap"
               aria-sort={ariaSort("finThrough")}
             >
               {sortButton("finThrough", "Fin. through")}
@@ -377,7 +387,7 @@ export function CompsTable({
               <th
                 key={c.key}
                 scope="col"
-                className="px-2 py-1.5 text-right whitespace-nowrap"
+                className="px-2 py-2 text-right whitespace-nowrap"
                 aria-sort={ariaSort(c.key)}
               >
                 {sortButton(c.key, c.header)}
@@ -385,7 +395,7 @@ export function CompsTable({
                   href={`${METHODOLOGY_PATH}#${METHODOLOGY_ANCHORS[c.key]}`}
                   aria-label={`How ${c.label} is calculated`}
                   title={`How ${c.label} is calculated`}
-                  className="ml-0.5 inline-block px-1 text-[11px] font-normal text-muted underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+                  className="ml-0.5 inline-block px-1 font-normal text-muted underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent"
                 >
                   ?
                 </a>
@@ -399,7 +409,16 @@ export function CompsTable({
             row.state === "loaded" ? dataRow(row) : statusRow(row),
           )}
         </tbody>
-        <tbody className="border-t-2 border-foreground">
+        <tbody className="border-t-2 border-foreground bg-surface">
+          <tr className="h-7 border-b border-rule">
+            <th
+              scope="row"
+              className={`${STICKY_COL} border-l-4 border-l-transparent bg-surface px-2 text-left text-[11px] font-bold tracking-wide uppercase`}
+            >
+              Peer statistics
+            </th>
+            <td colSpan={TABLE_COLUMNS.length + 2} />
+          </tr>
           {STAT_ROWS.map((r) => statsRow(r.key, r.label))}
         </tbody>
       </table>

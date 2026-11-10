@@ -41,7 +41,7 @@ export function ImpliedValuationBlock({ table }: { table: CompsTable }) {
       aria-labelledby="implied-heading"
       className="flex flex-col gap-2 text-[13px]"
     >
-      <h3 id="implied-heading" className="text-sm font-semibold">
+      <h3 id="implied-heading" className="section-bar">
         Implied valuation of {target.ticker}
       </h3>
       <p className="text-muted">

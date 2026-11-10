@@ -98,7 +98,7 @@ export function ValuationBlock({
       aria-labelledby="valuation-heading"
       className="flex flex-col gap-3"
     >
-      <h2 id="valuation-heading" className="text-base font-semibold">
+      <h2 id="valuation-heading" className="section-bar">
         Valuation
       </h2>
 

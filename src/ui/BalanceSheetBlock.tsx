@@ -27,7 +27,7 @@ export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
 
   return (
     <section aria-labelledby="balance-heading" className="flex flex-col gap-2">
-      <h2 id="balance-heading" className="text-base font-semibold">
+      <h2 id="balance-heading" className="section-bar">
         Balance sheet (for EV)
       </h2>
       <table className="w-full max-w-2xl border-collapse text-[13px] tabular-nums">

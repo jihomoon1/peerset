@@ -9,7 +9,7 @@ export function SiteFooter() {
   const alphaVantage = defaultQuoteDeps().provider !== null;
   return (
     <footer className="border-t border-rule">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-1 px-4 py-3 text-xs text-muted">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-1 px-4 py-4 sm:px-8 text-xs text-muted">
         <p>{DISCLAIMER}</p>
         <p>
           Financial data: SEC EDGAR filings.{" "}

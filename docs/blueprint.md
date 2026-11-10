@@ -155,9 +155,9 @@ Columns, in order: Company · Ticker · Fin. through · Price · Market cap · E
 
 ### Visual system
 
-- One accent (a deep ink blue) for the target, focus rings and primary buttons. Amber only for warnings, red only for errors. Status is never carried by color alone.
-- Inter with tabular numerals, 13 px table text, 32 px rows, subtle row separators, no zebra striping on screen.
-- No gradients, shadows or hero sections. It should read like a banking workbook, not a startup homepage.
+- Black and white with one accent (cobalt) for the target, focus rings and primary buttons. Amber only for warnings, red only for errors. Status is never carried by color alone.
+- Inter with tabular numerals, 13 px table text, 32 px rows, subtle row separators, no zebra striping on screen. Inter Tight for large headings. Square corners; section headings are a heavy rule over a small uppercase label; black bands for the site header, table header and home-page explainer.
+- No gradients or shadows. The home page may have a hero (approved by Jiho, November 2026); every other screen has none and reads like a banking workbook, not a startup homepage.
 
 ### UX states
 

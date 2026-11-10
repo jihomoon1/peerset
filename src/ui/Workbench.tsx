@@ -218,76 +218,86 @@ export function Workbench({
         priceDate={table.target.valuation!.bridge.dates.price}
         providerOn={providerOn}
       />
-      <OperatingBlock f={f} />
-      <BalanceSheetBlock f={f} />
-      <ValuationBlock
-        f={f}
-        v={table.target.valuation!}
-        tickers={targetTickers}
-        inputs={inputs}
-        errors={priced.errors}
-        priceDate={priceDate}
-        dateError={priced.dateError}
-        analysisDate={analysisDate}
-        providerErrors={providerErrors}
-        onInput={(t, text) => {
-          touch();
-          setInputs((cur) => ({ ...cur, [t]: text }));
-        }}
-        onDate={(d) => {
-          touch();
-          setPriceDate(d);
-        }}
-        onPaste={(text) => {
-          const { prices, unmatched } = parsePastedPrices(text, pasteTickers);
-          if (Object.keys(prices).length > 0) {
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <OperatingBlock f={f} />
+        <div className="flex flex-col gap-6">
+          <BalanceSheetBlock f={f} />
+          <PriceAutofill
+            tickers={pasteTickers}
+            inputs={inputs}
+            disabledReason={
+              counts.loading > 0
+                ? "Wait until every peer has finished loading"
+                : null
+            }
+            onQuote={(quote) => {
+              touch();
+              setInputs((cur) => ({
+                ...cur,
+                [quote.symbol]: String(quote.close),
+              }));
+              setFilled((cur) => ({
+                ...cur,
+                [quote.symbol]: {
+                  close: quote.close,
+                  asOfDate: quote.asOfDate,
+                },
+              }));
+            }}
+            onDone={(quotes) => {
+              if (quotes.length === 0) return;
+              // When every entered price now carries its own bar date, the shared date
+              // shows the earliest of them (methodology §6); typed prices keep theirs.
+              const done = new Set(quotes.map((x) => x.symbol));
+              const typedLeft = Object.entries(inputs).some(
+                ([t, v]) =>
+                  v.trim() &&
+                  !done.has(t) &&
+                  !(filled[t] && filled[t].close === priceNumber(v)),
+              );
+              if (!typedLeft) {
+                const dates = [
+                  ...quotes.map((x) => x.asOfDate),
+                  ...Object.entries(filled)
+                    .filter(([t]) => !done.has(t) && inputs[t]?.trim())
+                    .map(([, fp]) => fp.asOfDate),
+                ];
+                setPriceDate(dates.reduce((a, b) => (a < b ? a : b)));
+              }
+            }}
+          />
+        </div>
+        <ValuationBlock
+          f={f}
+          v={table.target.valuation!}
+          tickers={targetTickers}
+          inputs={inputs}
+          errors={priced.errors}
+          priceDate={priceDate}
+          dateError={priced.dateError}
+          analysisDate={analysisDate}
+          providerErrors={providerErrors}
+          onInput={(t, text) => {
             touch();
-            setInputs((cur) => ({ ...cur, ...prices }));
-          }
-          return unmatched;
-        }}
-      />
-      <PriceAutofill
-        tickers={pasteTickers}
-        inputs={inputs}
-        disabledReason={
-          counts.loading > 0
-            ? "Wait until every peer has finished loading"
-            : null
-        }
-        onQuote={(quote) => {
-          touch();
-          setInputs((cur) => ({ ...cur, [quote.symbol]: String(quote.close) }));
-          setFilled((cur) => ({
-            ...cur,
-            [quote.symbol]: { close: quote.close, asOfDate: quote.asOfDate },
-          }));
-        }}
-        onDone={(quotes) => {
-          if (quotes.length === 0) return;
-          // When every entered price now carries its own bar date, the shared date
-          // shows the earliest of them (methodology §6); typed prices keep theirs.
-          const done = new Set(quotes.map((x) => x.symbol));
-          const typedLeft = Object.entries(inputs).some(
-            ([t, v]) =>
-              v.trim() &&
-              !done.has(t) &&
-              !(filled[t] && filled[t].close === priceNumber(v)),
-          );
-          if (!typedLeft) {
-            const dates = [
-              ...quotes.map((x) => x.asOfDate),
-              ...Object.entries(filled)
-                .filter(([t]) => !done.has(t) && inputs[t]?.trim())
-                .map(([, fp]) => fp.asOfDate),
-            ];
-            setPriceDate(dates.reduce((a, b) => (a < b ? a : b)));
-          }
-        }}
-      />
+            setInputs((cur) => ({ ...cur, [t]: text }));
+          }}
+          onDate={(d) => {
+            touch();
+            setPriceDate(d);
+          }}
+          onPaste={(text) => {
+            const { prices, unmatched } = parsePastedPrices(text, pasteTickers);
+            if (Object.keys(prices).length > 0) {
+              touch();
+              setInputs((cur) => ({ ...cur, ...prices }));
+            }
+            return unmatched;
+          }}
+        />
+      </div>
 
       <section aria-labelledby="comps-heading" className="flex flex-col gap-3">
-        <h2 id="comps-heading" className="text-base font-semibold">
+        <h2 id="comps-heading" className="section-bar">
           Trading comps
         </h2>
         <p role="status" aria-live="polite" className="text-[13px]">
@@ -316,7 +326,16 @@ export function Workbench({
             </span>
           )}
         </p>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_minmax(0,1fr)]">
+        <CompsTable
+          table={table}
+          inputs={inputs}
+          errors={priced.errors}
+          onInput={(t, text) => {
+            touch();
+            setInputs((cur) => ({ ...cur, [t]: text }));
+          }}
+        />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
           <PeerPanel
             selection={selection}
             active={active}
@@ -334,15 +353,6 @@ export function Workbench({
             onDismiss={(t) => setPeerSet((s) => removePeer(s, t))}
           />
           <div className="flex min-w-0 flex-col gap-6">
-            <CompsTable
-              table={table}
-              inputs={inputs}
-              errors={priced.errors}
-              onInput={(t, text) => {
-                touch();
-                setInputs((cur) => ({ ...cur, [t]: text }));
-              }}
-            />
             <ImpliedValuationBlock table={table} />
           </div>
         </div>
