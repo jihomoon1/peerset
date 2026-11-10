@@ -127,7 +127,7 @@ A user goes from ticker to downloaded workbook in about ten steps, and the syste
 
 ## 6. Screen and interaction specification
 
-The main screen is a dense, desktop-first workbench: as-of strip, target summary, then the comps table with the peer panel beside it.
+The main screen is a dense, desktop-first workbench: as-of strip, target summary, price tools, then the comps table with implied valuation and the peer panel below it.
 
 ### Layout regions (desktop, 1280 px and wider)
 
@@ -135,9 +135,10 @@ The main screen is a dense, desktop-first workbench: as-of strip, target summary
 | --- | --- | --- | --- |
 | Header | Top, 56 px, sticky | Wordmark, ticker search, current company, Export button | Export disabled until at least one valid row exists |
 | As-of strip | Under header, sticky | Prices as of · financials LTM through · shares as of · data pulled at | Each item opens its explanation |
-| Target summary | Full width | Identity line (name, ticker, CIK, SIC, FYE, exchange); Operating block; Valuation block | "View calculations" opens the drawer on EBITDA |
-| Peer panel | Left rail, 320 px, collapsible | Suggested peers with reasons, add box, removed list, excluded list, count | Changes re-run stats only |
-| Comps table | Main area | Target row, peer rows, stats rows | Sort, click cells, enter prices |
+| Target summary | Full width | Identity line (name, ticker, CIK, SIC, FYE, exchange); Operating block; Balance sheet block; Valuation block with the target's price input | "View calculations" opens the drawer on EBITDA |
+| Prices | Full width, above the comps table | Shared price date, paste box, price autofill with the visitor's own key | Apply to every row of the table |
+| Comps table | Full width | Target row, peer rows, stats rows | Sort, click cells, enter prices |
+| Peer panel | Full width, below the comps table and implied valuation, collapsible (changed from a 320 px left rail, approved by Jiho, November 2026) | Suggested peers with reasons in columns, add box, removed list, excluded list, count | Changes re-run stats only |
 | Provenance drawer | Right overlay, 440 px | Formula, inputs, concept, period, accession, filing link, status, warnings | Modal dialog; Esc closes |
 | Footer | Bottom | Disclaimer, data attributions, GitHub link, app and methodology versions |  |
 

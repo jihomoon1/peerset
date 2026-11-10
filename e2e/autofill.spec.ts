@@ -59,8 +59,10 @@ async function mockAlphaVantage(page: Page, limitAt?: number) {
 // Hard rule 1: collects every request to PeerSet's origin, to check for the key.
 function watchOwnOrigin(page: Page) {
   const own: Request[] = [];
+  // The configured base URL, so the check still counts when the port differs.
+  const origin = new URL(test.info().project.use.baseURL!).origin;
   page.on("request", (r) => {
-    if (new URL(r.url()).origin === "http://localhost:3000") own.push(r);
+    if (new URL(r.url()).origin === origin) own.push(r);
   });
   return async () => {
     for (const r of own) {
