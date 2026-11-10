@@ -13,7 +13,9 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { QuoteSnapshot } from "@/domain/types";
+import Link from "next/link";
 import { formatDate } from "@/lib/format";
+import { PRICE_KEY_GUIDE_PATH } from "@/lib/priceKeyGuide";
 import {
   browserStorage,
   clearQuoteCache,
@@ -180,7 +182,13 @@ export function PriceAutofill({
       </ol>
       <p className="text-muted">
         Your key stays in your browser; PeerSet never sees it. Free keys allow
-        25 requests a day.
+        25 requests a day.{" "}
+        <Link
+          href={PRICE_KEY_GUIDE_PATH}
+          className="text-accent underline underline-offset-2"
+        >
+          Step-by-step guide
+        </Link>
       </p>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <label className="flex flex-col gap-1">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
 import { defaultQuoteDeps } from "@/lib/quotes";
 import { METHODOLOGY_PATH } from "@/lib/methodologyLinks";
+import { PRICE_KEY_GUIDE_PATH } from "@/lib/priceKeyGuide";
 import { APP_VERSION, DISCLAIMER, REPO_URL } from "@/lib/site";
 
 // Blueprint §6 footer: disclaimer, data attributions, GitHub link, versions.
@@ -29,6 +30,13 @@ export function SiteFooter() {
             className="underline hover:text-foreground"
           >
             Methodology
+          </Link>
+          {" · "}
+          <Link
+            href={PRICE_KEY_GUIDE_PATH}
+            className="underline hover:text-foreground"
+          >
+            Get a price key
           </Link>
           {" · "}App {APP_VERSION} · Methodology {METHODOLOGY_VERSION}
         </p>
