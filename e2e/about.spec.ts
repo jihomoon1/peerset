@@ -10,6 +10,13 @@ test("the Why PeerSet tab opens the page, with no serious axe issues", async ({
     page.getByRole("heading", { level: 1, name: /Comps you can check/ }),
   ).toBeVisible();
   await expect(
+    page.getByRole("heading", { name: "Why the trail matters" }),
+  ).toBeVisible();
+  // The Carrier case: balance sheet lines against the filing's total-debt tag.
+  await expect(
+    page.getByRole("row", { name: /Balance sheet lines 11,952\.0/ }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("heading", { name: "Who it's for" }),
   ).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
