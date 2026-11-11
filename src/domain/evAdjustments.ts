@@ -5,6 +5,7 @@
 
 import {
   faceUnavailableWarning,
+  lineValue,
   resolveLines,
   sumOf,
   type BalanceSheetInput,
@@ -13,10 +14,12 @@ import {
 import { selectFact } from "./factSelection";
 import {
   CONCEPTS,
+  DIVIDEND_LABEL,
   FACE,
   NCI_LIKE_LABEL,
   isTemporaryEquityNci,
   PREFERRED_LIKE_LABEL,
+  SHARE_COUNT_CONCEPT,
   TEMPORARY_EQUITY_BY_LABEL,
 } from "./policy";
 import type {
@@ -80,14 +83,33 @@ function compute(input: BalanceSheetInput, kind: Kind): BalanceSheetItem {
     ) {
       // Totals such as "Total equity including noncontrolling interests" mention
       // the item without being it.
-      unsupported ??= {
-        code: "UNRECOGNIZED_EQUITY_LINE",
-        message: `unrecognized ${kind.noun} line: '${line.label}' (${line.concept})`,
-      };
+      // §9 (0.5.0): share counts, per-share amounts and dividends payable are not the
+      // item; a look-alike line with no amount leaves nothing out of EV.
+      if (
+        SHARE_COUNT_CONCEPT.test(line.concept) ||
+        DIVIDEND_LABEL.test(line.label)
+      ) {
+        candidates.push({
+          line,
+          include: false,
+          reason: `share count, per-share or dividend line: not ${kind.noun}`,
+        });
+        continue;
+      }
+      const v = lineValue(line, input);
+      const empty =
+        v.kind === "blank" || (v.kind === "fact" && v.fact.value === 0);
+      if (!empty)
+        unsupported ??= {
+          code: "UNRECOGNIZED_EQUITY_LINE",
+          message: `unrecognized ${kind.noun} line: '${line.label}' (${line.concept})`,
+        };
       candidates.push({
         line,
         include: false,
-        reason: `looks like ${kind.noun} but its concept is not classified`,
+        reason: empty
+          ? `looks like ${kind.noun} but shows no amount`
+          : `looks like ${kind.noun} but its concept is not classified`,
       });
     }
   }

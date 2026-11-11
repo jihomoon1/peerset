@@ -22,6 +22,11 @@ export interface Multiples {
   evRevenue: Metric;
   evEbitda: Metric;
   pe: Metric;
+  // §13C (0.5.0): digital-asset companies only
+  mcapToDigitalAssets?: Metric;
+  // §13D (0.5.0): banks only
+  priceToBook?: Metric;
+  priceToTangibleBook?: Metric;
 }
 
 function ratio(
@@ -63,6 +68,56 @@ const unsupported = (
   reason: { code, message },
   warnings: [],
 });
+
+// §13C: market cap ÷ digital assets, with the balance-sheet-date caution.
+export function computeMcapToDigitalAssets(
+  marketCap: Metric,
+  digitalAssets: Metric,
+  balanceSheetDate: string,
+): Metric {
+  const m = ratio(
+    "Market cap ÷ digital assets",
+    ["market cap", marketCap],
+    ["digital assets", digitalAssets],
+    { evNumerator: false, notPositive: "DIGITAL_ASSETS_NOT_POSITIVE" },
+    "market cap ÷ digital assets (balance-sheet fair value)",
+  );
+  if (m.status === "missing" || m.status === "unsupported") return m;
+  return {
+    ...m,
+    warnings: mergeWarnings(m.warnings, [
+      {
+        code: "W_DIGITAL_ASSETS_AT_BALANCE_SHEET_DATE",
+        message: `digital assets at fair value on ${balanceSheetDate}; coin prices have moved since`,
+        severity: "caution",
+      },
+    ]),
+  };
+}
+
+// §13D: P/BV and P/TBV, market cap over the balance-sheet equity.
+export function computeBookMultiples(
+  marketCap: Metric,
+  commonEquity: Metric,
+  tangibleCommonEquity: Metric,
+): { priceToBook: Metric; priceToTangibleBook: Metric } {
+  return {
+    priceToBook: ratio(
+      "P/BV",
+      ["market cap", marketCap],
+      ["common equity", commonEquity],
+      { evNumerator: false, notPositive: "EQUITY_NOT_POSITIVE" },
+      "market cap ÷ common equity",
+    ),
+    priceToTangibleBook: ratio(
+      "P/TBV",
+      ["market cap", marketCap],
+      ["tangible common equity", tangibleCommonEquity],
+      { evNumerator: false, notPositive: "TCE_NOT_POSITIVE" },
+      "market cap ÷ tangible common equity",
+    ),
+  };
+}
 
 export function computeMultiples(input: MultiplesInput): Multiples {
   const ev: [string, Metric] = ["EV", input.ev];

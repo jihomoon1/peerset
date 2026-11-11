@@ -8,9 +8,11 @@ import { addDays, daysBetween } from "./dates";
 import type { CompanyFundamentals } from "./fundamentals";
 import { LAG_FLAG_DAYS } from "./policy";
 import { summarize, type MetricStats, type StatEntry } from "./stats";
-import type { Metric, MetricWarning, QuoteSnapshot } from "./types";
+import type { IssuerKind, Metric, MetricWarning, QuoteSnapshot } from "./types";
 import { priceCompany, type Valuation } from "./valuation";
 
+// The operating-company columns (v1). Digital-asset and bank tables use their own
+// lists below (methodology §13B, 0.5.0), so operating tables are unchanged.
 export const COMPS_COLUMNS = [
   "price",
   "marketCap",
@@ -22,13 +24,50 @@ export const COMPS_COLUMNS = [
   "evEbitda",
   "pe",
 ] as const;
-export type CompsColumn = (typeof COMPS_COLUMNS)[number];
+
+// §13C, §13D: every column any kind can show, in display order.
+export const ALL_COMPS_COLUMNS = [
+  ...COMPS_COLUMNS,
+  "digitalAssets",
+  "mcapToDigitalAssets",
+  "commonEquity",
+  "tangibleCommonEquity",
+  "rotce",
+  "priceToBook",
+  "priceToTangibleBook",
+] as const;
+export type CompsColumn = (typeof ALL_COMPS_COLUMNS)[number];
+
+export const KIND_COLUMNS: Record<IssuerKind, readonly CompsColumn[]> = {
+  operating: COMPS_COLUMNS,
+  digitalAsset: [...COMPS_COLUMNS, "digitalAssets", "mcapToDigitalAssets"],
+  bank: [
+    "price",
+    "marketCap",
+    "commonEquity",
+    "tangibleCommonEquity",
+    "rotce",
+    "pe",
+    "priceToBook",
+    "priceToTangibleBook",
+  ],
+};
+
+// The table's columns follow the target's kind.
+export function columnsForKind(
+  kind: IssuerKind | null,
+): readonly CompsColumn[] {
+  return KIND_COLUMNS[kind ?? "operating"];
+}
 
 // Price has no statistic: an average share price across companies means nothing.
 export const STAT_COLUMNS = COMPS_COLUMNS.filter(
+  (c): c is Exclude<(typeof COMPS_COLUMNS)[number], "price"> => c !== "price",
+);
+export const ALL_STAT_COLUMNS = ALL_COMPS_COLUMNS.filter(
   (c): c is Exclude<CompsColumn, "price"> => c !== "price",
 );
-export type StatColumn = (typeof STAT_COLUMNS)[number];
+export type StatColumn = (typeof ALL_STAT_COLUMNS)[number];
 
 export type PeerState =
   | { kind: "loading" }
@@ -57,6 +96,8 @@ export interface CompsRow {
 }
 
 export interface CompsTable {
+  kind: IssuerKind; // the target's kind; decides the columns
+  columns: readonly CompsColumn[];
   target: CompsRow;
   peers: CompsRow[];
   stats: Record<StatColumn, MetricStats>;
@@ -82,6 +123,7 @@ function pricedRow(
   analysisDate: string,
 ): Pick<CompsRow, "fundamentals" | "valuation" | "cells" | "needsPrice"> {
   const v = priceCompany(f, quotes, analysisDate);
+  const m = v.multiples;
   return {
     fundamentals: f,
     valuation: v,
@@ -93,10 +135,33 @@ function pricedRow(
       revenue: f.metrics.revenue,
       ebitda: f.metrics.ebitda,
       ebitdaMargin: f.metrics.ebitdaMargin,
-      evRevenue: v.multiples.evRevenue,
-      evEbitda: v.multiples.evEbitda,
-      pe: v.multiples.pe,
+      evRevenue: m.evRevenue,
+      evEbitda: m.evEbitda,
+      pe: m.pe,
+      digitalAssets:
+        f.digital?.digitalAssets.metric ??
+        notApplicable("digital-asset companies"),
+      mcapToDigitalAssets:
+        m.mcapToDigitalAssets ?? notApplicable("digital-asset companies"),
+      commonEquity: f.bank?.commonEquity.metric ?? notApplicable("banks"),
+      tangibleCommonEquity:
+        f.bank?.tangibleCommonEquity.metric ?? notApplicable("banks"),
+      rotce: f.bank?.rotce ?? notApplicable("banks"),
+      priceToBook: m.priceToBook ?? notApplicable("banks"),
+      priceToTangibleBook: m.priceToTangibleBook ?? notApplicable("banks"),
     },
+  };
+}
+
+// §13B: a column another kind has no value for (a peer added by hand).
+function notApplicable(only: string): Metric {
+  return {
+    status: "unsupported",
+    reason: {
+      code: "NOT_APPLICABLE",
+      message: `not applicable: only computed for ${only}`,
+    },
+    warnings: [],
   };
 }
 
@@ -170,7 +235,7 @@ export function buildComps(
     }
 
   const stats = Object.fromEntries(
-    STAT_COLUMNS.map((col) => {
+    ALL_STAT_COLUMNS.map((col) => {
       const entries: StatEntry[] = peerRows.flatMap((r): StatEntry[] => {
         if (r.cells)
           return [
@@ -192,7 +257,10 @@ export function buildComps(
     }),
   ) as Record<StatColumn, MetricStats>;
 
+  const kind = target.kind ?? "operating";
   return {
+    kind,
+    columns: columnsForKind(kind),
     target: targetRow,
     peers: peerRows,
     stats,

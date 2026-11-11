@@ -16,6 +16,9 @@ export const FIXTURES = {
   TT: { fixture: "TT/2026Q2", cik: "0001466258", asOf: "2026-10-26" },
   JCI: { fixture: "JCI/2026Q2", cik: "0000833444", asOf: "2026-10-26" },
   LCID: { fixture: "LCID/2026Q2", cik: "0001811210", asOf: "2026-10-26" },
+  // M7 (methodology 0.5.0): a digital-asset company and a bank, both Q3 10-Qs.
+  COIN: { fixture: "COIN/2026Q3", cik: "0001679788", asOf: "2026-11-10" },
+  FITB: { fixture: "FITB/2026Q3", cik: "0000035527", asOf: "2026-11-10" },
 } as const;
 
 export async function fixtureFundamentals(ticker: keyof typeof FIXTURES) {

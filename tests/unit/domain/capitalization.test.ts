@@ -114,23 +114,61 @@ describe("computeShareClasses", () => {
     });
   });
 
-  it("a class with no cover symbol is unlisted, so market cap is Unsupported", () => {
+  it("an unlisted class is priced at the only listed ticker, with a caution (0.5.1)", () => {
     const r = computeShareClasses(
       input({
         facts: [shares(100, COMMON), shares(20, CLASS_B)],
         textFacts: [symbol("SYN", COMMON)],
       }),
     );
-    expect(r.classes.find((c) => c.classMember === CLASS_B)?.ticker).toBe(
-      undefined,
+    const b = r.classes.find((c) => c.classMember === CLASS_B)!;
+    expect(b.ticker).toBeUndefined();
+    expect(b.pricedAs).toBe("SYN");
+    expect(r.blocker).toBeUndefined();
+    expect(r.warnings.map((w) => w.code)).toContain(
+      "W_UNLISTED_CLASS_PRICED_AS_LISTED",
+    );
+    expect(
+      r.warnings.find((w) => w.code === "W_UNLISTED_CLASS_PRICED_AS_LISTED")
+        ?.message,
+    ).toBe(
+      "Class B has no listed ticker of its own: priced at SYN, assuming 1-for-1 conversion into the listed class (check the filing)",
+    );
+  });
+
+  it("a cover symbol with no class (Coinbase) prices every class at that ticker", () => {
+    const CLASS_A = "us-gaap:CommonClassAMember";
+    const r = computeShareClasses(
+      input({
+        facts: [shares(223, CLASS_A), shares(41, CLASS_B)],
+        textFacts: [symbol("SYN")],
+      }),
+    );
+    expect(r.blocker).toBeUndefined();
+    expect(r.classes.map((c) => c.pricedAs)).toEqual(["SYN", "SYN"]);
+  });
+
+  it("with two listed classes, an unlisted third stays Unsupported", () => {
+    const CLASS_A = "us-gaap:CommonClassAMember";
+    const CLASS_C = "us-gaap:CommonClassCMember";
+    const r = computeShareClasses(
+      input({
+        facts: [shares(100, CLASS_A), shares(20, CLASS_B), shares(90, CLASS_C)],
+        textFacts: [symbol("SYN", CLASS_A), symbol("SYNC", CLASS_C)],
+        listings: [
+          { ticker: "SYN", exchange: "Nasdaq" },
+          { ticker: "SYNC", exchange: "Nasdaq" },
+        ],
+      }),
     );
     expect(r.blocker).toEqual({
       status: "unsupported",
       reason: {
         code: "UNLISTED_SHARE_CLASS",
-        message: `unlisted share class: ${CLASS_B}`,
+        message: `unlisted share class: ${CLASS_B} (several listed classes, SYN, SYNC: no single price to use)`,
       },
     });
+    expect(r.classes.every((c) => c.pricedAs === undefined)).toBe(true);
   });
 
   it("a single class with no symbol on the cover is unlisted", () => {

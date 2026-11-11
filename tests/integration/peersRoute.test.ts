@@ -35,6 +35,8 @@ const co = (
           accession: "b",
         },
   revenueNote: revenueM === null ? "no companyfacts entry" : null,
+  kind: Number(sic) >= 6000 && Number(sic) <= 6799 ? null : "operating",
+  totalAssets: null,
 });
 
 const companies = [
@@ -65,6 +67,7 @@ const index = (cs: PeerIndexCompany[]): PeerIndex => ({
   },
   companies: cs,
   unlisted: [{ ticker: "OTCX", exchange: "OTC" }],
+  kindsRecorded: true,
 });
 
 function handler(cs = companies) {

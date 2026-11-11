@@ -72,6 +72,14 @@ export function IdentityCard({
           </div>
         ))}
       </dl>
+      {identity.support.supported &&
+      identity.support.kindCheck === "financial-sic" ? (
+        <p className="text-[13px] text-muted">
+          Financial company (SIC {identity.sic}): PeerSet covers it only as a
+          bank or a digital-asset company, checked from its filing when you open
+          it.
+        </p>
+      ) : null}
       {identity.support.supported ? (
         <Link
           href={`/c/${encodeURIComponent(ticker)}`}

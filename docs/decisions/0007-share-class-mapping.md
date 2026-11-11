@@ -28,3 +28,5 @@ So cover symbols can't be used as they stand. Watsco's Class B is `WSOB` on the 
 - **Conflicting counts** for a class within the filing make market cap Unsupported (`SOURCE_CONFLICT`). A class is never silently dropped.
 - **No cover count** at all makes market cap Missing.
 - **`W_SHARES_AFTER_BALANCE_SHEET`** (information only) is added whenever the cover date is after the balance-sheet date, which is the usual case (blueprint §15).
+
+**Update, methodology 0.5.1 (M7 review, November 11, 2026):** a class without its own cover symbol is priced at the company's listed ticker when there is exactly one, with the caution `W_UNLISTED_CLASS_PRICED_AS_LISTED` (assumes 1-for-1 conversion; XBRL doesn't tag the ratio). Chosen by Jiho over "listed shares only" and "keep Unsupported" so dual-class digital-asset companies (Coinbase, Strategy) get a market cap. Two or more listed tickers: still Unsupported.

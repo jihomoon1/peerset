@@ -7,9 +7,8 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { COMPS_COLUMNS } from "@/domain/comps";
 import {
-  DEFAULT_SLIDE_OPTIONS,
+  defaultSlideOptions,
   SLIDE_COLUMN_LABEL,
   SLIDE_STAT_LABEL,
   SLIDE_STATS,
@@ -41,7 +40,16 @@ export function ExportButton({ state }: { state: ExportState }) {
   // slide table. Kept for this visit only.
   const [open, setOpen] = useState(false);
   const [layout, setLayout] = useState<"full" | "slide">("full");
-  const [slide, setSlide] = useState<SlideOptions>(DEFAULT_SLIDE_OPTIONS);
+  // §13B: banks and digital-asset companies start from their own columns.
+  const [slide, setSlide] = useState<SlideOptions>(() =>
+    defaultSlideOptions(
+      state.columns.includes("priceToBook")
+        ? "bank"
+        : state.columns.includes("mcapToDigitalAssets")
+          ? "digitalAsset"
+          : "operating",
+    ),
+  );
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -203,7 +211,7 @@ export function ExportButton({ state }: { state: ExportState }) {
                 </summary>
                 <fieldset className="mt-3 flex flex-col gap-1">
                   <legend className="mb-1 text-muted">Columns</legend>
-                  {COMPS_COLUMNS.map((c) => (
+                  {state.columns.map((c) => (
                     <label key={c} className="flex items-center gap-2">
                       <input
                         type="checkbox"

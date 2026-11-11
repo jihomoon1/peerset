@@ -1,0 +1,71 @@
+{
+  "ticker": "FITB",
+  "cik": "0000035527",
+  "fixture": "FITB",
+  "kind": "bank",
+  "methodologyVersion": "0.5.1",
+  "filing": {
+    "accession": "0000035527-26-000243",
+    "form": "10-Q",
+    "filedDate": "2026-11-03",
+    "reportDate": "2026-09-30"
+  },
+  "statement": {
+    "name": "CONDENSED CONSOLIDATED BALANCE SHEETS (unaudited)",
+    "url": "https://www.sec.gov/Archives/edgar/data/35527/000003552726000243/R2.htm",
+    "scale": "Millions"
+  },
+  "note": "Every balance-sheet value is read from the filing's rendered balance sheet (column Sep. 30, 2026), USD millions as displayed, times 1,000,000. Not engine output. Net income to common is read from SEC's companyfacts for us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic: FY2025 2,376 (10-K 0000035527-26-000124) + 9M 2026 1,719 − 9M 2025 1,677 (both 10-Q 0000035527-26-000243) = 2,418. Shares outstanding rose from 661,197,787 to 907,366,824 during 2026 (face footnote 2), so ending TCE includes an acquisition that LTM income only partly reflects.",
+  "ebitda": { "status": "unsupported", "code": "NOT_FOR_BANKS" },
+  "commonEquity": {
+    "value": 31114000000,
+    "lines": [
+      {
+        "label": "Total Equity",
+        "concept": "us-gaap:StockholdersEquity",
+        "displayed": "33,296",
+        "value": 33296000000
+      },
+      {
+        "label": "Preferred stock",
+        "concept": "us-gaap:PreferredStockValue",
+        "displayed": "2,182",
+        "value": 2182000000
+      }
+    ],
+    "math": "33,296 − 2,182 = 31,114"
+  },
+  "tangibleCommonEquity": {
+    "value": 19940000000,
+    "deducted": [
+      {
+        "label": "Goodwill",
+        "concept": "us-gaap:Goodwill",
+        "displayed": "9,984",
+        "value": 9984000000
+      },
+      {
+        "label": "Intangible assets",
+        "concept": "us-gaap:IntangibleAssetsNetExcludingGoodwill",
+        "displayed": "1,190",
+        "value": 1190000000
+      }
+    ],
+    "notDeducted": [
+      {
+        "label": "Servicing rights",
+        "concept": "us-gaap:ServicingAssetAtAmortizedValue",
+        "displayed": "1,669"
+      }
+    ],
+    "math": "31,114 − 9,984 − 1,190 = 19,940"
+  },
+  "netIncomeToCommon": {
+    "value": 2418000000,
+    "math": "2,376 + 1,719 − 1,677 = 2,418"
+  },
+  "rotce": {
+    "value": 0.12126379137412237,
+    "math": "2,418 ÷ 19,940 = 0.121264 (12.1%)"
+  }
+}

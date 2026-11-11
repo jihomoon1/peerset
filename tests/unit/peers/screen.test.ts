@@ -43,6 +43,8 @@ function co(
           },
     revenueNote:
       revenueM === null ? "no fiscal-year revenue in a 10-K or 10-K/A" : null,
+    kind: Number(sic) >= 6000 && Number(sic) <= 6799 ? null : "operating",
+    totalAssets: null,
     ...over,
   };
 }
@@ -67,6 +69,7 @@ function index(companies: PeerIndexCompany[], unlisted = []): PeerIndex {
     },
     companies: [...companies].sort((a, b) => a.cik.localeCompare(b.cik)),
     unlisted,
+    kindsRecorded: true,
   };
 }
 
@@ -467,5 +470,101 @@ describe("findTarget", () => {
     expect(() => findTarget(idx, "OTCX", DAY)).toThrow(/major exchange/);
     expect(() => findTarget(idx, "JPM", DAY)).toThrow(UnsupportedIssuerError);
     expect(() => findTarget(idx, "NOREV", DAY)).toThrow(/screening revenue/);
+  });
+});
+
+// Methodology 0.5.0 §13E: each kind screens only its own kind; banks size on total
+// assets (USD m below), digital-asset companies on screening revenue.
+describe("screening by issuer kind (§13E)", () => {
+  const bank = (ticker: string, sic: string, assetsM: number | null) =>
+    co(ticker, sic, null, {
+      kind: "bank",
+      totalAssets:
+        assetsM === null
+          ? null
+          : { value: assetsM * 1_000_000, accession: "0000000000-26-000001" },
+    });
+  const crypto = (ticker: string, revenueM: number) =>
+    co(ticker, "6199", revenueM, { kind: "digitalAsset" });
+
+  it("an operating target still drops every financial SIC", () => {
+    expect(exclusionFor(bank("B", "6021", 100), DAY)?.code).toBe(
+      "FINANCIAL_SIC",
+    );
+    expect(exclusionFor(crypto("C", 100), DAY)?.code).toBe("FINANCIAL_SIC");
+  });
+
+  it("a bank target keeps banks only, sized by total assets, revenue not needed", () => {
+    expect(exclusionFor(bank("B", "6021", 100), DAY, "bank")).toBeNull();
+    expect(exclusionFor(crypto("C", 100), DAY, "bank")?.code).toBe(
+      "OTHER_KIND",
+    );
+    expect(exclusionFor(co("OP", "3585", 100), DAY, "bank")?.code).toBe(
+      "OTHER_KIND",
+    );
+    expect(
+      exclusionFor(co("X", "6199", 100, { kind: null }), DAY, "bank")?.code,
+    ).toBe("FINANCIAL_SIC");
+    expect(exclusionFor(bank("NA", "6021", null), DAY, "bank")?.code).toBe(
+      "NO_TOTAL_ASSETS",
+    );
+  });
+
+  it("ranks banks by closeness of total assets inside the 0.2x–5x band", () => {
+    const target = bank("TGT", "6021", 100_000);
+    const r = screenPeers(
+      index([
+        target,
+        bank("A", "6021", 90_000), // 0.9x
+        bank("B", "6021", 150_000), // 1.5x
+        bank("C", "6021", 50_000), // 0.5x
+        bank("D", "6021", 300_000), // 3.0x
+        bank("E", "6021", 25_000), // 0.25x
+        bank("BIG", "6021", 600_000), // 6.0x: out
+        crypto("CR", 5_000),
+      ]),
+      target,
+      { analysisDate: DAY },
+    );
+    // |ln| distances: A 0.105, B 0.405, C 0.693, D 1.099, E 1.386
+    expect(tickers(r.selected)).toEqual(["A", "B", "C", "D", "E"]);
+    expect(r.selected[0].reason).toContain("total assets 0.9x");
+    const why = Object.fromEntries(r.excluded.map((e) => [e.ticker, e.code]));
+    expect(why).toEqual({ BIG: "OUTSIDE_SIZE_RANGE" });
+    expect(r.excluded[0].detail).toContain("total assets 6.0x");
+  });
+
+  it("a digital-asset target keeps digital-asset companies, sized by revenue", () => {
+    const target = crypto("TGT", 1_000);
+    const r = screenPeers(
+      index([
+        target,
+        ...["A", "B", "C", "D", "E"].map((t, i) => crypto(t, 600 + i * 200)),
+        co("LENDR", "6199", 1_000, { kind: null }),
+        bank("BK", "6199", 1_000),
+      ]),
+      target,
+      { analysisDate: DAY },
+    );
+    expect(tickers(r.selected).sort()).toEqual(["A", "B", "C", "D", "E"]);
+    const why = Object.fromEntries(r.excluded.map((e) => [e.ticker, e.code]));
+    expect(why).toEqual({ BK: "OTHER_KIND", LENDR: "FINANCIAL_SIC" });
+    expect(r.selected[0].reason).toContain("revenue");
+  });
+
+  it("findTarget: a financial company without a kind is unsupported, and says so for an old index", () => {
+    const lender = co("LEND", "6199", 1_000, { kind: null });
+    expect(() => findTarget(index([lender]), "LEND", DAY)).toThrow(
+      /neither a bank nor a digital-asset company/,
+    );
+    const old = { ...index([lender]), kindsRecorded: false };
+    expect(() => findTarget(old, "LEND", DAY)).toThrow(/must be rebuilt/);
+    const noAssets = bank("NA", "6021", null);
+    expect(() => findTarget(index([noAssets]), "NA", DAY)).toThrow(
+      /no total assets/,
+    );
+    expect(findTarget(index([bank("OK", "6021", 5)]), "OK", DAY).ticker).toBe(
+      "OK",
+    );
   });
 });

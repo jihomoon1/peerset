@@ -121,12 +121,20 @@ describe("support check (blueprint §3)", () => {
     );
   });
 
-  it("SIC 6000–6799 → FINANCIAL_SIC (both ends inclusive)", () => {
+  it("SIC 6000–6799 is supported pending the issuer-kind check (both ends inclusive, 0.5.0)", () => {
     const rows: Row[] = [["10-Q", "2026-08-01", "2026-06-30"]];
-    expect(reasonOf(synthetic(rows, { sic: "6000" }))).toBe("FINANCIAL_SIC");
-    expect(reasonOf(synthetic(rows, { sic: "6799" }))).toBe("FINANCIAL_SIC");
-    expect(reasonOf(synthetic(rows, { sic: "5999" }))).toBe("supported");
-    expect(reasonOf(synthetic(rows, { sic: "6800" }))).toBe("supported");
+    const supportOf = (sic: string) =>
+      buildIdentity(synthetic(rows, { sic }), { asOf: AS_OF }).support;
+    expect(supportOf("6000")).toEqual({
+      supported: true,
+      kindCheck: "financial-sic",
+    });
+    expect(supportOf("6799")).toEqual({
+      supported: true,
+      kindCheck: "financial-sic",
+    });
+    expect(supportOf("5999")).toEqual({ supported: true });
+    expect(supportOf("6800")).toEqual({ supported: true });
   });
 
   it("latest periodic filed more than 200 days before asOf → STALE_FILER", () => {

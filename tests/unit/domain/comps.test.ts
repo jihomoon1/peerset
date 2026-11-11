@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   buildComps,
+  ALL_STAT_COLUMNS,
   STAT_COLUMNS,
   type CompsPeer,
   type PeerState,
@@ -134,7 +135,8 @@ describe("buildComps rows and cells", () => {
 describe("buildComps statistics", () => {
   it("has statistics for every column except price", () => {
     const t = buildComps(LII, [], [], ANALYSIS);
-    expect(Object.keys(t.stats).sort()).toEqual([...STAT_COLUMNS].sort());
+    expect(Object.keys(t.stats).sort()).toEqual([...ALL_STAT_COLUMNS].sort());
+    expect(ALL_STAT_COLUMNS).not.toContain("price");
     expect(STAT_COLUMNS).not.toContain("price");
   });
 

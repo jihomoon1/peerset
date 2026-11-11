@@ -3,8 +3,10 @@
 // fetched, so a whole screen runs without a single SEC or price call.
 
 import { addMonths, daysBetween } from "@/domain/dates";
+import { inFinancialSicRange } from "@/domain/issuerKind";
 import {
   EXCLUDED_SIC_RANGE,
+  PEER_ASSETS_SCREEN,
   PEER_REVENUE_SCREEN,
   PEERS,
   PERIODIC_FORMS,
@@ -13,6 +15,7 @@ import {
 } from "@/domain/policy";
 import type {
   ExclusionCode,
+  IssuerKind,
   PeerSelectionResult,
   ScreeningFunnelStep,
 } from "@/domain/types";
@@ -39,11 +42,23 @@ const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 // Plain code-point order, so ranking never depends on the server's locale.
 const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
+const KIND_NAME: Record<IssuerKind, string> = {
+  operating: "an operating company",
+  bank: "a bank",
+  digitalAsset: "a digital-asset company",
+};
+
+// Banks are sized by total assets, everyone else by screening revenue (§13E).
+const sizeOf = (kind: IssuerKind, c: PeerIndexCompany) =>
+  kind === "bank" ? c.totalAssets?.value : c.revenue?.value;
+
 // Blueprint §10.2 step 2, apart from "not the target" and the size band: why this
-// company can't be a peer on the analysis date, or null when it can.
+// company can't be a peer of a `targetKind` target on the analysis date, or null when
+// it can. Methodology §13E (0.5.0): each kind screens only its own kind.
 export function exclusionFor(
   c: PeerIndexCompany,
   analysisDate: string,
+  targetKind: IssuerKind = "operating",
 ): Exclusion | null {
   const latest = c.latest;
   if (!latest)
@@ -61,11 +76,18 @@ export function exclusionFor(
       code: "TRANSITION_PERIOD",
       detail: `latest report is a ${latest.form}`,
     };
-  const sic = Number(c.sic);
-  if (sic >= EXCLUDED_SIC_RANGE.min && sic <= EXCLUDED_SIC_RANGE.max)
+  if (targetKind === "operating" ? inFinancialSicRange(c.sic) : c.kind === null)
     return {
       code: "FINANCIAL_SIC",
-      detail: `SIC ${c.sic} is in the financial range ${EXCLUDED_SIC_RANGE.min}–${EXCLUDED_SIC_RANGE.max}`,
+      detail:
+        targetKind === "operating"
+          ? `SIC ${c.sic} is in the financial range ${EXCLUDED_SIC_RANGE.min}–${EXCLUDED_SIC_RANGE.max}`
+          : `SIC ${c.sic}: neither a bank nor a digital-asset company`,
+    };
+  if (c.kind !== targetKind)
+    return {
+      code: "OTHER_KIND",
+      detail: `${KIND_NAME[c.kind ?? "operating"]}, not ${KIND_NAME[targetKind]}`,
     };
   const age = daysBetween(latest.filedDate, analysisDate);
   if (age > STALE_FILER_DAYS)
@@ -73,6 +95,13 @@ export function exclusionFor(
       code: "STALE_FILING",
       detail: `latest ${latest.form} filed ${latest.filedDate}, ${age} days before ${analysisDate}`,
     };
+  if (targetKind === "bank")
+    return c.totalAssets
+      ? null
+      : {
+          code: "NO_TOTAL_ASSETS",
+          detail: `no total assets (us-gaap:Assets) at the latest report date (${latest.reportDate})`,
+        };
   if (!c.revenue)
     return {
       code: "NO_SCREENING_REVENUE",
@@ -113,12 +142,21 @@ export function findTarget(
       `${t} has no SIC code in SEC's records, so peers can't be screened`,
       "target without SIC",
     );
-  const why = exclusionFor(company, analysisDate);
+  if (company.kind === null)
+    throw new UnsupportedIssuerError(
+      index.kindsRecorded
+        ? `${t} is a financial company (SIC ${company.sic}) that is neither a bank nor a digital-asset company, so peers can't be screened`
+        : `${t} is a financial company (SIC ${company.sic}); the peer index predates bank and digital-asset screening and must be rebuilt`,
+      `target FINANCIAL_SIC${index.kindsRecorded ? "" : " (index format 1)"}`,
+    );
+  const why = exclusionFor(company, analysisDate, company.kind);
   if (why)
     throw new UnsupportedIssuerError(
       why.code === "NO_SCREENING_REVENUE"
         ? `${t} has no screening revenue: ${why.detail}`
-        : `${t} can't be screened for peers: ${why.detail}`,
+        : why.code === "NO_TOTAL_ASSETS"
+          ? `${t} has ${why.detail}`
+          : `${t} can't be screened for peers: ${why.detail}`,
       `target ${why.code}`,
     );
   return company;
@@ -142,11 +180,16 @@ export function screenPeers(
       `Keep between ${PEERS.min} and ${PEERS.max} peers`,
       `peer count ${count}`,
     );
-  const targetRevenue = target.revenue?.value;
-  if (targetRevenue === undefined || targetRevenue <= 0)
+  const kind = target.kind ?? "operating";
+  const band = kind === "bank" ? PEER_ASSETS_SCREEN : PEER_REVENUE_SCREEN;
+  const sizeName = kind === "bank" ? "total assets" : "revenue";
+  const targetSize = sizeOf(kind, target);
+  if (targetSize === undefined || targetSize <= 0)
     throw new UnsupportedIssuerError(
-      `${target.ticker} has no positive screening revenue to size peers against`,
-      "target revenue missing or not positive",
+      kind === "bank"
+        ? `${target.ticker} has no positive total assets to size peers against`
+        : `${target.ticker} has no positive screening revenue to size peers against`,
+      `target ${sizeName} missing or not positive`,
     );
 
   // Steps 1–3 per tier. "Fewer than 5 eligible" counts companies that pass both the
@@ -165,18 +208,18 @@ export function screenPeers(
     qualified = [];
     excluded = [];
     for (const company of inTier) {
-      const why = exclusionFor(company, options.analysisDate);
+      const why = exclusionFor(company, options.analysisDate, kind);
       if (why) {
         excluded.push({ cik: company.cik, ticker: company.ticker, ...why });
         continue;
       }
-      const ratio = company.revenue!.value / targetRevenue;
-      if (ratio < PEER_REVENUE_SCREEN.min || ratio > PEER_REVENUE_SCREEN.max) {
+      const ratio = sizeOf(kind, company)! / targetSize;
+      if (ratio < band.min || ratio > band.max) {
         excluded.push({
           cik: company.cik,
           ticker: company.ticker,
           code: "OUTSIDE_SIZE_RANGE",
-          detail: `revenue ${formatBandRatio(ratio)} the target's (allowed ${PEER_REVENUE_SCREEN.min}x–${PEER_REVENUE_SCREEN.max}x)`,
+          detail: `${sizeName} ${formatBandRatio(ratio)} the target's (allowed ${band.min}x–${band.max}x)`,
         });
         continue;
       }
@@ -206,7 +249,7 @@ export function screenPeers(
       cik: q.company.cik,
       ticker: q.company.ticker,
       code: "NOT_IN_TOP_N",
-      detail: `ranked ${count + i + 1} of ${qualified.length} by closeness of revenue; ${count} kept`,
+      detail: `ranked ${count + i + 1} of ${qualified.length} by closeness of ${sizeName}; ${count} kept`,
     }),
   );
 
@@ -217,7 +260,7 @@ export function screenPeers(
     selected: kept.map((q) => ({
       cik: q.company.cik,
       ticker: q.company.ticker,
-      reason: reasonFor(q, target, tier),
+      reason: reasonFor(q, target, tier, sizeName),
       latest: {
         form: q.company.latest!.form,
         filedDate: q.company.latest!.filedDate,
@@ -228,8 +271,14 @@ export function screenPeers(
   };
 }
 
-// "SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29" (blueprint §10.2).
-function reasonFor(q: Candidate, target: PeerIndexCompany, tier: Tier): string {
+// "SIC 3585 exact · revenue 0.6x · Dec FYE · 10-Q filed 2026-07-29" (blueprint §10.2);
+// banks say "total assets 0.6x" (§13E).
+function reasonFor(
+  q: Candidate,
+  target: PeerIndexCompany,
+  tier: Tier,
+  sizeName: string,
+): string {
   const c = q.company;
   const sic =
     tier === "sic4"
@@ -240,5 +289,5 @@ function reasonFor(q: Candidate, target: PeerIndexCompany, tier: Tier): string {
   const month = MONTHS[Number(c.fiscalYearEnd.slice(0, 2)) - 1];
   const fye = month ? `${month} FYE` : "FYE not reported";
   const latest = c.latest!;
-  return `${sic} · revenue ${formatBandRatio(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
+  return `${sic} · ${sizeName} ${formatBandRatio(q.ratio)} · ${fye} · ${latest.form} filed ${latest.filedDate}`;
 }

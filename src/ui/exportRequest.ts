@@ -3,7 +3,7 @@
 // removed peers and the prices the screen applied (with their date). The server
 // recomputes every number from those.
 
-import { COMPS_COLUMNS, type CompsTable } from "@/domain/comps";
+import type { CompsColumn, CompsTable } from "@/domain/comps";
 import type { QuoteSnapshot } from "@/domain/types";
 import type { ExportOptions } from "@/export/options";
 
@@ -24,6 +24,7 @@ export interface ExportState {
   request: ExportRequestBody;
   disabledReason: string | null; // null = the button is enabled
   notANumber: number; // cells the workbook will show as NM, — or Unsupported
+  columns: readonly CompsColumn[]; // the table's columns (methodology §13B)
 }
 
 const usable = (status: string) =>
@@ -49,7 +50,7 @@ export function exportState(input: {
   );
   const rows = [table.target, ...table.peers].filter((r) => r.cells);
   const cells = rows.flatMap((r) =>
-    COMPS_COLUMNS.map((c) => r.cells![c].status),
+    table.columns.map((c) => r.cells![c].status),
   );
   const disabledReason =
     table.counts.loading > 0
@@ -70,5 +71,6 @@ export function exportState(input: {
     },
     disabledReason,
     notANumber: cells.filter((s) => !usable(s)).length,
+    columns: table.columns,
   };
 }

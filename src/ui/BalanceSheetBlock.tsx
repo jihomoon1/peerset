@@ -5,12 +5,19 @@ import type { CompanyFundamentals } from "@/domain/fundamentals";
 import { formatDate } from "@/lib/format";
 import {
   BALANCE_SHEET_LABELS,
+  balanceSheetItem,
   BalanceSheetDrawer,
   type BalanceSheetKey,
 } from "./BalanceSheetDrawer";
 import { displayMetric, STATUS_WORDS } from "./metricDisplay";
 
-const ITEMS: BalanceSheetKey[] = ["debt", "cash"];
+// §13C, §13D: digital-asset companies add their digital assets; banks show equity.
+const ITEMS: Record<"operating" | "bank" | "digitalAsset", BalanceSheetKey[]> =
+  {
+    operating: ["debt", "cash"],
+    digitalAsset: ["debt", "cash", "digitalAssets"],
+    bank: ["commonEquity", "tangibleCommonEquity"],
+  };
 
 // Total debt and cash at the balance-sheet date (methodology §7–§8), the EV inputs
 // that need no price. Market cap and EV are in the valuation block.
@@ -28,7 +35,9 @@ export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
   return (
     <section aria-labelledby="balance-heading" className="flex flex-col gap-2">
       <h2 id="balance-heading" className="section-bar">
-        Balance sheet (for EV)
+        {f.kind === "bank"
+          ? "Balance sheet (equity)"
+          : "Balance sheet (for EV)"}
       </h2>
       <table className="w-full max-w-2xl border-collapse text-[13px] tabular-nums">
         <caption className="mb-1 text-left text-muted">
@@ -49,8 +58,10 @@ export function BalanceSheetBlock({ f }: { f: CompanyFundamentals }) {
           </tr>
         </thead>
         <tbody>
-          {ITEMS.map((key) => {
-            const m = f[key].metric;
+          {ITEMS[f.kind ?? "operating"].map((key) => {
+            const item = balanceSheetItem(f, key);
+            if (!item) return null;
+            const m = item.metric;
             const d = displayMetric(m);
             const cautions = m.warnings.filter((w) => w.severity === "caution");
             return (

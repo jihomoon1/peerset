@@ -1,0 +1,80 @@
+{
+  "ticker": "COIN",
+  "cik": "0001679788",
+  "fixture": "COIN",
+  "kind": "digitalAsset",
+  "methodologyVersion": "0.5.1",
+  "filing": {
+    "accession": "0001679788-26-000122",
+    "form": "10-Q",
+    "filedDate": "2026-10-29",
+    "reportDate": "2026-09-30"
+  },
+  "statement": {
+    "name": "Consolidated Balance Sheets",
+    "url": "https://www.sec.gov/Archives/edgar/data/1679788/000167978826000122/R2.htm",
+    "scale": "Thousands"
+  },
+  "note": "Every balance-sheet value is read from the filing's rendered balance sheet (column Sep. 30, 2026), USD thousands as displayed, times 1,000. Not engine output. Only 'Crypto assets held for investment' carries a us-gaap crypto fair-value concept; the three coin: lines are listed and not counted (methodology \u00a713C). The crypto gain or loss is read from SEC's companyfacts for us-gaap:CryptoAssetRealizedAndUnrealizedGainLossOperating: FY2025 (20,704) (10-K 0001679788-26-000015) + 9M 2026 (40,764) \u2212 9M 2025 10,077 (both 10-Q 0001679788-26-000122) = (71,545).",
+  "digitalAssets": {
+    "value": 2224811000,
+    "lines": [
+      {
+        "label": "Crypto assets held for operations",
+        "concept": "coin:CryptoAssetFairValueOperations",
+        "displayed": "53,059",
+        "value": 53059000,
+        "included": false
+      },
+      {
+        "label": "Crypto assets held as collateral",
+        "concept": "coin:CryptoAssetFairValueHeldAsCollateral",
+        "displayed": "1,299,500",
+        "value": 1299500000,
+        "included": false
+      },
+      {
+        "label": "Crypto assets borrowed",
+        "concept": "coin:CryptoAssetFairValueBorrowed",
+        "displayed": "389,657",
+        "value": 389657000,
+        "included": false
+      },
+      {
+        "label": "Crypto assets held for investment",
+        "concept": "us-gaap:CryptoAssetFairValueNoncurrent",
+        "displayed": "2,224,811",
+        "value": 2224811000,
+        "included": true
+      }
+    ],
+    "warnings": [
+      "W_DIGITAL_ASSET_LINE_NOT_COUNTED",
+      "W_DIGITAL_ASSET_LINE_NOT_COUNTED",
+      "W_DIGITAL_ASSET_LINE_NOT_COUNTED"
+    ]
+  },
+  "cryptoRemeasurement": {
+    "value": -71545000,
+    "math": "(20,704) + (40,764) \u2212 10,077 = (71,545)"
+  },
+  "ebitdaWarnings": ["W_EBITDA_INCLUDES_CRYPTO_REMEASUREMENT"],
+  "shareClasses": {
+    "note": "Cover page of the 10-Q (dei:EntityCommonStockSharesOutstanding, October 22, 2026); one trading symbol, COIN (Nasdaq), with no class attached. Both classes are priced at COIN under \u00a76 (0.5.1).",
+    "classes": [
+      {
+        "classMember": "us-gaap:CommonClassAMember",
+        "shares": 223729527,
+        "pricedAs": "COIN"
+      },
+      {
+        "classMember": "us-gaap:CommonClassBMember",
+        "shares": 41033891,
+        "pricedAs": "COIN"
+      }
+    ],
+    "testPrice": 300,
+    "marketCap": 79429025400,
+    "math": "300 \u00d7 (223,729,527 + 41,033,891) = 300 \u00d7 264,763,418 = 79,429,025,400"
+  }
+}

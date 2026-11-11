@@ -10,6 +10,7 @@ import {
   normalizeSymbol,
   type ShareClass,
   type ShareClasses,
+  priceTicker,
 } from "./capitalization";
 import { daysBetween } from "./dates";
 import { isUsable, mergeWarnings, unusableInputs } from "./metrics/common";
@@ -70,8 +71,9 @@ export function computeMarketCap(
     quotes.find((q) => normalizeSymbol(q.symbol) === normalizeSymbol(ticker));
 
   const classes: ShareClassCapitalization[] = shareClasses.classes.map((c) => {
-    const quote = c.ticker ? quoteFor(c.ticker) : undefined;
-    const equityValue: Metric = !c.ticker
+    const ticker = priceTicker(c);
+    const quote = ticker ? quoteFor(ticker) : undefined;
+    const equityValue: Metric = !ticker
       ? {
           status: "unsupported",
           reason: {
@@ -83,7 +85,7 @@ export function computeMarketCap(
       : !quote
         ? {
             status: "missing",
-            reason: `price needed for ${c.ticker}`,
+            reason: `price needed for ${ticker}`,
             warnings: [],
           }
         : {
@@ -91,11 +93,10 @@ export function computeMarketCap(
             value: quote.close * c.shares,
             unit: "USD",
             period: { kind: "instant", end: quote.asOfDate },
-            formula: `price × shares (${c.ticker})`,
-            inputs: [
-              { metric: `price ${c.ticker}`, value: quote.close },
-              c.fact,
-            ],
+            formula: c.ticker
+              ? `price × shares (${c.ticker})`
+              : `${ticker} price × shares (unlisted ${c.classMember}, §6)`,
+            inputs: [{ metric: `price ${ticker}`, value: quote.close }, c.fact],
             warnings: [],
           };
     return { ...c, ...(quote ? { quote } : {}), equityValue };
@@ -128,7 +129,9 @@ export function computeMarketCap(
       },
       ...withDate,
     };
-  const unpriced = classes.filter((c) => !c.quote).map((c) => c.ticker);
+  const unpriced = [
+    ...new Set(classes.filter((c) => !c.quote).map((c) => priceTicker(c))),
+  ];
   if (unpriced.length > 0)
     return {
       classes,

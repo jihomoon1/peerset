@@ -3,12 +3,17 @@
 // names stored once. One company per line, so a monthly refresh diffs line by line.
 // encodeIndex is deterministic: the same index always gives the same bytes.
 
+// Format 2 (methodology 0.5.0, §13E) adds each company's kind and a bank's total assets;
+// a format-1 file still reads, with financial companies left without a kind.
+
 import { z } from "zod";
+import { inFinancialSicRange } from "@/domain/issuerKind";
 import type { PeerIndex, PeerIndexCompany } from "./indexTypes";
 
-export const INDEX_FORMAT = "peerset-peer-index/1";
+export const INDEX_FORMAT = "peerset-peer-index/2";
+const INDEX_FORMAT_V1 = "peerset-peer-index/1";
 
-const FIELDS = [
+const FIELDS_V1 = [
   "cik",
   "name",
   "listings",
@@ -19,12 +24,13 @@ const FIELDS = [
   "revenue",
   "revenueNote",
 ] as const;
+const FIELDS = [...FIELDS_V1, "kind", "totalAssets"] as const;
 
 // [form, filedDate, reportDate, accession]
 const Latest = z.tuple([z.string(), z.string(), z.string(), z.string()]);
 // [value, periodEnd, concept index, accession]
 const Revenue = z.tuple([z.number(), z.string(), z.number().int(), z.string()]);
-const Row = z.tuple([
+const ROW_V1 = [
   z.string(),
   z.string(),
   z.array(z.tuple([z.string(), z.string()])).min(1),
@@ -34,36 +40,56 @@ const Row = z.tuple([
   Latest.nullable(),
   Revenue.nullable(),
   z.string().nullable(),
+] as const;
+const RowV1 = z.tuple(ROW_V1);
+const Row = z.tuple([
+  ...ROW_V1,
+  z.enum(["operating", "bank", "digitalAsset"]).nullable(),
+  // [value, accession]: a bank's total assets at the latest report date
+  z.tuple([z.number(), z.string()]).nullable(),
 ]);
 const Source = z.object({ url: z.string(), lastModified: z.string() });
 
-const FileSchema = z.object({
-  format: z.literal(INDEX_FORMAT),
-  meta: z.object({
-    generatedAt: z.string(),
-    methodologyVersion: z.string(),
-    sources: z.object({
-      tickers: Source,
-      submissions: Source,
-      companyfacts: Source,
-    }),
-    counts: z.object({
-      total: z.number().int(),
-      listed: z.number().int(),
-      withRevenue: z.number().int(),
-      byExclusionReason: z.record(z.string(), z.number().int()),
-      unreadable: z.object({
-        submissions: z.number().int(),
-        companyfacts: z.number().int(),
-      }),
+const Meta = z.object({
+  generatedAt: z.string(),
+  methodologyVersion: z.string(),
+  sources: z.object({
+    tickers: Source,
+    submissions: Source,
+    companyfacts: Source,
+  }),
+  counts: z.object({
+    total: z.number().int(),
+    listed: z.number().int(),
+    withRevenue: z.number().int(),
+    byExclusionReason: z.record(z.string(), z.number().int()),
+    unreadable: z.object({
+      submissions: z.number().int(),
+      companyfacts: z.number().int(),
     }),
   }),
+});
+
+const common = {
+  meta: Meta,
   sicDescriptions: z.record(z.string(), z.string()),
   concepts: z.array(z.string()),
-  fields: z.tuple(FIELDS.map((f) => z.literal(f)) as never),
-  rows: z.array(Row),
   unlisted: z.array(z.tuple([z.string(), z.string()])),
-});
+};
+const FileSchema = z.discriminatedUnion("format", [
+  z.object({
+    format: z.literal(INDEX_FORMAT),
+    fields: z.tuple(FIELDS.map((f) => z.literal(f)) as never),
+    rows: z.array(Row),
+    ...common,
+  }),
+  z.object({
+    format: z.literal(INDEX_FORMAT_V1),
+    fields: z.tuple(FIELDS_V1.map((f) => z.literal(f)) as never),
+    rows: z.array(RowV1),
+    ...common,
+  }),
+]);
 
 const FOREIGN = new Set(["20-F", "20-F/A", "40-F", "40-F/A"]);
 
@@ -104,6 +130,8 @@ export function encodeIndex(index: PeerIndex): string {
             ]
           : null,
         c.revenueNote,
+        c.kind,
+        c.totalAssets ? [c.totalAssets.value, c.totalAssets.accession] : null,
       ]),
     );
   const sortedSics = Object.fromEntries(
@@ -138,7 +166,9 @@ export function decodeIndex(raw: unknown): PeerIndex {
     );
   }
   const file = parsed.data;
-  const companies: PeerIndexCompany[] = file.rows.map((r) => {
+  const v2 = file.format === INDEX_FORMAT;
+  const rows: (z.infer<typeof RowV1> | z.infer<typeof Row>)[] = file.rows;
+  const companies: PeerIndexCompany[] = rows.map((r) => {
     const [
       cik,
       name,
@@ -150,6 +180,8 @@ export function decodeIndex(raw: unknown): PeerIndex {
       revenue,
       revenueNote,
     ] = r;
+    const extra = r.length === 11 ? r : null;
+    const assets = extra ? extra[10] : null;
     return {
       cik,
       name,
@@ -177,11 +209,14 @@ export function decodeIndex(raw: unknown): PeerIndex {
           }
         : null,
       revenueNote,
+      kind: extra ? extra[9] : inFinancialSicRange(sic) ? null : "operating",
+      totalAssets: assets ? { value: assets[0], accession: assets[1] } : null,
     };
   });
   return {
     meta: file.meta,
     companies,
     unlisted: file.unlisted.map(([ticker, exchange]) => ({ ticker, exchange })),
+    kindsRecorded: v2,
   };
 }

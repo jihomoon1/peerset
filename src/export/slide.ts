@@ -28,7 +28,15 @@ export const SLIDE_HEADER_ROW = 4;
 export const SLIDE_TARGET_ROW = 5;
 
 const MILLION = 1_000_000;
-const MONEY: readonly CompsColumn[] = ["marketCap", "ev", "revenue", "ebitda"];
+const MONEY: readonly CompsColumn[] = [
+  "marketCap",
+  "ev",
+  "revenue",
+  "ebitda",
+  "digitalAssets",
+  "commonEquity",
+  "tangibleCommonEquity",
+];
 const FMT: Record<CompsColumn, NumFmt> = {
   price: "perShare",
   marketCap: "millions",
@@ -39,6 +47,13 @@ const FMT: Record<CompsColumn, NumFmt> = {
   evRevenue: "multiple",
   evEbitda: "multiple",
   pe: "multiple",
+  digitalAssets: "millions",
+  mcapToDigitalAssets: "multiple",
+  commonEquity: "millions",
+  tangibleCommonEquity: "millions",
+  rotce: "percent",
+  priceToBook: "multiple",
+  priceToTangibleBook: "multiple",
 };
 const STATUS_TEXT = {
   nm: "NM",

@@ -3,11 +3,8 @@
 // asOf; this module never reads the clock.
 
 import { daysBetween } from "@/domain/dates";
-import {
-  EXCLUDED_SIC_RANGE,
-  PERIODIC_FORMS,
-  STALE_FILER_DAYS,
-} from "@/domain/policy";
+import { inFinancialSicRange } from "@/domain/issuerKind";
+import { PERIODIC_FORMS, STALE_FILER_DAYS } from "@/domain/policy";
 import type {
   CompanyIdentity,
   PeriodicForm,
@@ -113,7 +110,7 @@ export function identityFromSubmissions(
     exchange: s.exchanges[i] ?? "",
   }));
 
-  const reason = unsupportedReason(latest, s.sic, asOf);
+  const reason = unsupportedReason(latest, asOf);
   return {
     cik,
     name: s.name,
@@ -125,13 +122,16 @@ export function identityFromSubmissions(
     fiscalYearEnd: s.fiscalYearEnd ?? "",
     stateOfIncorporation: s.stateOfIncorporation ?? "",
     latestPeriodic,
-    support: reason ? { supported: false, reason } : { supported: true },
+    support: reason
+      ? { supported: false, reason }
+      : inFinancialSicRange(s.sic)
+        ? { supported: true, kindCheck: "financial-sic" }
+        : { supported: true },
   };
 }
 
 function unsupportedReason(
   latest: Row | undefined,
-  sic: string,
   asOf: string,
 ): UnsupportedReason | null {
   if (!latest)
@@ -149,15 +149,8 @@ function unsupportedReason(
       code: "TRANSITION_PERIOD",
       message: `Latest report is a ${latest.form} transition-period filing, which can't be compared`,
     };
-  const sicNumber = Number(sic);
-  if (
-    sicNumber >= EXCLUDED_SIC_RANGE.min &&
-    sicNumber <= EXCLUDED_SIC_RANGE.max
-  )
-    return {
-      code: "FINANCIAL_SIC",
-      message: `Financial company (SIC ${sic}); trading comps by EV/EBITDA don't apply`,
-    };
+  // §13B (0.5.0): SIC 6000–6799 is no longer rejected here; the filing's facts
+  // decide whether the company is a bank or a digital-asset company.
   const age = daysBetween(latest.filedDate, asOf);
   if (age > STALE_FILER_DAYS)
     return {
