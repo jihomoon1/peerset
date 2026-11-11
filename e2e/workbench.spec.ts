@@ -183,3 +183,11 @@ test("mobile 375 px: regions stack, only the table scrolls sideways, Company sta
     await companyHeader.evaluate((el) => getComputedStyle(el).position),
   ).toBe("sticky");
 });
+
+test("the table key explains Unsupported and lag", async ({ page }) => {
+  await page.goto("/c/LII");
+  const key = page.locator("details", { hasText: "What do Unsupported" });
+  await key.locator("summary").click();
+  await expect(key.getByText(/left out rather than guessed/)).toBeVisible();
+  await expect(key.getByText(/more than 75 days away/)).toBeVisible();
+});

@@ -22,6 +22,7 @@ import { exportState } from "./exportRequest";
 import { ImpliedValuationBlock } from "./ImpliedValuationBlock";
 import { OperatingBlock } from "./OperatingBlock";
 import { PeerPanel, type PeerSelection } from "./PeerPanel";
+import { TableKey } from "./TableKey";
 import {
   activePeers,
   addPeer,
@@ -338,6 +339,7 @@ export function Workbench({
             setInputs((cur) => ({ ...cur, [t]: text }));
           }}
         />
+        <TableKey />
         <ImpliedValuationBlock table={table} />
         <PeerPanel
           selection={selection}
