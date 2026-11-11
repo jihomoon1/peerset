@@ -35,6 +35,9 @@ export interface ShareClass {
   ticker?: string; // SEC's spelling ('WSO-B'); absent = unlisted class
   exchange?: string;
   coverSymbol?: string; // as the cover shows it ('WSOB')
+  // §6 (0.5.1): an unlisted class priced at the company's only listed ticker, on the
+  // assumption that it converts 1-for-1 into the listed class (caution attached).
+  pricedAs?: string;
   shares: number;
   sharesAsOf: string; // the cover date, usually weeks after the balance sheet
   coverFiling: FilingReference;
@@ -53,6 +56,18 @@ export interface ShareClasses {
   blocker?: ShareClassBlocker;
   warnings: MetricWarning[];
 }
+
+// The ticker whose price values this class: its own, or the listed one it is priced as.
+export const priceTicker = (c: {
+  ticker?: string;
+  pricedAs?: string;
+}): string | undefined => c.ticker ?? c.pricedAs;
+
+// 'us-gaap:CommonClassBMember' → 'Class B'
+const memberName = (m: string) => {
+  const letter = /Class([A-Z])Member$/.exec(m)?.[1];
+  return letter ? `Class ${letter}` : m;
+};
 
 // 'WSOB', 'WSO-B', 'WSO.B' and 'WSO/B' all name the same class.
 export const normalizeSymbol = (s: string): string =>
@@ -157,6 +172,7 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
   }
 
   const classes: ShareClass[] = [];
+  const unlisted: string[] = [];
   for (const { member, selection, symbol } of pairs) {
     if (selection.kind === "conflict") {
       blocker ??= unsupported(
@@ -173,13 +189,7 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
         message: `cover symbol '${symbol}' for ${member} is not in SEC's listings for the company`,
         severity: "caution",
       });
-    if (!symbol)
-      blocker ??= unsupported(
-        "UNLISTED_SHARE_CLASS",
-        member === SINGLE_CLASS
-          ? `unlisted share class: ${member} (no dei:TradingSymbol on the cover page)`
-          : `unlisted share class: ${member}`,
-      );
+    if (!symbol) unlisted.push(member);
     classes.push({
       classMember: member,
       ...(symbol
@@ -191,6 +201,40 @@ export function computeShareClasses(input: ShareClassInput): ShareClasses {
       coverFiling: selection.fact.filing,
       fact: selection.fact,
     });
+  }
+
+  // §6 (0.5.1): classes without their own cover symbol are priced at the company's
+  // listed ticker when there is exactly one (cover symbols, with or without a class,
+  // that SEC lists for the CIK). With two or more listed tickers no single price fits
+  // an unlisted class, so it stays Unsupported.
+  if (unlisted.length > 0) {
+    const listedTickers = [
+      ...new Set([
+        ...classes.flatMap((c) => (c.ticker && c.exchange ? [c.ticker] : [])),
+        ...symbols.flatMap((t) => {
+          const l = listingOf(t.value.trim());
+          return l ? [l.ticker] : [];
+        }),
+      ]),
+    ];
+    const only = listedTickers.length === 1 ? listedTickers[0] : undefined;
+    if (only && !unlisted.includes(SINGLE_CLASS)) {
+      for (const c of classes) if (!c.ticker) c.pricedAs = only;
+      const one = unlisted.length === 1;
+      warnings.push({
+        code: "W_UNLISTED_CLASS_PRICED_AS_LISTED",
+        message: `${unlisted.map(memberName).join(", ")} ${one ? "has" : "have"} no listed ticker of ${one ? "its" : "their"} own: priced at ${only}, assuming 1-for-1 conversion into the listed class (check the filing)`,
+        severity: "caution",
+      });
+    } else
+      blocker ??= unsupported(
+        "UNLISTED_SHARE_CLASS",
+        unlisted[0] === SINGLE_CLASS
+          ? `unlisted share class: ${SINGLE_CLASS} (no dei:TradingSymbol on the cover page)`
+          : listedTickers.length > 1
+            ? `unlisted share class: ${unlisted[0]} (several listed classes, ${listedTickers.join(", ")}: no single price to use)`
+            : `unlisted share class: ${unlisted[0]}`,
+      );
   }
 
   if (sharesAsOf > input.balanceSheetDate)

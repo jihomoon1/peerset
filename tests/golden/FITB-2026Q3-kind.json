@@ -3,7 +3,7 @@
   "cik": "0000035527",
   "fixture": "FITB",
   "kind": "bank",
-  "methodologyVersion": "0.5.0",
+  "methodologyVersion": "0.5.1",
   "filing": {
     "accession": "0000035527-26-000243",
     "form": "10-Q",

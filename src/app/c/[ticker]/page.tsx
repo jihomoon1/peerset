@@ -5,6 +5,7 @@
 // (add, remove, px, pxdate) restores a shared analysis. The header and the footer
 // come from the root layout.
 
+import { priceTicker } from "@/domain/capitalization";
 import { notFound } from "next/navigation";
 import { PeerSetError } from "@/lib/errors";
 import {
@@ -91,9 +92,14 @@ export default async function CompanyPage({
   const quoteDeps = defaultQuoteDeps();
   let quotes: QuotesResult = { quotes: [], errors: [] };
   if (f && quoteDeps.provider) {
-    const tickers = f.shareClasses.classes.flatMap((c) =>
-      c.ticker ? [c.ticker] : [],
-    );
+    const tickers = [
+      ...new Set(
+        f.shareClasses.classes.flatMap((c) => {
+          const t = priceTicker(c);
+          return t ? [t] : [];
+        }),
+      ),
+    ];
     if (tickers.length > 0) quotes = await loadQuotes(tickers, quoteDeps);
   }
 

@@ -1,7 +1,7 @@
 {
   "ticker": "LII",
   "fixture": "LII-Q3",
-  "methodologyVersion": "0.5.0",
+  "methodologyVersion": "0.5.1",
   "analysisDate": "2026-11-01",
   "note": "Prices are test inputs, not market data. Shares come from the Q3 10-Q cover page; total debt, cash, revenue, EBITDA and EPS are the values in tests/golden/LII-2026Q3.json and LII-2026Q3-balance.json, read from the rendered filings. Arithmetic in full dollars; multiples asserted to 0.01x.",
   "prices": [

@@ -1,4 +1,5 @@
 "use client";
+import { priceTicker } from "@/domain/capitalization";
 
 // The comps workbench (blueprint §6): the target summary (as-of strip, operating,
 // balance-sheet and valuation blocks), then the peer panel beside the comps table.
@@ -55,7 +56,14 @@ import { ValuationBlock } from "./ValuationBlock";
 const listedTickers = (f: CompanyFundamentals) =>
   byListingOrder(
     f.identity,
-    f.shareClasses.classes.flatMap((c) => (c.ticker ? [c.ticker] : [])),
+    [
+      ...new Set(
+        f.shareClasses.classes.flatMap((c) => {
+          const t = priceTicker(c);
+          return t ? [t] : [];
+        }),
+      ),
+    ],
     (t) => t,
   );
 

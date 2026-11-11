@@ -80,6 +80,24 @@ describe("computeMarketCap", () => {
     expect(r.priceDate).toBe("2026-10-23");
   });
 
+  it("prices an unlisted class at its pricedAs ticker (§6, 0.5.1)", () => {
+    const sc = twoClasses();
+    const b = sc.classes[0];
+    delete b.ticker;
+    b.pricedAs = "SYN";
+    const missing = computeMarketCap(sc, [], "2026-10-26");
+    expect(missing.marketCap).toMatchObject({
+      status: "missing",
+      reason: "price needed for SYN", // named once, not once per class
+    });
+    const r = computeMarketCap(sc, [quote("SYN", 10)], "2026-10-26");
+    // 10 × 20 (Class B at SYN's price) + 10 × 100 = 1,200
+    expect(value(r.marketCap)).toBe(1200);
+    expect(r.classes[0].equityValue).toMatchObject({
+      formula: "SYN price × shares (unlisted us-gaap:CommonClassBMember, §6)",
+    });
+  });
+
   it("matches quotes to classes whatever the spelling", () => {
     const r = computeMarketCap(
       twoClasses(),

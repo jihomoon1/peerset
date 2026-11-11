@@ -1,4 +1,5 @@
 "use client";
+import { priceTicker } from "@/domain/capitalization";
 
 // The comps table (blueprint §6): target row pinned with an accent border, peer rows,
 // then statistics rows below a rule that never sort. Sticky header and Company
@@ -541,7 +542,14 @@ function PriceInputs({
   const f = row.fundamentals!;
   const tickers = byListingOrder(
     f.identity,
-    f.shareClasses.classes.flatMap((c) => (c.ticker ? [c.ticker] : [])),
+    [
+      ...new Set(
+        f.shareClasses.classes.flatMap((c) => {
+          const t = priceTicker(c);
+          return t ? [t] : [];
+        }),
+      ),
+    ],
     (t) => t,
   );
   if (tickers.length === 0)

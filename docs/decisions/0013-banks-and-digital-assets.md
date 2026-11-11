@@ -26,6 +26,8 @@ v1 rejected every company with SIC 6000–6799 ("Financial company; trading comp
 - Robinhood (SIC 6211) is a digital-asset company by this rule, but its face has no us-gaap crypto line, so its digital assets are Missing (live check, November 11, 2026).
 - Goldens: Fifth Third (bank) and Coinbase (digital-asset company), 10-Qs for September 30, 2026 (`tests/golden/FITB-2026Q3-kind.json`, `COIN-2026Q3-kind.json`, `docs/reconciliation/FITB.md`, `COIN.md`).
 
+- Coinbase and Strategy have an unlisted Class B. Methodology 0.5.1 prices it at the listed ticker with a caution (decision 0007 update), so their market cap and market cap ÷ digital assets compute.
+
 ## Revisit when
 
 Insurers or REITs are requested, or the 2026+ us-gaap taxonomy adds bank-specific concepts PeerSet should read.

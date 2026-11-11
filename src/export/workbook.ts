@@ -552,7 +552,11 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
     const row = cur.row();
     const n = row.number;
     putText(row.getCell(1), memberLabel(c.classMember));
-    putText(row.getCell(2), c.ticker ?? "unlisted");
+    putText(
+      row.getCell(2),
+      c.ticker ??
+        (c.pricedAs ? `unlisted, priced at ${c.pricedAs}` : "unlisted"),
+    );
     putInput(
       row.getCell(3),
       c.shares / MILLION,

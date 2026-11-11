@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Metric } from "@/domain/types";
+import type { Metric, QuoteSnapshot } from "@/domain/types";
+import { priceCompany } from "@/domain/valuation";
 import { FIXTURES, fixtureFundamentals } from "../helpers/fundamentals";
 
 // Issuer-kind goldens (methodology 0.5.0 §13B–§13D). Expected values come from each
@@ -33,6 +34,11 @@ interface Golden {
   digitalAssets?: { value: number; lines: Line[]; warnings: string[] };
   cryptoRemeasurement?: { value: number };
   ebitdaWarnings?: string[];
+  shareClasses?: {
+    classes: { classMember: string; shares: number; pricedAs: string }[];
+    testPrice: number;
+    marketCap: number;
+  };
 }
 
 const goldens: Golden[] = readdirSync(import.meta.dirname)
@@ -104,6 +110,35 @@ describe.each(goldens)("$ticker issuer-kind golden", (g) => {
       );
       for (const w of g.ebitdaWarnings!)
         expect(codes(f.metrics.ebitda)).toContain(w);
+    });
+  }
+
+  if (g.shareClasses) {
+    const sc = g.shareClasses;
+    it("prices every unlisted class at the listed ticker (§6, 0.5.1)", async () => {
+      const f = await fixtureFundamentals(g.ticker);
+      expect(
+        f.shareClasses.classes.map((c) => [
+          c.classMember,
+          c.shares,
+          c.pricedAs,
+        ]),
+      ).toEqual(sc.classes.map((c) => [c.classMember, c.shares, c.pricedAs]));
+      const quote: QuoteSnapshot = {
+        symbol: sc.classes[0].pricedAs,
+        close: sc.testPrice,
+        asOfDate: "2026-11-10",
+        currency: "USD",
+        source: "user_entered",
+        retrievedAt: "2026-11-10T00:00:00.000Z",
+      };
+      const v = priceCompany(f, [quote], "2026-11-10");
+      expect(value(v.bridge.marketCap)).toBe(sc.marketCap);
+      expect(codes(v.bridge.marketCap)).toContain(
+        "W_UNLISTED_CLASS_PRICED_AS_LISTED",
+      );
+      expect(v.needsPrice).toEqual([]);
+      expect(v.multiples.mcapToDigitalAssets?.status).toBe("derived");
     });
   }
 });

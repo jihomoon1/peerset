@@ -3,6 +3,7 @@
 // the browser call this same function, so entering a price recomputes instantly and
 // the export (M5) recomputes the same numbers. M4's comps.ts calls it per company.
 
+import { priceTicker } from "./capitalization";
 import {
   computeEnterpriseValue,
   computeMarketCap,
@@ -110,9 +111,14 @@ export function priceCompany(
 
   return {
     shareClasses: classes,
-    needsPrice: classes.flatMap((c) =>
-      c.ticker && !c.quote ? [c.ticker] : [],
-    ),
+    needsPrice: [
+      ...new Set(
+        classes.flatMap((c) => {
+          const t = priceTicker(c);
+          return t && !c.quote ? [t] : [];
+        }),
+      ),
+    ],
     ...(price ? { price } : {}),
     bridge,
     multiples,

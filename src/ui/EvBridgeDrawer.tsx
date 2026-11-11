@@ -147,7 +147,10 @@ export function EvBridgeDrawer({
                   className="border-b border-rule align-top"
                 >
                   <th scope="row" className="py-1 pr-2 text-left font-normal">
-                    {c.ticker ?? "Unlisted"}
+                    {c.ticker ??
+                      (c.pricedAs
+                        ? `Unlisted, priced at ${c.pricedAs}`
+                        : "Unlisted")}
                     <div className="font-mono text-xs text-muted">
                       {c.classMember}
                     </div>

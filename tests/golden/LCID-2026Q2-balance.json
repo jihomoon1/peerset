@@ -16,7 +16,7 @@
     "url": "https://www.sec.gov/Archives/edgar/data/1811210/000162828026052606/R2.htm",
     "scale": "Thousands"
   },
-  "methodologyVersion": "0.5.0",
+  "methodologyVersion": "0.5.1",
   "note": "Every value is read from the filing's rendered balance sheet ('CONDENSED CONSOLIDATED BALANCE SHEETS', column Jun. 30, 2026), USD thousands as displayed, times the scale. Not engine output. Preferred is Unsupported: the face shows 'Redeemable convertible preferred stock, (related party)' 2,906,257 in temporary equity (us-gaap:TemporaryEquityCarryingAmountAttributableToParent), which methodology 0.4.3 §9 classifies as preferred by its label, but the derivative-liability line whose label mentions preferred stock is not classified and is the line the engine names. EV leaves the preferred out, and since 0.4.3 says so with the caution W_NOT_IN_EV_UNCLASSIFIED (LCID-2026Q2-valuation.json).",
   "debt": {
     "lines": [

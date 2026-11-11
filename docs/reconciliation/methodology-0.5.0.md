@@ -9,3 +9,7 @@ Methodology 0.5.0 (M7: banks and digital-asset companies, §13B–§13E) bumped 
 **Why no value changed.** All of these companies are operating companies (SIC outside 6000–6799). For them 0.5.0 changes nothing: the comps columns, EV, debt, cash and every multiple follow the same rules. The one §9 change that could touch them (preferred-stock look-alike lines that are share counts, dividends or empty no longer block the item) moved no golden value. Evidence: after changing only the version field, the full golden suite passed with every expected value untouched (`git diff tests/golden` shows one line per file, the version).
 
 The text notes in LCID's goldens that say "since 0.4.3" describe when a rule began and stay as written.
+
+## 0.5.1 (November 11, 2026)
+
+Same kind of change: **definition change, no value change.** 0.5.1 prices an unlisted share class at the company's only listed ticker (§6). The field `"methodologyVersion"` moved from `"0.5.0"` to `"0.5.1"` in the 19 files above and in `COIN-2026Q3-kind.json` and `FITB-2026Q3-kind.json`. No golden company has an unlisted class (Watsco's Class B is listed as WSO-B), so no market cap, EV or multiple moved: the full golden suite passed before and after with only the version field changed.

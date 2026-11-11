@@ -120,6 +120,7 @@ export type WarningCode =
   | "W_LEASE_LINE_EXCLUDED" // §7 rule 2: debt-tagged lease-only line left out
   | "W_RESTRICTED_CASH_INCLUDED" // §8
   | "W_SHARES_AFTER_BALANCE_SHEET" // §6: cover date after the balance sheet (info)
+  | "W_UNLISTED_CLASS_PRICED_AS_LISTED" // §6 (0.5.1): unlisted class at the listed price
   | "W_TICKER_NOT_IN_SEC_LIST" // §6: cover symbol SEC doesn't list for the CIK
   | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
   | "W_NOT_IN_EV_UNCLASSIFIED" // §9 (0.4.3): temporary-equity line, item Unsupported
