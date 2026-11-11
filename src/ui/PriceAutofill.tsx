@@ -27,6 +27,7 @@ import {
   rememberKey,
   type FillRow,
 } from "@/prices/browserAlphaVantage";
+import { clearTypedPrices } from "@/prices/savedPrices";
 
 const noSubscribe = () => () => {};
 
@@ -148,6 +149,7 @@ export function PriceAutofill({
     const storage = browserStorage();
     forgetRememberedKey(storage);
     clearQuoteCache(storage);
+    clearTypedPrices(storage);
     setApiKey("");
     setRemember(false);
     setRows({});

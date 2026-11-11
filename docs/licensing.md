@@ -35,6 +35,7 @@ This is the visitor's personal use of their own free key under Alpha Vantage's t
    - Requests go one at a time, at least 1.2 s apart (Alpha Vantage's burst notice asks for 1 per second), with at most 13 tickers per click.
    - A rate-limit or daily-cap answer stops the fill at once and keeps what was already filled.
    - Each close is cached in the visitor's own `localStorage` until 6 p.m. ET on the next weekday, so a reload spends no calls.
+   - A cached close is put back into an empty price box when the visitor opens a company again (November 2026), with its bar date and attribution. The expiry is unchanged, and it spends no calls.
 3. **The server stays off.** `PRICE_PROVIDER` stays `user` in production, and `/api/quotes` keeps answering 404 there (tests: `tests/integration/quotesRoute.test.ts`, "is 404 in user mode"; `tests/unit/prices/alphaVantage.test.ts`, `priceProviderName`).
 4. **Filled prices are user inputs.**
    - They go into the URL state (`px=` with `pxav=` naming the filled tickers and their bar dates), so the visitor decides whether to share a link.

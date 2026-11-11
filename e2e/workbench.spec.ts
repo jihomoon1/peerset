@@ -191,3 +191,30 @@ test("the table key explains Unsupported and lag", async ({ page }) => {
   await expect(key.getByText(/left out rather than guessed/)).toBeVisible();
   await expect(key.getByText(/more than 75 days away/)).toBeVisible();
 });
+
+test("typed prices are remembered in this browser and put back on a fresh visit", async ({
+  page,
+}) => {
+  await page.goto("/c/LII");
+  await expect(page.getByText(/4 of 4 peers loaded/)).toBeVisible();
+  await page.getByLabel("Price date").fill("2026-10-23");
+  await page.getByLabel("LII price (USD)").first().fill("500");
+  await page.getByLabel("CARR price (USD)").fill("60");
+  await expect(page).toHaveURL(/px=/);
+
+  // A fresh visit: no prices in the address.
+  await page.goto("/c/LII");
+  await expect(page.getByLabel("LII price (USD)").first()).toHaveValue("500");
+  await expect(page.getByLabel("CARR price (USD)")).toHaveValue("60");
+  await expect(page.getByLabel("Price date")).toHaveValue("2026-10-23");
+  await expect(
+    page.getByText("Put back 2 saved prices from this browser."),
+  ).toBeVisible();
+
+  // Clearing a price forgets it.
+  await page.getByLabel("CARR price (USD)").fill("");
+  await page.goto("/c/LII");
+  await expect(page.getByLabel("LII price (USD)").first()).toHaveValue("500");
+  await expect(page.getByText(/4 of 4 peers loaded/)).toBeVisible();
+  await expect(page.getByLabel("CARR price (USD)")).toHaveValue("");
+});

@@ -9,6 +9,7 @@ export function PricesBlock({
   priceDate,
   dateError,
   analysisDate,
+  note,
   onDate,
   onPaste,
   children,
@@ -16,6 +17,7 @@ export function PricesBlock({
   priceDate: string;
   dateError?: string;
   analysisDate: string;
+  note?: string; // e.g. how many saved prices were put back
   onDate: (date: string) => void;
   onPaste: (text: string) => string[]; // returns the lines it couldn't use
   children: ReactNode;
@@ -38,8 +40,14 @@ export function PricesBlock({
         >
           <p className="text-muted">
             One date covers every price you type. Enter prices in the table
-            below, or paste several at once.
+            below, or paste several at once. Prices are remembered in this
+            browser.
           </p>
+          {note && (
+            <p role="status" className="font-medium">
+              {note}
+            </p>
+          )}
           <div className="flex flex-col items-start gap-1">
             <label htmlFor="price-date" className="font-medium">
               Price date

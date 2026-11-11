@@ -153,14 +153,17 @@ test("3. reloading the same day spends no Alpha Vantage calls (cache)", async ({
   });
   expect(asked).toHaveLength(5);
 
-  // Reload without the prices in the URL, so every input is empty again.
+  // Open the company again without the prices in the URL. Today's saved closes are
+  // put back by themselves (November 2026): no click, and no new call.
   await openLii(page);
-  // The remembered key is back; Fill again is served from today's saved closes.
   await expect(panel(page).getByLabel("Alpha Vantage key")).toHaveValue(KEY);
-  await panel(page).getByRole("button", { name: "Fill prices" }).click();
-  await expect(summary(page)).toHaveText("Filled 5 of 5 prices.");
-  expect(asked).toHaveLength(5); // still 5: zero new calls
   await expect(page.getByLabel("JCI price (USD)")).toHaveValue("80");
+  await expect(
+    page.getByText("Put back 5 saved prices from this browser."),
+  ).toBeVisible();
+  // They are still labeled as filled with the user's own key.
+  await expect(page).toHaveURL(/pxav=/);
+  expect(asked).toHaveLength(5); // still 5: zero new calls
 
   // "Forget key" removes the key and the saved closes from this browser.
   await panel(page).getByRole("button", { name: "Forget key" }).click();

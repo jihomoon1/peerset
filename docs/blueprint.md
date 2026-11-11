@@ -136,7 +136,7 @@ The main screen is a dense, desktop-first workbench: as-of strip, target summary
 | Header | Top, 56 px, sticky | Wordmark, ticker search, current company, Export button | Export disabled until at least one valid row exists |
 | As-of strip | Under header, sticky | Prices as of · financials LTM through · shares as of · data pulled at | Each item opens its explanation |
 | Target summary | Full width | Identity line (name, ticker, CIK, SIC, FYE, exchange); Operating block; Balance sheet block; Valuation block with the target's price input | "View calculations" opens the drawer on EBITDA |
-| Prices | Full width, above the comps table | Shared price date, paste box, price autofill with the visitor's own key | Apply to every row of the table |
+| Prices | Full width, above the comps table | Shared price date, paste box, price autofill with the visitor's own key | Apply to every row of the table. Prices are remembered in the visitor's own browser and put back into empty price boxes on a later visit (approved by Jiho, November 2026): a typed price with the date it was entered under, a key-filled close until the next close is published (`docs/licensing.md`). A price in the link wins; "Forget key" clears them |
 | Comps table | Full width | Target row, peer rows, stats rows | Sort, click cells, enter prices |
 | Peer panel | Full width, below the comps table and implied valuation, collapsible (changed from a 320 px left rail, approved by Jiho, November 2026) | Suggested peers with reasons in columns, add box, removed list, excluded list, count | Changes re-run stats only |
 | Provenance drawer | Right overlay, 440 px | Formula, inputs, concept, period, accession, filing link, status, warnings | Modal dialog; Esc closes |
