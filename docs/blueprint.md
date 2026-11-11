@@ -651,7 +651,7 @@ When companyfacts lacks the latest filing — as it did for LII's July 10-Q — 
 | `/api/fundamentals?ticker=` | GET | Pre-price fundamentals: LTM metrics, share classes, debt and cash | 24 h, keyed by CIK + latest accession + methodology version |
 | `/api/peers?ticker=` | GET | Peer selection result | Static index |
 | `/api/quotes?symbols=` | GET | Quote snapshots (Alpha Vantage mode only) | Until the next close |
-| `/api/export` | POST target, peers, prices | XLSX stream | None |
+| `/api/export` | POST target, peers, prices, optional export options (§17) | XLSX stream | None |
 | `/methodology` | Page | Static content | Build time |
 
 Design rules:
@@ -819,6 +819,16 @@ Trading Comps cells link here, shown in green.
 
 - One row per fact used: company, metric, concept, period start and end, value (USD), form, accession, filed date, source (companyfacts or filing), and a `HYPERLINK` to the filing index.
 - Then definitions, the NM policy, limitations, price source and attribution, app and methodology versions, and generation time.
+
+### Slide table (export option)
+
+Added after v1.1, approved by Jiho, November 2026. An "Options" button beside Export offers two choices. **Full workbook** is the three sheets above and stays the default. **Slide table** is a one-sheet workbook (`PeerSet_LII_slide_<date>.xlsx`, sheet "Comps") made to paste into a pitch slide:
+
+- **Table:** title and units lines, headers on row 4, the target on row 5 (bold), then every loaded peer, then the chosen summary rows ("Peer mean", "Peer median", …) over peers only.
+- **Choices (Advanced):** any of the nine table columns (at least one; default EV, LTM revenue, LTM EBITDA, EBITDA margin, EV/Revenue, EV/EBITDA) and any of Mean, Median, High, Low, 25th and 75th percentile (default Mean and Median). Company and Ticker always show.
+- **Sources under the table,** to copy into the slide footer: the source line, the price line with its attribution (the same text as Trading Comps row 5), the EBITDA and basic-share notes, the disclaimer, and each company's latest filing (form, period end, filed date) linked to its SEC filing index.
+- **Values, not formulas.** There is no Calculations sheet for a formula to point at, so cells are plain numbers taken from the same snapshot, in millions at full precision. "NM", "—" and "Unsupported" stay text. No input colors, fills, freeze panes or gridlines.
+- **Same rules as the full workbook:** the options choose what is shown and never carry a number; the server recomputes everything.
 
 ### Formatting
 
