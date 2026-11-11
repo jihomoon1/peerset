@@ -53,7 +53,9 @@ test("§6 No ticker yet: search box, examples and a one-line explanation", async
       page.getByRole("link", { name: t, exact: true }),
     ).toBeVisible();
   await expect(
-    page.getByText(/^Type a U\.S\. ticker and get first-pass trading comps/),
+    page.getByText(
+      "Type a U.S. stock ticker. Get a comps table built from SEC filings.",
+    ),
   ).toBeVisible();
 });
 
