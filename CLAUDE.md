@@ -3,11 +3,11 @@
 PeerSet is a public, non-commercial, open-source web app that turns a U.S. ticker into first-pass trading comps built from SEC filings. Every number must trace to its filing, period and XBRL concept.
 
 - Source of truth for product and engineering: `docs/blueprint.md`.
-- Source of truth for financial definitions: `docs/methodology.md` (imported below).
+- Source of truth for financial definitions: `docs/methodology.md`. A summary is imported below; read the full section before changing finance code.
 - If a request conflicts with either, stop and ask Jiho.
 - Jiho is a finance student and a beginner programmer: explain important choices in one or two plain sentences.
 
-@docs/methodology.md
+@docs/methodology-summary.md
 
 ## Architecture map (blueprint §12)
 
