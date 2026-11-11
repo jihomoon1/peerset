@@ -98,11 +98,11 @@ export function TickerSearch({
         onChange={(e) => setValue(e.target.value)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={`${compact ? "w-28" : "w-48"} rounded-sm border border-rule bg-background px-2 py-1 uppercase placeholder:normal-case focus-visible:outline-2 focus-visible:outline-accent`}
+        className={`${compact ? "w-28 border-rule px-2 py-1" : "w-64 border-foreground px-3 py-2.5 text-base"} rounded-sm border bg-background uppercase placeholder:normal-case focus-visible:outline-2 focus-visible:outline-accent`}
       />
       <button
         type="submit"
-        className="rounded-sm bg-accent px-3 py-1 font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className={`${compact ? "px-3 py-1" : "px-6 py-2.5 text-base"} rounded-sm bg-accent font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
       >
         {lookup ? "Look up" : "Analyze"}
       </button>

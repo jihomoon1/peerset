@@ -77,3 +77,41 @@ test("the Export button sits in the header and enables once peers load", async (
   await expect(page.getByText(/4 of 4 peers loaded/)).toBeVisible();
   await expect(button).toBeEnabled();
 });
+
+test("export options: the slide table downloads as one clean sheet", async ({
+  page,
+}) => {
+  await page.goto("/c/LII");
+  await expect(page.getByText(/4 of 4 peers loaded/)).toBeVisible();
+  const banner = page.getByRole("banner");
+  await banner.getByRole("button", { name: "Options" }).click();
+  await page.getByRole("radio", { name: /^Slide table/ }).check();
+  // Advanced: drop a column, add a summary row.
+  await page.getByText("Advanced", { exact: true }).click();
+  await page.getByRole("checkbox", { name: "EBITDA margin" }).uncheck();
+  await page.getByRole("checkbox", { name: "High" }).check();
+
+  const download = page.waitForEvent("download");
+  await banner.getByRole("button", { name: "Export to Excel" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("PeerSet_LII_slide_2026-10-26.xlsx");
+
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(
+    (await readFile(await file.path())) as unknown as ArrayBuffer,
+  );
+  expect(wb.worksheets.map((w) => w.name)).toEqual(["Comps"]);
+  const ws = wb.getWorksheet("Comps")!;
+  const head = [1, 2, 3, 4, 5, 6, 7].map((c) => ws.getRow(4).getCell(c).value);
+  expect(head).toEqual([
+    "Company",
+    "Ticker",
+    "EV",
+    "LTM revenue",
+    "LTM EBITDA",
+    "EV/Revenue",
+    "EV/EBITDA",
+  ]);
+  expect(rowLabeled(ws, "Peer high")).toBeGreaterThan(0);
+  expect(rowLabeled(ws, "Sources")).toBeGreaterThan(0);
+});

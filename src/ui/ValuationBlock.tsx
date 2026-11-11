@@ -51,7 +51,7 @@ const ROWS: {
 const inputId = (ticker: string) => `price-${ticker}`;
 
 // The valuation block (blueprint §6): one price per listed class and one price date,
-// then market cap, EV and the three multiples, recomputed in the browser on every
+// (set in the Prices block), then market cap, EV and the three multiples, recomputed in the browser on every
 // keystroke with the same priceCompany the server uses (blueprint §13).
 export function ValuationBlock({
   f,
@@ -59,30 +59,18 @@ export function ValuationBlock({
   tickers,
   inputs,
   errors,
-  priceDate,
-  dateError,
-  analysisDate,
   providerErrors,
   onInput,
-  onDate,
-  onPaste,
 }: {
   f: CompanyFundamentals;
   v: Valuation;
   tickers: string[];
   inputs: Record<string, string>;
   errors: Record<string, string>;
-  priceDate: string;
-  dateError?: string;
-  analysisDate: string;
   providerErrors: QuoteError[];
   onInput: (ticker: string, text: string) => void;
-  onDate: (date: string) => void;
-  onPaste: (text: string) => string[]; // returns the lines it couldn't use
 }) {
   const [open, setOpen] = useState(false);
-  const [paste, setPaste] = useState("");
-  const [unmatched, setUnmatched] = useState<string[]>([]);
   const opener = useRef<HTMLButtonElement | null>(null);
   const blocker = f.shareClasses.blocker;
 
@@ -98,7 +86,7 @@ export function ValuationBlock({
       aria-labelledby="valuation-heading"
       className="flex flex-col gap-3"
     >
-      <h2 id="valuation-heading" className="text-base font-semibold">
+      <h2 id="valuation-heading" className="section-bar">
         Valuation
       </h2>
 
@@ -139,61 +127,15 @@ export function ValuationBlock({
             )}
           </div>
         ))}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="price-date" className="font-medium">
-            Price date
-          </label>
-          <input
-            id="price-date"
-            type="date"
-            value={priceDate}
-            max={analysisDate}
-            onChange={(e) => onDate(e.target.value)}
-            aria-invalid={dateError ? true : undefined}
-            aria-describedby={dateError ? "price-date-error" : undefined}
-            className="rounded-sm border border-rule bg-background px-2 py-1 focus-visible:outline-2 focus-visible:outline-accent"
-          />
-          {dateError && (
-            <span id="price-date-error" className="text-error">
-              {dateError}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="price-paste" className="font-medium">
-            Paste prices{" "}
-            <span className="font-normal text-muted">
-              (one &quot;ticker, price&quot; per line)
-            </span>
-          </label>
-          <div className="flex items-start gap-2">
-            <textarea
-              id="price-paste"
-              rows={2}
-              value={paste}
-              onChange={(e) => setPaste(e.target.value)}
-              className="w-48 rounded-sm border border-rule bg-background px-2 py-1 font-mono text-xs focus-visible:outline-2 focus-visible:outline-accent"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setUnmatched(onPaste(paste));
-                setPaste("");
-              }}
-              className="rounded-sm border border-rule px-2 py-1 focus-visible:outline-2 focus-visible:outline-accent"
-            >
-              Apply
-            </button>
-          </div>
-          {unmatched.length > 0 && (
-            <span role="status" className="text-warn">
-              Not used: {unmatched.join("; ")}
-            </span>
-          )}
-        </div>
         {providerErrors.length > 0 && (
           <p role="status" className="w-full text-warn">
             {providerErrors.map((e) => `${e.symbol}: ${e.message}`).join(" · ")}
+          </p>
+        )}
+        {!blocker && v.needsPrice.length > 0 && (
+          <p className="w-full">
+            Enter {v.needsPrice.join(" and ")}&apos;s closing price to compute
+            the values below.
           </p>
         )}
         {blocker && (
@@ -239,7 +181,7 @@ export function ValuationBlock({
                 <th scope="row" className="pr-3 text-left font-normal">
                   {row.label}
                 </th>
-                <td className="pr-3 text-right">
+                <td className="pr-3 text-right whitespace-nowrap">
                   {row.key === "marketCap" || row.key === "ev" ? (
                     <button
                       type="button"
@@ -263,7 +205,9 @@ export function ValuationBlock({
                   )}
                 </td>
                 <td>
-                  {d.note && <span className="text-muted">{d.note}</span>}
+                  {d.note && d.kind !== "needs-price" && (
+                    <span className="text-muted">{d.note}</span>
+                  )}
                   {cautions.length > 0 && (
                     <span className="ml-2 text-warn">
                       {cautions.map((w) => w.message).join("; ")}

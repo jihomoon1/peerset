@@ -11,7 +11,11 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   globalTimeout: 10 * 60_000,
   globalSetup: "./e2e/warmup.ts",
-  expect: { timeout: 10_000 },
+  // All specs share one server, so its SEC limiter (600 ms between starts, ADR 0012)
+  // queues their peer loads. A warm 4-peer load takes 5–6 s on its own.
+  workers: 2,
+  timeout: 60_000,
+  expect: { timeout: 25_000 },
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: "http://localhost:3000",

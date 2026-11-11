@@ -3,6 +3,7 @@
 // fundamentals and recomputes everything (lib/exportSnapshot.ts). Kept apart from
 // route.ts so tests can inject fixture deps.
 
+import { buildSlideWorkbook } from "@/export/slide";
 import { buildWorkbook } from "@/export/workbook";
 import {
   errorResponseBody,
@@ -11,7 +12,11 @@ import {
   PeerSetError,
   SecRateLimitedError,
 } from "@/lib/errors";
-import { loadExportSnapshot, type ExportDeps } from "@/lib/exportSnapshot";
+import {
+  loadExportSnapshot,
+  parseExportOptions,
+  type ExportDeps,
+} from "@/lib/exportSnapshot";
 import { log, type Logger } from "@/lib/log";
 
 export const XLSX_CONTENT_TYPE =
@@ -46,15 +51,22 @@ export function createExportHandler(
     const started = Date.now();
     try {
       const deps = makeDeps();
-      const snapshot = await loadExportSnapshot(await readBody(request), deps);
-      const buffer = Buffer.from(
-        await buildWorkbook(snapshot).xlsx.writeBuffer(),
-      );
+      const body = await readBody(request);
+      // Checked before any filing is loaded, so a bad option fails fast.
+      const options = parseExportOptions(body);
+      const snapshot = await loadExportSnapshot(body, deps);
+      const workbook =
+        options.layout === "slide"
+          ? buildSlideWorkbook(snapshot, options)
+          : buildWorkbook(snapshot);
+      const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
       const ticker = snapshot.table.target.ticker;
-      const filename = `PeerSet_${ticker}_comps_${snapshot.analysisDate}.xlsx`;
+      const kind = options.layout === "slide" ? "slide" : "comps";
+      const filename = `PeerSet_${ticker}_${kind}_${snapshot.analysisDate}.xlsx`;
       logger("export", {
         requestId,
         ticker,
+        layout: options.layout,
         peers: snapshot.table.counts.peers,
         failed: snapshot.table.counts.failed,
         quotes: snapshot.quotes.length,

@@ -78,12 +78,15 @@ export function PeerPanel({
   return (
     <aside
       aria-labelledby="peer-panel-heading"
-      className={`flex flex-col gap-4 text-[13px] ${collapsed ? "lg:w-auto" : "lg:w-80"}`}
+      className="flex flex-col gap-4 text-[13px]"
     >
-      <div className="flex items-center justify-between gap-2">
-        <h2 id="peer-panel-heading" className="text-base font-semibold">
+      <div className="flex items-center justify-between gap-2 border-t-2 border-foreground pt-2">
+        <h2
+          id="peer-panel-heading"
+          className="text-xs font-bold tracking-wide uppercase"
+        >
           Peers{" "}
-          <span className="text-sm font-normal text-muted">
+          <span className="font-normal text-muted normal-case">
             ({active.length} in table)
           </span>
         </h2>
@@ -167,7 +170,7 @@ export function PeerPanel({
               Peer screening unavailable: {selection.message}
             </p>
           ) : (
-            <p className="text-muted">
+            <p className="max-w-3xl text-muted">
               {tierText(selection.data)}. Screened on revenue in the latest
               fiscal year (0.2x–5x {selection.data.target.ticker}). SIC codes
               miss some competitors: add them above.
@@ -184,7 +187,7 @@ export function PeerPanel({
             </div>
           )}
           {active.length > 0 && (
-            <ul className="flex flex-col gap-2">
+            <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
               {active.map((p) => {
                 const s = states[p.ticker];
                 return (

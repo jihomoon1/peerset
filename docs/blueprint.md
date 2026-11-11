@@ -127,7 +127,7 @@ A user goes from ticker to downloaded workbook in about ten steps, and the syste
 
 ## 6. Screen and interaction specification
 
-The main screen is a dense, desktop-first workbench: as-of strip, target summary, then the comps table with the peer panel beside it.
+The main screen is a dense, desktop-first workbench: as-of strip, target summary, price tools, then the comps table with implied valuation and the peer panel below it.
 
 ### Layout regions (desktop, 1280 px and wider)
 
@@ -135,9 +135,10 @@ The main screen is a dense, desktop-first workbench: as-of strip, target summary
 | --- | --- | --- | --- |
 | Header | Top, 56 px, sticky | Wordmark, ticker search, current company, Export button | Export disabled until at least one valid row exists |
 | As-of strip | Under header, sticky | Prices as of · financials LTM through · shares as of · data pulled at | Each item opens its explanation |
-| Target summary | Full width | Identity line (name, ticker, CIK, SIC, FYE, exchange); Operating block; Valuation block | "View calculations" opens the drawer on EBITDA |
-| Peer panel | Left rail, 320 px, collapsible | Suggested peers with reasons, add box, removed list, excluded list, count | Changes re-run stats only |
-| Comps table | Main area | Target row, peer rows, stats rows | Sort, click cells, enter prices |
+| Target summary | Full width | Identity line (name, ticker, CIK, SIC, FYE, exchange); Operating block; Balance sheet block; Valuation block with the target's price input | "View calculations" opens the drawer on EBITDA |
+| Prices | Full width, above the comps table | Shared price date, paste box, price autofill with the visitor's own key | Apply to every row of the table. Prices are remembered in the visitor's own browser and put back into empty price boxes on a later visit (approved by Jiho, November 2026): a typed price with the date it was entered under, a key-filled close until the next close is published (`docs/licensing.md`). A price in the link wins; "Forget key" clears them |
+| Comps table | Full width | Target row, peer rows, stats rows | Sort, click cells, enter prices |
+| Peer panel | Full width, below the comps table and implied valuation, collapsible (changed from a 320 px left rail, approved by Jiho, November 2026) | Suggested peers with reasons in columns, add box, removed list, excluded list, count | Changes re-run stats only |
 | Provenance drawer | Right overlay, 440 px | Formula, inputs, concept, period, accession, filing link, status, warnings | Modal dialog; Esc closes |
 | Footer | Bottom | Disclaimer, data attributions, GitHub link, app and methodology versions |  |
 
@@ -155,9 +156,9 @@ Columns, in order: Company · Ticker · Fin. through · Price · Market cap · E
 
 ### Visual system
 
-- One accent (a deep ink blue) for the target, focus rings and primary buttons. Amber only for warnings, red only for errors. Status is never carried by color alone.
-- Inter with tabular numerals, 13 px table text, 32 px rows, subtle row separators, no zebra striping on screen.
-- No gradients, shadows or hero sections. It should read like a banking workbook, not a startup homepage.
+- Black and white with one accent (cobalt) for the target, focus rings and primary buttons. Amber only for warnings, red only for errors. Status is never carried by color alone.
+- Inter with tabular numerals, 13 px table text, 32 px rows, subtle row separators, no zebra striping on screen. Inter Tight for large headings. Square corners; section headings are a heavy rule over a small uppercase label; black bands for the site header, table header and home-page explainer.
+- No gradients or shadows. The home page may have a hero (approved by Jiho, November 2026); every other screen has none and reads like a banking workbook, not a startup homepage.
 
 ### UX states
 
@@ -650,7 +651,7 @@ When companyfacts lacks the latest filing — as it did for LII's July 10-Q — 
 | `/api/fundamentals?ticker=` | GET | Pre-price fundamentals: LTM metrics, share classes, debt and cash | 24 h, keyed by CIK + latest accession + methodology version |
 | `/api/peers?ticker=` | GET | Peer selection result | Static index |
 | `/api/quotes?symbols=` | GET | Quote snapshots (Alpha Vantage mode only) | Until the next close |
-| `/api/export` | POST target, peers, prices | XLSX stream | None |
+| `/api/export` | POST target, peers, prices, optional export options (§17) | XLSX stream | None |
 | `/methodology` | Page | Static content | Build time |
 
 Design rules:
@@ -818,6 +819,16 @@ Trading Comps cells link here, shown in green.
 
 - One row per fact used: company, metric, concept, period start and end, value (USD), form, accession, filed date, source (companyfacts or filing), and a `HYPERLINK` to the filing index.
 - Then definitions, the NM policy, limitations, price source and attribution, app and methodology versions, and generation time.
+
+### Slide table (export option)
+
+Added after v1.1, approved by Jiho, November 2026. An "Options" button beside Export offers two choices. **Full workbook** is the three sheets above and stays the default. **Slide table** is a one-sheet workbook (`PeerSet_LII_slide_<date>.xlsx`, sheet "Comps") made to paste into a pitch slide:
+
+- **Table:** title and units lines, headers on row 4, the target on row 5 (bold), then every loaded peer, then the chosen summary rows ("Peer mean", "Peer median", …) over peers only.
+- **Choices (Advanced):** any of the nine table columns (at least one; default EV, LTM revenue, LTM EBITDA, EBITDA margin, EV/Revenue, EV/EBITDA) and any of Mean, Median, High, Low, 25th and 75th percentile (default Mean and Median). Company and Ticker always show.
+- **Sources under the table,** to copy into the slide footer: the source line, the price line with its attribution (the same text as Trading Comps row 5), the EBITDA and basic-share notes, the disclaimer, and each company's latest filing (form, period end, filed date) linked to its SEC filing index.
+- **Values, not formulas.** There is no Calculations sheet for a formula to point at, so cells are plain numbers taken from the same snapshot, in millions at full precision. "NM", "—" and "Unsupported" stay text. No input colors, fills, freeze panes or gridlines.
+- **Same rules as the full workbook:** the options choose what is shown and never carry a number; the server recomputes everything.
 
 ### Formatting
 

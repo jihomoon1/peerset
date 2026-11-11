@@ -33,7 +33,7 @@ export function OperatingBlock({ f }: { f: CompanyFundamentals }) {
       aria-labelledby="operating-heading"
       className="flex flex-col gap-2"
     >
-      <h2 id="operating-heading" className="text-base font-semibold">
+      <h2 id="operating-heading" className="section-bar">
         Operating
       </h2>
       <table className="w-full max-w-2xl border-collapse text-[13px] tabular-nums">

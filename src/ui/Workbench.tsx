@@ -8,12 +8,18 @@
 // Price autofill (v1.1) fills inputs from the user's own browser with the user's own
 // Alpha Vantage key; filled prices are user inputs like typed ones.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buildComps, type CompsPeer } from "@/domain/comps";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import type { QuoteSnapshot } from "@/domain/types";
 import { formatDate } from "@/lib/format";
 import type { QuoteError } from "@/lib/quotes";
+import { browserStorage } from "@/prices/browserAlphaVantage";
+import {
+  removeTypedPrice,
+  restorePrices,
+  saveTypedPrice,
+} from "@/prices/savedPrices";
 import { AsOfStrip } from "./AsOfStrip";
 import { BalanceSheetBlock } from "./BalanceSheetBlock";
 import { CompsTable } from "./CompsTable";
@@ -22,6 +28,7 @@ import { exportState } from "./exportRequest";
 import { ImpliedValuationBlock } from "./ImpliedValuationBlock";
 import { OperatingBlock } from "./OperatingBlock";
 import { PeerPanel, type PeerSelection } from "./PeerPanel";
+import { TableKey } from "./TableKey";
 import {
   activePeers,
   addPeer,
@@ -32,6 +39,7 @@ import {
   type PeerSetState,
 } from "./peerSet";
 import { PriceAutofill } from "./PriceAutofill";
+import { PricesBlock } from "./PricesBlock";
 import {
   byListingOrder,
   parsePastedPrices,
@@ -197,6 +205,77 @@ export function Workbench({
   ];
   const { counts } = table;
 
+  // One price box changed by hand. Clearing it also forgets its saved price.
+  const onPrice = (t: string, text: string) => {
+    touch();
+    if (!text.trim()) removeTypedPrice(browserStorage(), t);
+    setInputs((cur) => ({ ...cur, [t]: text }));
+  };
+
+  // Typed prices are kept in this browser with their price date (savedPrices.ts);
+  // key-filled ones already live in the quote cache with their own date.
+  useEffect(() => {
+    if (priceDate > analysisDate) return;
+    const storage = browserStorage();
+    for (const [t, v] of Object.entries(inputs)) {
+      if (!v.trim()) continue;
+      const n = priceNumber(v);
+      if (filled[t]?.close === n) continue;
+      if (providerQuotes.some((x) => x.symbol === t && x.close === n)) continue;
+      saveTypedPrice(storage, t, v, priceDate);
+    }
+  }, [inputs, priceDate, filled, analysisDate, providerQuotes]);
+
+  // The first time a ticker shows up with an empty price box, put back the price this
+  // browser has for it. Each ticker is tried once, so a box the user clears stays
+  // empty, and a price already on the page (typed, pasted or from the link) is kept.
+  const tried = useRef(new Set<string>());
+  const [restored, setRestored] = useState(0);
+  const restoreNote =
+    restored > 0
+      ? `Put back ${restored} saved price${restored === 1 ? "" : "s"} from this browser.`
+      : "";
+  const tickersKey = pasteTickers.join(",");
+  useEffect(() => {
+    const fresh = tickersKey
+      .split(",")
+      .filter((t) => t && !tried.current.has(t));
+    if (fresh.length === 0) return;
+    fresh.forEach((t) => tried.current.add(t));
+    const isFilled = (t: string, v: string) =>
+      filled[t]?.close === priceNumber(v);
+    const typedInUse = Object.entries(inputs).some(
+      ([t, v]) => v.trim() && !isFilled(t, v),
+    );
+    const r = restorePrices({
+      storage: browserStorage(),
+      tickers: fresh.filter((t) => !inputs[t]?.trim()),
+      typedDate: typedInUse ? priceDate : null,
+      analysisDate,
+      now: new Date(),
+    });
+    const n = Object.keys(r.inputs).length;
+    if (n === 0) return;
+    setRetrievedAt(new Date().toISOString());
+    setInputs((cur) => ({ ...cur, ...r.inputs }));
+    setFilled((cur) => ({ ...cur, ...r.filled }));
+    const filledDates = [
+      ...Object.values(r.filled),
+      ...Object.entries(filled)
+        .filter(([t]) => inputs[t]?.trim())
+        .map(([, fp]) => fp),
+    ].map((fp) => fp.asOfDate);
+    if (r.priceDate) setPriceDate(r.priceDate);
+    // Only key-filled prices on the page: the shared date shows the earliest close.
+    else if (
+      !typedInUse &&
+      n === Object.keys(r.filled).length &&
+      filledDates.length > 0
+    )
+      setPriceDate(filledDates.reduce((a, b) => (a < b ? a : b)));
+    setRestored((prev) => prev + n);
+  }, [tickersKey, inputs, filled, priceDate, analysisDate]);
+
   // The export sends these inputs; the server recomputes the same table (§13).
   const exporting = exportState({
     target: f.identity.ticker,
@@ -218,22 +297,25 @@ export function Workbench({
         priceDate={table.target.valuation!.bridge.dates.price}
         providerOn={providerOn}
       />
-      <OperatingBlock f={f} />
-      <BalanceSheetBlock f={f} />
-      <ValuationBlock
-        f={f}
-        v={table.target.valuation!}
-        tickers={targetTickers}
-        inputs={inputs}
-        errors={priced.errors}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <OperatingBlock f={f} />
+        <BalanceSheetBlock f={f} />
+        <ValuationBlock
+          f={f}
+          v={table.target.valuation!}
+          tickers={targetTickers}
+          inputs={inputs}
+          errors={priced.errors}
+          providerErrors={providerErrors}
+          onInput={onPrice}
+        />
+      </div>
+
+      <PricesBlock
         priceDate={priceDate}
         dateError={priced.dateError}
         analysisDate={analysisDate}
-        providerErrors={providerErrors}
-        onInput={(t, text) => {
-          touch();
-          setInputs((cur) => ({ ...cur, [t]: text }));
-        }}
+        note={restoreNote}
         onDate={(d) => {
           touch();
           setPriceDate(d);
@@ -246,48 +328,55 @@ export function Workbench({
           }
           return unmatched;
         }}
-      />
-      <PriceAutofill
-        tickers={pasteTickers}
-        inputs={inputs}
-        disabledReason={
-          counts.loading > 0
-            ? "Wait until every peer has finished loading"
-            : null
-        }
-        onQuote={(quote) => {
-          touch();
-          setInputs((cur) => ({ ...cur, [quote.symbol]: String(quote.close) }));
-          setFilled((cur) => ({
-            ...cur,
-            [quote.symbol]: { close: quote.close, asOfDate: quote.asOfDate },
-          }));
-        }}
-        onDone={(quotes) => {
-          if (quotes.length === 0) return;
-          // When every entered price now carries its own bar date, the shared date
-          // shows the earliest of them (methodology §6); typed prices keep theirs.
-          const done = new Set(quotes.map((x) => x.symbol));
-          const typedLeft = Object.entries(inputs).some(
-            ([t, v]) =>
-              v.trim() &&
-              !done.has(t) &&
-              !(filled[t] && filled[t].close === priceNumber(v)),
-          );
-          if (!typedLeft) {
-            const dates = [
-              ...quotes.map((x) => x.asOfDate),
-              ...Object.entries(filled)
-                .filter(([t]) => !done.has(t) && inputs[t]?.trim())
-                .map(([, fp]) => fp.asOfDate),
-            ];
-            setPriceDate(dates.reduce((a, b) => (a < b ? a : b)));
+      >
+        <PriceAutofill
+          tickers={pasteTickers}
+          inputs={inputs}
+          disabledReason={
+            counts.loading > 0
+              ? "Wait until every peer has finished loading"
+              : null
           }
-        }}
-      />
+          onQuote={(quote) => {
+            touch();
+            setInputs((cur) => ({
+              ...cur,
+              [quote.symbol]: String(quote.close),
+            }));
+            setFilled((cur) => ({
+              ...cur,
+              [quote.symbol]: {
+                close: quote.close,
+                asOfDate: quote.asOfDate,
+              },
+            }));
+          }}
+          onDone={(quotes) => {
+            if (quotes.length === 0) return;
+            // When every entered price now carries its own bar date, the shared date
+            // shows the earliest of them (methodology §6); typed prices keep theirs.
+            const done = new Set(quotes.map((x) => x.symbol));
+            const typedLeft = Object.entries(inputs).some(
+              ([t, v]) =>
+                v.trim() &&
+                !done.has(t) &&
+                !(filled[t] && filled[t].close === priceNumber(v)),
+            );
+            if (!typedLeft) {
+              const dates = [
+                ...quotes.map((x) => x.asOfDate),
+                ...Object.entries(filled)
+                  .filter(([t]) => !done.has(t) && inputs[t]?.trim())
+                  .map(([, fp]) => fp.asOfDate),
+              ];
+              setPriceDate(dates.reduce((a, b) => (a < b ? a : b)));
+            }
+          }}
+        />
+      </PricesBlock>
 
       <section aria-labelledby="comps-heading" className="flex flex-col gap-3">
-        <h2 id="comps-heading" className="text-base font-semibold">
+        <h2 id="comps-heading" className="section-bar">
           Trading comps
         </h2>
         <p role="status" aria-live="polite" className="text-[13px]">
@@ -316,36 +405,30 @@ export function Workbench({
             </span>
           )}
         </p>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_minmax(0,1fr)]">
-          <PeerPanel
-            selection={selection}
-            active={active}
-            removed={removedPeers(peerSet)}
-            states={states}
-            notAPeer={notAPeer}
-            onAdd={(raw) => {
-              const r = addPeer(peerSet, raw);
-              if (!r.ok) return r.message;
-              setPeerSet(r.state);
-              return null;
-            }}
-            onRemove={(t) => setPeerSet((s) => removePeer(s, t))}
-            onRestore={(t) => setPeerSet((s) => restorePeer(s, t))}
-            onDismiss={(t) => setPeerSet((s) => removePeer(s, t))}
-          />
-          <div className="flex min-w-0 flex-col gap-6">
-            <CompsTable
-              table={table}
-              inputs={inputs}
-              errors={priced.errors}
-              onInput={(t, text) => {
-                touch();
-                setInputs((cur) => ({ ...cur, [t]: text }));
-              }}
-            />
-            <ImpliedValuationBlock table={table} />
-          </div>
-        </div>
+        <CompsTable
+          table={table}
+          inputs={inputs}
+          errors={priced.errors}
+          onInput={onPrice}
+        />
+        <TableKey />
+        <ImpliedValuationBlock table={table} />
+        <PeerPanel
+          selection={selection}
+          active={active}
+          removed={removedPeers(peerSet)}
+          states={states}
+          notAPeer={notAPeer}
+          onAdd={(raw) => {
+            const r = addPeer(peerSet, raw);
+            if (!r.ok) return r.message;
+            setPeerSet(r.state);
+            return null;
+          }}
+          onRemove={(t) => setPeerSet((s) => removePeer(s, t))}
+          onRestore={(t) => setPeerSet((s) => restorePeer(s, t))}
+          onDismiss={(t) => setPeerSet((s) => removePeer(s, t))}
+        />
       </section>
     </>
   );

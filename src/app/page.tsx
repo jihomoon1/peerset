@@ -1,62 +1,92 @@
 import Link from "next/link";
-import { DISCLAIMER } from "@/lib/site";
 import { TickerSearch } from "@/ui/TickerSearch";
 
 const EXAMPLES = ["LII", "WSO", "GGG", "AAON"];
 
-// Blueprint §6 "No ticker yet": search box, examples, one-line explanation.
+const STEPS: [string, string][] = [
+  [
+    "Type a ticker",
+    "PeerSet reads the company's SEC filings and picks similar companies to compare it with.",
+  ],
+  [
+    "Add share prices",
+    "Type them in, or fill them with a free key. Filings don't include prices.",
+  ],
+  [
+    "Check and export",
+    "Click any number to see the filing it came from, then download the table to Excel.",
+  ],
+];
+
+const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-8";
+
+// Blueprint §6 "No ticker yet": search box, examples, one-line explanation, under the
+// one hero the visual system allows. Everything sits on one left edge.
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
-      <section aria-labelledby="home-heading" className="flex flex-col gap-3">
-        <h1 id="home-heading" className="text-xl font-semibold">
-          PeerSet
+    <main className="flex flex-1 flex-col">
+      <section
+        aria-labelledby="home-heading"
+        className={`${WRAP} flex flex-col gap-6 py-16 lg:py-24`}
+      >
+        <h1
+          id="home-heading"
+          className="font-display max-w-4xl text-5xl leading-[1.05] font-bold tracking-[-0.02em] sm:text-7xl"
+        >
+          Every multiple, <br className="hidden sm:block" />
+          traced to the filing.
         </h1>
-        <p className="max-w-2xl text-sm">
-          Type a U.S. ticker and get first-pass trading comps built from SEC
-          filings, with every number traced to its filing, period and XBRL
-          concept.
+        <p className="max-w-xl text-lg leading-snug">
+          Type a U.S. stock ticker. Get a comps table built from SEC filings.
         </p>
         <TickerSearch lookup />
-        <p className="text-[13px]">
-          <span className="text-muted">Examples: </span>
-          {EXAMPLES.map((t, i) => (
-            <span key={t}>
-              {i > 0 && " · "}
-              <Link
-                href={`/c/${t}`}
-                className="text-accent underline focus-visible:outline-2 focus-visible:outline-accent"
-              >
-                {t}
-              </Link>
-            </span>
+        <p className="flex flex-wrap items-center gap-2 text-[13px]">
+          <span className="text-muted">Or try one</span>
+          {EXAMPLES.map((t) => (
+            <Link
+              key={t}
+              href={`/c/${t}`}
+              className="border border-foreground px-3 py-1 font-semibold hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              {t}
+            </Link>
           ))}
         </p>
       </section>
 
-      <section aria-labelledby="how-heading" className="flex flex-col gap-2">
-        <h2 id="how-heading" className="text-sm font-semibold">
-          How it works
-        </h2>
-        <ul className="list-disc space-y-1 pl-5 text-[13px]">
-          <li>
-            Reads the company&apos;s latest 10-K or 10-Q from SEC EDGAR, and
-            parses the filing itself when SEC&apos;s summary data lags.
-          </li>
-          <li>
-            Builds last-twelve-month revenue, EBITDA, net income and EPS, plus
-            debt and cash from the balance sheet as presented.
-          </li>
-          <li>
-            You enter the share price; PeerSet computes market cap, enterprise
-            value and multiples, and shows the calculation behind every cell.
-          </li>
-        </ul>
+      <section aria-labelledby="how-heading" className="band">
+        <div className={`${WRAP} flex flex-col gap-8 py-12 lg:py-16`}>
+          <h2
+            id="how-heading"
+            className="font-display text-3xl font-medium tracking-[-0.01em]"
+          >
+            How it works
+          </h2>
+          <ol className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-3">
+            {STEPS.map(([title, body], i) => (
+              <li
+                key={title}
+                className="flex flex-col gap-2 border-t border-foreground pt-4"
+              >
+                <h3 className="text-[17px] font-semibold">
+                  {i + 1}. {title}
+                </h3>
+                <p className="max-w-sm text-[15px] leading-snug text-muted">
+                  {body}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="text-[15px]">
+            <Link
+              href="/about"
+              className="underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              Why the filing trail matters
+            </Link>
+          </p>
+        </div>
       </section>
-
-      <p className="border-l-2 border-rule pl-3 text-xs text-muted">
-        {DISCLAIMER}
-      </p>
     </main>
   );
 }

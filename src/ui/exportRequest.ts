@@ -5,6 +5,7 @@
 
 import { COMPS_COLUMNS, type CompsTable } from "@/domain/comps";
 import type { QuoteSnapshot } from "@/domain/types";
+import type { ExportOptions } from "@/export/options";
 
 export interface ExportRequestBody {
   target: string;
@@ -15,6 +16,8 @@ export interface ExportRequestBody {
   // v1.1: prices the browser filled from Alpha Vantage with the user's own key, each
   // with its bar's date. Still user inputs; the server labels them, never trusts more.
   filled?: Record<string, string>;
+  // What the workbook should contain; absent means the full three-sheet workbook.
+  options?: ExportOptions;
 }
 
 export interface ExportState {

@@ -57,12 +57,8 @@ function block(f: CompanyFundamentals, quotes: QuoteSnapshot[]) {
         quotes.map((q) => [q.symbol, String(q.close)]),
       )}
       errors={{}}
-      priceDate="2026-10-23"
-      analysisDate="2026-10-26"
       providerErrors={[]}
       onInput={() => {}}
-      onDate={() => {}}
-      onPaste={() => []}
     />,
   );
 }

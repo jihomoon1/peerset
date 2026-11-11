@@ -13,7 +13,9 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { QuoteSnapshot } from "@/domain/types";
+import Link from "next/link";
 import { formatDate } from "@/lib/format";
+import { PRICE_KEY_GUIDE_PATH } from "@/lib/priceKeyGuide";
 import {
   browserStorage,
   clearQuoteCache,
@@ -25,6 +27,7 @@ import {
   rememberKey,
   type FillRow,
 } from "@/prices/browserAlphaVantage";
+import { clearTypedPrices } from "@/prices/savedPrices";
 
 const noSubscribe = () => () => {};
 
@@ -146,6 +149,7 @@ export function PriceAutofill({
     const storage = browserStorage();
     forgetRememberedKey(storage);
     clearQuoteCache(storage);
+    clearTypedPrices(storage);
     setApiKey("");
     setRemember(false);
     setRows({});
@@ -162,17 +166,31 @@ export function PriceAutofill({
       <h3 id={`${id}-h`} className="text-[13px] font-semibold">
         Price autofill
       </h3>
+      <ol className="list-decimal space-y-1 pl-4">
+        <li>
+          <a
+            href="https://www.alphavantage.co/support/#api-key"
+            className="font-semibold text-accent underline underline-offset-2"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Get a free Alpha Vantage key
+          </a>{" "}
+          <span className="text-muted">
+            (opens in a new tab; a short form with your email).
+          </span>
+        </li>
+        <li>Paste it below and press Fill prices.</li>
+      </ol>
       <p className="text-muted">
-        Your free key from{" "}
-        <a
-          href="https://www.alphavantage.co/support/#api-key"
+        Your key stays in your browser; PeerSet never sees it. Free keys allow
+        25 requests a day.{" "}
+        <Link
+          href={PRICE_KEY_GUIDE_PATH}
           className="text-accent underline underline-offset-2"
-          target="_blank"
-          rel="noreferrer"
         >
-          alphavantage.co
-        </a>
-        . It stays in your browser; PeerSet never sees it.
+          Step-by-step guide
+        </Link>
       </p>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <label className="flex flex-col gap-1">

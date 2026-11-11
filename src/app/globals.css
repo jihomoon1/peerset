@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
-/* Blueprint §6 visual system: one accent (deep ink blue), amber only for warnings,
-   red only for errors, no gradients or shadows. */
+/* Blueprint §6 visual system: black and white with one accent (cobalt), amber only
+   for warnings, red only for errors, no gradients or shadows. `.band` is a black
+   section; it re-points the tokens, so anything inside adapts without its own colors. */
 :root {
   --background: #ffffff;
-  --foreground: #1a1d21;
+  --foreground: #0a0a0a;
   --muted: #5b6470;
-  --rule: #e3e6ea;
-  --surface: #f6f7f9;
-  --accent: #1f3a60;
+  --rule: #e1e3e8;
+  --surface: #f5f5f7;
+  --accent: #1a3ce0;
+  --target: #eef1fe;
   --warn: #7a4f00;
   --warn-bg: #fff6e0;
   --error: #a4161a;
@@ -22,12 +24,28 @@
     --muted: #a0a8b3;
     --rule: #2a2f36;
     --surface: #171a1f;
-    --accent: #8fb3e8;
+    --accent: #93a8ff;
+    --target: #1a2042;
     --warn: #f0c060;
     --warn-bg: #2b2210;
     --error: #ff8a8a;
     --error-bg: #2d1414;
   }
+}
+
+.band {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --muted: #a8aeb8;
+  --rule: #33373e;
+  --surface: #1c1e22;
+  --accent: #ffffff;
+  --warn: #f0c060;
+  --warn-bg: #2b2210;
+  --error: #ff8a8a;
+  --error-bg: #2d1414;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 @theme inline {
@@ -37,17 +55,31 @@
   --color-rule: var(--rule);
   --color-surface: var(--surface);
   --color-accent: var(--accent);
+  --color-target: var(--target);
   --color-warn: var(--warn);
   --color-warn-bg: var(--warn-bg);
   --color-error: var(--error);
   --color-error-bg: var(--error-bg);
   --font-sans: var(--font-inter);
+  --font-display: var(--font-inter-tight);
+  --radius-sm: 0px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* A section heading: heavy top rule, small uppercase label. */
+.section-bar {
+  border-top: 2px solid var(--foreground);
+  padding-top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* /methodology: the rendered docs/methodology.md (M6). Wide tables scroll inside the

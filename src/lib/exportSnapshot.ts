@@ -5,9 +5,14 @@
 // a number it computed.
 
 import { z } from "zod";
-import type { CompsPeer, PeerState } from "@/domain/comps";
+import { COMPS_COLUMNS, type CompsPeer, type PeerState } from "@/domain/comps";
 import { isIsoDate } from "@/domain/dates";
 import { PEERS } from "@/domain/policy";
+import {
+  normalizeSlideOptions,
+  SLIDE_STATS,
+  type ExportOptions,
+} from "@/export/options";
 import { buildExportSnapshot, type ExportSnapshot } from "@/export/snapshot";
 import { PRICE_LIMIT } from "@/prices/userEntered";
 import { activePeers, NOT_A_PEER_CODES } from "@/ui/peerSet";
@@ -86,6 +91,38 @@ export function parseExportRequest(
       );
   }
   return req;
+}
+
+// What the workbook should contain (blueprint §17, "Slide table"). Absent means the
+// full workbook. Options pick a layout, columns and summary rows; they hold no number.
+const ExportOptionsSchema = z.discriminatedUnion("layout", [
+  z.object({ layout: z.literal("full") }),
+  z.object({
+    layout: z.literal("slide"),
+    columns: z.array(z.enum(COMPS_COLUMNS)).min(1).max(COMPS_COLUMNS.length),
+    stats: z.array(z.enum(SLIDE_STATS)).max(SLIDE_STATS.length),
+  }),
+]);
+
+export function parseExportOptions(body: unknown): ExportOptions {
+  const raw =
+    body && typeof body === "object" && "options" in body
+      ? (body as { options: unknown }).options
+      : undefined;
+  if (raw === undefined) return { layout: "full" };
+  const parsed = ExportOptionsSchema.safeParse(raw);
+  if (!parsed.success)
+    throw new InvalidInputError(
+      "The export options aren't valid: choose the full workbook, or a slide table with at least one column",
+      `options: ${parsed.error.issues
+        .map((i) => i.path.join("."))
+        .join(", ")
+        .slice(0, 200)}`,
+    );
+  const o = parsed.data;
+  return o.layout === "slide"
+    ? { layout: "slide", ...normalizeSlideOptions(o) }
+    : o;
 }
 
 // A failed load as the browser's peer loader records it: the code and user message
