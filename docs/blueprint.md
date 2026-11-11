@@ -15,7 +15,7 @@ These came from your Phase A answers (all defaults) plus your GitHub and Vercel 
 | Hosting | Your existing Vercel account, Hobby plan, region `iad1` (Washington DC) |
 | Audience | Public URL; personal and non-commercial; no ads, payments or club branding |
 | SEC contact | A dedicated project email, stored in the `SEC_USER_AGENT` environment variable |
-| Issuer scope | 10-K/10-Q filers reporting in USD; no SIC 6000–6799 (banks, insurers, REITs, funds); multi-class only when every class is listed |
+| Issuer scope | 10-K/10-Q filers reporting in USD; in SIC 6000–6799 only banks and digital-asset companies (M7, methodology §13B), so no insurers, REITs or funds; multi-class only when every class is listed |
 | Peer screen | Revenue 0.2–5x the target, ranked by closeness; market cap shown after finalists are priced |
 | Excel | 3 sheets; blue hardcoded inputs; derived metrics as live formulas with cached values |
 | Pace | About 5–6 hours a week; correct LII plus a live URL first |
@@ -88,7 +88,7 @@ Support matrix v1:
 | --- | --- |
 | 10-K / 10-Q filers, including foreign-domiciled ones such as Trane and JCI | 20-F / 40-F filers and ADRs |
 | USD monetary facts | Non-USD reporting |
-| Non-financial SIC codes | SIC 6000–6799 |
+| Non-financial SIC codes; banks and digital-asset companies in SIC 6000–6799 (M7) | Other SIC 6000–6799 companies (insurers, REITs, funds, lenders without deposits) |
 | Single class, or several classes that are all listed | An unlisted share class |
 | Fiscal years of 52/53 weeks, any month-end | Transition-period reports (10-KT, 10-QT) |
 | Latest periodic filing within 200 days | Stale or delinquent filers |
@@ -1029,7 +1029,7 @@ v1's limits are deliberate and shown in the app; nine decisions below need your 
 - EV leaves out preferred stock, noncontrolling interests and equity investments; it warns when they look material.
 - Peers come from SIC codes and revenue scale, not economic judgment.
 - Prices are user-entered until Alpha Vantage approves; there are no historical prices.
-- Only U.S. 10-K/10-Q filers reporting in USD; no 20-F filers, ADRs or financial companies.
+- Only U.S. 10-K/10-Q filers reporting in USD; no 20-F filers or ADRs. Among financial companies only banks and digital-asset companies (M7).
 - Company extension tags are ignored, so some companies will be Unsupported.
 - Multi-class P/E and unlisted share classes are Unsupported.
 - LTM is only as current as each company's latest filing; laggards are flagged, not fixed.

@@ -4,6 +4,7 @@
 // that fails SEC schema validation is kept without that data and counted.
 
 import { readFileSync } from "node:fs";
+import { screeningProfile, type ScreeningProfile } from "@/domain/issuerKind";
 import { screeningRevenue } from "@/domain/screeningRevenue";
 import {
   assembleIndex,
@@ -12,7 +13,7 @@ import {
 } from "@/peers/buildIndex";
 import type { PeerIndex, PeerIndexMeta } from "@/peers/indexTypes";
 import { trimCompanyFacts } from "@/sec/companyFacts";
-import { parseSubmissions } from "@/sec/submissions";
+import { latestReport, parseSubmissions } from "@/sec/submissions";
 import type { Submissions } from "@/sec/schemas";
 import { forEachJsonEntry } from "./bulkZip";
 
@@ -55,14 +56,24 @@ export async function buildFromFiles(input: BuildInput): Promise<PeerIndex> {
   log(`submissions.zip: ${s.entries} entries, ${s.read} read`);
 
   const revenue = new Map<string, RevenueResult>();
+  const profiles = new Map<string, ScreeningProfile>();
   const f = await forEachJsonEntry(
     input.companyfactsZip,
     wanted,
     (name, text) => {
       try {
-        revenue.set(
-          cikOf(name),
-          screeningRevenue(trimCompanyFacts(JSON.parse(text)).facts),
+        const cik = cikOf(name);
+        const facts = trimCompanyFacts(JSON.parse(text)).facts;
+        revenue.set(cik, screeningRevenue(facts));
+        // Submissions are read first, so the latest report date is known (§13E).
+        const sub = subs.get(cik);
+        profiles.set(
+          cik,
+          screeningProfile({
+            sic: sub?.sic ?? "",
+            facts,
+            reportDate: sub ? latestReport(sub)?.reportDate : undefined,
+          }),
         );
       } catch {
         unreadable.companyfacts++;
@@ -81,6 +92,7 @@ export async function buildFromFiles(input: BuildInput): Promise<PeerIndex> {
       listed,
       subs.get(cik) ?? null,
       revenue.get(cik) ?? { kind: "none", reason: "no companyfacts entry" },
+      profiles.get(cik),
     ),
   );
   return assembleIndex(universe, companies, input.sources, unreadable);

@@ -5,7 +5,11 @@
 // a number it computed.
 
 import { z } from "zod";
-import { COMPS_COLUMNS, type CompsPeer, type PeerState } from "@/domain/comps";
+import {
+  ALL_COMPS_COLUMNS,
+  type CompsPeer,
+  type PeerState,
+} from "@/domain/comps";
 import { isIsoDate } from "@/domain/dates";
 import { PEERS } from "@/domain/policy";
 import {
@@ -99,7 +103,10 @@ const ExportOptionsSchema = z.discriminatedUnion("layout", [
   z.object({ layout: z.literal("full") }),
   z.object({
     layout: z.literal("slide"),
-    columns: z.array(z.enum(COMPS_COLUMNS)).min(1).max(COMPS_COLUMNS.length),
+    columns: z
+      .array(z.enum(ALL_COMPS_COLUMNS))
+      .min(1)
+      .max(ALL_COMPS_COLUMNS.length),
     stats: z.array(z.enum(SLIDE_STATS)).max(SLIDE_STATS.length),
   }),
 ]);

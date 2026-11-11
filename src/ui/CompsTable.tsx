@@ -24,7 +24,13 @@ import {
 } from "@/lib/format";
 import { METHODOLOGY_ANCHORS, METHODOLOGY_PATH } from "@/lib/methodologyLinks";
 import { sortPeerRows, type SortColumn, type SortState } from "./compsSort";
+import {
+  balanceSheetItem,
+  BalanceSheetDrawer,
+  type BalanceSheetKey,
+} from "./BalanceSheetDrawer";
 import { EvBridgeDrawer } from "./EvBridgeDrawer";
+import { KindRatioDrawer } from "./KindRatioDrawer";
 import { displayMetric } from "./metricDisplay";
 import { byListingOrder, displayValuationCell } from "./pricing";
 import { ProvenanceDrawer } from "./ProvenanceDrawer";
@@ -62,7 +68,55 @@ export const TABLE_COLUMNS: {
     unit: "multiple",
   },
   { key: "pe", label: "P/E", header: "P/E", unit: "multiple" },
+  // §13C digital-asset companies
+  {
+    key: "digitalAssets",
+    label: "Digital assets",
+    header: "Digital assets",
+    unit: "USD",
+  },
+  {
+    key: "mcapToDigitalAssets",
+    label: "Market cap ÷ digital assets",
+    header: "Mkt cap ÷ digital",
+    unit: "multiple",
+  },
+  // §13D banks
+  {
+    key: "commonEquity",
+    label: "Common equity",
+    header: "Common equity",
+    unit: "USD",
+  },
+  {
+    key: "tangibleCommonEquity",
+    label: "Tangible common equity",
+    header: "TCE",
+    unit: "USD",
+  },
+  { key: "rotce", label: "ROTCE (LTM)", header: "ROTCE", unit: "ratio" },
+  { key: "priceToBook", label: "P/BV", header: "P/BV", unit: "multiple" },
+  {
+    key: "priceToTangibleBook",
+    label: "P/TBV",
+    header: "P/TBV",
+    unit: "multiple",
+  },
 ];
+
+// Balance-sheet items with their own drawer (§7–§8, §13C, §13D).
+const BALANCE_ITEMS = new Set<CompsColumn>([
+  "digitalAssets",
+  "commonEquity",
+  "tangibleCommonEquity",
+]);
+// Ratios added for digital-asset companies and banks.
+const KIND_RATIOS = new Set<CompsColumn>([
+  "mcapToDigitalAssets",
+  "priceToBook",
+  "priceToTangibleBook",
+  "rotce",
+]);
 
 const OPERATING: Partial<Record<CompsColumn, MetricKey>> = {
   revenue: "revenue",
@@ -75,6 +129,9 @@ const VALUATION = new Set<CompsColumn>([
   "evRevenue",
   "evEbitda",
   "pe",
+  "mcapToDigitalAssets",
+  "priceToBook",
+  "priceToTangibleBook",
 ]);
 
 export function formatStat(value: number, unit: Unit): string {
@@ -129,6 +186,8 @@ export function CompsTable({
     if (!open) opener.current?.focus();
   }, [open]);
   const peers = sortPeerRows(table.peers, sort);
+  // The columns follow the target's kind (methodology §13B).
+  const columns = TABLE_COLUMNS.filter((c) => table.columns.includes(c.key));
   const busy = table.counts.loading > 0;
 
   const openFrom = (e: React.MouseEvent<HTMLButtonElement>, next: Open) => {
@@ -187,7 +246,7 @@ export function CompsTable({
     );
     return [
       fin,
-      ...TABLE_COLUMNS.map((c) => {
+      ...columns.map((c) => {
         if (c.key === "price" && row.role === "peer")
           return (
             <td key={c.key} className="px-2 text-right">
@@ -278,7 +337,7 @@ export function CompsTable({
       {companyCell(row)}
       <td className="px-2">{row.ticker}</td>
       {row.state === "loading" ? (
-        <td colSpan={TABLE_COLUMNS.length + 1} className="px-2">
+        <td colSpan={columns.length + 1} className="px-2">
           <span className="sr-only">Loading {row.ticker}</span>
           <span
             aria-hidden="true"
@@ -286,7 +345,7 @@ export function CompsTable({
           />
         </td>
       ) : (
-        <td colSpan={TABLE_COLUMNS.length + 1} className="px-2 italic">
+        <td colSpan={columns.length + 1} className="px-2 italic">
           {row.failure?.code === "UNSUPPORTED_ISSUER"
             ? "Unsupported"
             : "Failed to load"}
@@ -322,7 +381,7 @@ export function CompsTable({
       </th>
       <td />
       <td />
-      {TABLE_COLUMNS.map((c) => {
+      {columns.map((c) => {
         if (c.key === "price") return <td key={c.key} />;
         const s: MetricStats = table.stats[c.key];
         const text =
@@ -383,7 +442,7 @@ export function CompsTable({
             >
               {sortButton("finThrough", "Fin. through")}
             </th>
-            {TABLE_COLUMNS.map((c) => (
+            {columns.map((c) => (
               <th
                 key={c.key}
                 scope="col"
@@ -417,7 +476,7 @@ export function CompsTable({
             >
               Peer statistics
             </th>
-            <td colSpan={TABLE_COLUMNS.length + 2} />
+            <td colSpan={columns.length + 2} />
           </tr>
           {STAT_ROWS.map((r) => statsRow(r.key, r.label))}
         </tbody>
@@ -428,6 +487,24 @@ export function CompsTable({
           <ProvenanceDrawer
             f={open.row.fundamentals}
             metricKey={OPERATING[open.col]!}
+            onClose={() => setOpen(null)}
+          />
+        ) : BALANCE_ITEMS.has(open.col) &&
+          balanceSheetItem(
+            open.row.fundamentals,
+            open.col as BalanceSheetKey,
+          ) ? (
+          <BalanceSheetDrawer
+            f={open.row.fundamentals}
+            item={open.col as BalanceSheetKey}
+            onClose={() => setOpen(null)}
+          />
+        ) : KIND_RATIOS.has(open.col) || BALANCE_ITEMS.has(open.col) ? (
+          <KindRatioDrawer
+            f={open.row.fundamentals}
+            title={TABLE_COLUMNS.find((c) => c.key === open.col)!.label}
+            metric={open.row.cells![open.col]}
+            unit={open.col === "rotce" ? "ratio" : "multiple"}
             onClose={() => setOpen(null)}
           />
         ) : (

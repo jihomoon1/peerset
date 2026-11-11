@@ -14,6 +14,7 @@ Full rules and the version number: `docs/methodology.md`. It wins wherever this 
 8. EBITDA = operating income + D&A, labeled "standardized, unadjusted"; no add-backs.
 9. EV = market cap + total debt − cash and short-term investments. Debt and cash come from balance-sheet face lines; an unrecognized line makes the total Unsupported.
 10. NM: denominator ≤ 0, EV ≤ 0, or a multiple above 100.0x. A missing input shows "—", never NM.
+11. Issuer kinds (0.5.0): SIC outside 6000–6799 is an operating company. Inside it, bank deposits make a bank (valued on P/E, P/BV, P/TBV, ROTCE; no EV or EBITDA) and crypto fair value makes a digital-asset company (operating columns plus digital assets and market cap ÷ digital assets). Anything else is Unsupported. Peers are screened within the target's kind; banks are sized by total assets.
 
 ## Read this section of methodology.md before changing code in that area
 
@@ -32,5 +33,9 @@ Full rules and the version number: `docs/methodology.md`. It wins wherever this 
 | Dates, lag and stale-price flags                         | §12     |
 | Implied valuation                                        | §13     |
 | Peer screening                                           | §13A    |
+| Issuer kinds (bank, digital-asset company)               | §13B    |
+| Digital assets, mNAV, crypto EBITDA caution              | §13C    |
+| Bank equity, TCE, P/BV, P/TBV, ROTCE                     | §13D    |
+| Peer screening by kind, peer index format 2              | §13E    |
 | Policy constants                                         | §14     |
 | Change log                                               | §15     |

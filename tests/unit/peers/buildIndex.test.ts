@@ -25,6 +25,8 @@ const company = (
   files20F: false,
   revenue: null,
   revenueNote: "no companyfacts entry",
+  kind: Number(sic) >= 6000 && Number(sic) <= 6799 ? null : "operating",
+  totalAssets: null,
 });
 
 const index = (companies: PeerIndexCompany[]): PeerIndex => ({
@@ -46,6 +48,7 @@ const index = (companies: PeerIndexCompany[]): PeerIndex => ({
   },
   companies,
   unlisted: [],
+  kindsRecorded: true,
 });
 
 describe("listedUniverse", () => {

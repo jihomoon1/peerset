@@ -2,6 +2,10 @@
 // universe, what each record holds, the metadata counts, and the month-to-month diff
 // for the refresh PR. scripts/peer-index/build.ts does the file reading.
 
+import {
+  inFinancialSicRange,
+  type ScreeningProfile,
+} from "@/domain/issuerKind";
 import { METHODOLOGY_VERSION } from "@/domain/policy";
 import type { ScreeningRevenue } from "@/domain/screeningRevenue";
 import type { Listing } from "@/domain/types";
@@ -51,20 +55,28 @@ export function listedUniverse(raw: unknown): Universe {
 }
 
 // One company's record. `submissions` is null when the bulk file has no (readable)
-// entry; `revenue` is null when companyfacts has none.
+// entry; `revenue` is null when companyfacts has none. `profile` (§13E) comes from
+// companyfacts at the latest report date; without companyfacts a financial-SIC
+// company has no kind.
 export function companyRecord(
   cik: string,
   listed: { name: string; listings: Listing[] },
   submissions: Submissions | null,
   revenue: ScreeningRevenue | { kind: "none"; reason: string },
+  profile?: ScreeningProfile,
 ): PeerIndexCompany {
   const latest = submissions ? latestReport(submissions) : undefined;
+  const sic = submissions?.sic ?? "";
+  const screening = profile ?? {
+    kind: inFinancialSicRange(sic) ? null : "operating",
+    totalAssets: null,
+  };
   return {
     cik,
     name: submissions?.name ?? listed.name,
     ticker: listed.listings[0].ticker,
     listings: listed.listings,
-    sic: submissions?.sic ?? "",
+    sic,
     sicDescription: submissions?.sicDescription ?? "",
     fiscalYearEnd: submissions?.fiscalYearEnd ?? "",
     incorporation: submissions?.stateOfIncorporation ?? "",
@@ -87,6 +99,8 @@ export function companyRecord(
           }
         : null,
     revenueNote: revenue.kind === "ok" ? null : revenue.reason,
+    kind: screening.kind,
+    totalAssets: screening.totalAssets,
   };
 }
 
@@ -125,6 +139,7 @@ export function assembleIndex(
     },
     companies: [...companies].sort((a, b) => a.cik.localeCompare(b.cik)),
     unlisted: universe.unlisted,
+    kindsRecorded: true,
   };
 }
 

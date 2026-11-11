@@ -20,8 +20,10 @@ const EXCLUSION_TEXT: Record<ExclusionCode, string> = {
   FOREIGN_FILER: "files 20-F or 40-F",
   TRANSITION_PERIOD: "transition-period report",
   FINANCIAL_SIC: "financial SIC (6000–6799)",
+  OTHER_KIND: "different issuer kind",
   STALE_FILING: "latest filing over 200 days old",
   NO_SCREENING_REVENUE: "no screening revenue",
+  NO_TOTAL_ASSETS: "no total assets",
   OUTSIDE_SIZE_RANGE: "revenue outside 0.2x–5x",
   NOT_IN_TOP_N: "ranked below the number kept",
 };
@@ -36,9 +38,13 @@ export function tierText(data: PeersResponse): string {
   return `2-digit group ${sic.slice(0, 2)} — fewer than 5 in group ${sic.slice(0, 3)}`;
 }
 
-function funnelLine(step: ScreeningFunnelStep): string {
+function funnelLine(step: ScreeningFunnelStep, bank: boolean): string {
+  const text = (code: ExclusionCode) =>
+    bank && code === "OUTSIDE_SIZE_RANGE"
+      ? "total assets outside 0.2x–5x" // banks size on assets (§13E)
+      : EXCLUSION_TEXT[code];
   const dropped = Object.entries(step.dropped)
-    .map(([code, n]) => `${n} ${EXCLUSION_TEXT[code as ExclusionCode]}`)
+    .map(([code, n]) => `${n} ${text(code as ExclusionCode)}`)
     .join(", ");
   return `${TIER_NAME[step.tier]} ${step.group}: ${step.companies} ${
     step.companies === 1 ? "company" : "companies"
@@ -171,9 +177,14 @@ export function PeerPanel({
             </p>
           ) : (
             <p className="max-w-3xl text-muted">
-              {tierText(selection.data)}. Screened on revenue in the latest
-              fiscal year (0.2x–5x {selection.data.target.ticker}). SIC codes
-              miss some competitors: add them above.
+              {tierText(selection.data)}.{" "}
+              {selection.data.target.kind === "bank"
+                ? "Banks only, screened on total assets at the latest report date"
+                : selection.data.target.kind === "digitalAsset"
+                  ? "Digital-asset companies only, screened on revenue in the latest fiscal year"
+                  : "Screened on revenue in the latest fiscal year"}{" "}
+              (0.2x–5x {selection.data.target.ticker}). SIC codes miss some
+              competitors: add them above.
             </p>
           )}
           {data && data.selected.length === 0 && (
@@ -181,7 +192,9 @@ export function PeerPanel({
               <p className="font-medium">No peers passed the screen.</p>
               <ul className="list-disc pl-5 text-muted">
                 {data.funnel.map((f) => (
-                  <li key={f.tier}>{funnelLine(f)}</li>
+                  <li key={f.tier}>
+                    {funnelLine(f, data.target.kind === "bank")}
+                  </li>
                 ))}
               </ul>
             </div>

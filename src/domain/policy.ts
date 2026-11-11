@@ -2,7 +2,7 @@
 // Source: docs/methodology.md. Changing anything here bumps METHODOLOGY_VERSION
 // and the version in methodology.md together (CLAUDE.md invariant 7).
 
-export const METHODOLOGY_VERSION = "0.4.3";
+export const METHODOLOGY_VERSION = "0.5.0";
 
 // ── §14 policy constants ────────────────────────────────────────────────────
 
@@ -23,6 +23,9 @@ export const SCREENING_REVENUE_MAX_AGE_MONTHS = 15; // §13A: FY end vs latest r
 export const PEER_REVENUE_SCREEN = { min: 0.2, max: 5 } as const; // blueprint §10.2
 export const PEERS = { default: 8, min: 5, max: 12 } as const; // blueprint §10.2
 export const EXCLUDED_SIC_RANGE = { min: 6000, max: 6799 } as const; // blueprint §3
+// §13B (0.5.0): inside EXCLUDED_SIC_RANGE only banks and digital-asset companies.
+export const DIGITAL_ASSETS_MATERIALITY = 0.05; // §13C: digital assets > 5% of market cap warns
+export const PEER_ASSETS_SCREEN = { min: 0.2, max: 5 } as const; // §13E: banks, total assets
 // §5: an EPS ratio r is split-like when max(r, 1/r) is within 2% of 1.5 (3-for-2) or
 // of a whole number from 2 to 50 (2-for-1 ... 50-for-1; reverse splits via 1/r).
 export const SPLIT_LIKE_RATIO = {
@@ -174,6 +177,28 @@ export const CONCEPTS = {
     "dei:SecurityExchangeName",
   ],
 
+  // §13B (0.5.0): issuer kind inside SIC 6000–6799, at the balance-sheet date
+  bankDeposits: [
+    "us-gaap:Deposits",
+    "us-gaap:InterestBearingDepositLiabilities",
+    "us-gaap:NoninterestBearingDepositLiabilities",
+  ],
+  cryptoFairValue: [
+    "us-gaap:CryptoAssetFairValue",
+    "us-gaap:CryptoAssetFairValueCurrent",
+    "us-gaap:CryptoAssetFairValueNoncurrent",
+  ],
+  // §13C: the LTM digital-asset fair-value gain or loss named by the EBITDA caution
+  cryptoRemeasurement: [
+    "us-gaap:CryptoAssetRealizedAndUnrealizedGainLossOperating",
+    "us-gaap:CryptoAssetUnrealizedGainLossOperating",
+  ],
+  // §13D: ROTCE numerator; §13E: bank size
+  netIncomeToCommon: [
+    "us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic",
+  ],
+  totalAssets: ["us-gaap:Assets"],
+
   // §5 EPS cross-check and split detection
   epsCrossCheck: ["us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding"],
   // Unit "pure", accepted through PURE_UNIT_CONCEPTS.
@@ -302,12 +327,46 @@ export const FACE = {
     "AvailableForSaleSecuritiesDebtSecuritiesNoncurrent",
   ),
   // §9
-  preferred: usGaap("PreferredStockValue"),
+  // §9 (0.5.0: banks present preferred stock with its paid-in capital)
+  preferred: usGaap(
+    "PreferredStockValue",
+    "PreferredStockValueOutstanding",
+    "PreferredStockIncludingAdditionalPaidInCapital",
+    "PreferredStockIncludingAdditionalPaidInCapitalNetOfDiscount",
+  ),
   nci: usGaap(
     "MinorityInterest",
     "RedeemableNoncontrollingInterestEquityCarryingAmount",
   ),
+  // §13C: digital assets
+  digitalAssets: usGaap(
+    "CryptoAssetFairValue",
+    "CryptoAssetFairValueCurrent",
+    "CryptoAssetFairValueNoncurrent",
+  ),
+  // §13D: parent equity, and the goodwill and intangible lines TCE deducts
+  parentEquity: usGaap("StockholdersEquity"),
+  intangibles: usGaap(
+    "Goodwill",
+    "IntangibleAssetsNetExcludingGoodwill",
+    "IntangibleAssetsNetIncludingGoodwill",
+    "OtherIntangibleAssetsNet",
+    "FiniteLivedIntangibleAssetsNet",
+    "IndefiniteLivedIntangibleAssetsExcludingGoodwill",
+  ),
 } as const;
+
+// §13C: an assets-side company-concept line that looks like digital assets.
+export const DIGITAL_ASSET_LIKE_LABEL =
+  /\bcrypto|digital assets?\b|\bbitcoin|\bether(eum)?\b/i;
+// §13D: an assets-side line that looks like goodwill or intangibles, and a deducted
+// line that also holds servicing rights.
+export const INTANGIBLE_LIKE_LABEL = /goodwill|intangible/i;
+export const SERVICING_LABEL = /servicing/i;
+// §9 (0.5.0): look-alike lines that never block preferred stock or NCI: share counts
+// and per-share amounts (by concept), dividends (by label).
+export const SHARE_COUNT_CONCEPT = /Shares|PerShare/;
+export const DIVIDEND_LABEL = /dividend/i;
 
 // §7 rule 3: a liabilities-side face line "looks like debt" when its label matches.
 export const DEBT_LIKE_LABEL =

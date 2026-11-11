@@ -1,7 +1,7 @@
 {
   "ticker": "LCID",
   "fixture": "LCID",
-  "methodologyVersion": "0.4.3",
+  "methodologyVersion": "0.5.0",
   "analysisDate": "2026-10-26",
   "note": "Negative-EBITDA fixture (M6). The price is a test input, not market data, chosen so EV > 0 and the EV/EBITDA NM reason is 'EBITDA ≤ 0', not 'EV ≤ 0'. Shares come from the 10-Q cover page; debt, cash, revenue, EBITDA and EPS are the values in LCID-2026Q2.json and LCID-2026Q2-balance.json, read from the rendered filings.",
   "prices": [

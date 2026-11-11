@@ -1,16 +1,35 @@
 "use client";
 
+import type { BalanceSheetItem } from "@/domain/balanceSheet";
 import type { CompanyFundamentals } from "@/domain/fundamentals";
 import { formatDate } from "@/lib/format";
 import { Drawer, Section, WarningList } from "./Drawer";
 import { displayMetric, formatFactValueWithExact } from "./metricDisplay";
 
-export type BalanceSheetKey = "debt" | "cash";
+export type BalanceSheetKey =
+  | "debt"
+  | "cash"
+  | "digitalAssets" // §13C
+  | "commonEquity" // §13D
+  | "tangibleCommonEquity"; // §13D
 
 export const BALANCE_SHEET_LABELS: Record<BalanceSheetKey, string> = {
   debt: "Total debt",
   cash: "Cash and short-term investments",
+  digitalAssets: "Digital assets (fair value)",
+  commonEquity: "Common equity",
+  tangibleCommonEquity: "Tangible common equity",
 };
+
+// The item behind a key, or undefined when the company's kind has none.
+export function balanceSheetItem(
+  f: CompanyFundamentals,
+  key: BalanceSheetKey,
+): BalanceSheetItem | undefined {
+  if (key === "debt" || key === "cash") return f[key];
+  if (key === "digitalAssets") return f.digital?.digitalAssets;
+  return f.bank?.[key];
+}
 
 // Provenance for a balance-sheet item (methodology §7–§8): every face line the rule
 // looked at, with its label, concept, value and why it is in or out of the total.
@@ -23,7 +42,9 @@ export function BalanceSheetDrawer({
   item: BalanceSheetKey;
   onClose: () => void;
 }) {
-  const { metric: m, lines, method } = f[item];
+  const found = balanceSheetItem(f, item);
+  if (!found) return null;
+  const { metric: m, lines, method } = found;
   const d = displayMetric(m);
   const { statement, date } = f.balanceSheet;
 

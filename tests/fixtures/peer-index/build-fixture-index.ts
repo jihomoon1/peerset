@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
+import { screeningProfile } from "@/domain/issuerKind";
 import { screeningRevenue } from "@/domain/screeningRevenue";
 import { assembleIndex, companyRecord, listedUniverse } from "@/peers/buildIndex";
 import { encodeIndex } from "@/peers/indexFormat";
@@ -15,7 +16,7 @@ import type { PeerIndex } from "@/peers/indexTypes";
 import { trimCompanyFacts } from "@/sec/companyFacts";
 import { allFixtureDirs } from "@/sec/fixtureFetch";
 import { FIXTURE_PINS } from "../../helpers/fixturePins";
-import { parseSubmissions } from "@/sec/submissions";
+import { latestReport, parseSubmissions } from "@/sec/submissions";
 
 const SEC = path.join("tests", "fixtures", "sec");
 export const FIXTURE_INDEX_PATH = path.join(
@@ -65,12 +66,19 @@ export function buildFixtureIndex(): PeerIndex {
     if (!manifest.files.some((x) => x.role === "companyfacts")) continue;
     const listed = universe.listed.get(manifest.cik);
     if (!listed) throw new Error(`${dir}: CIK ${manifest.cik} is not listed`);
+    const submissions = parseSubmissions(readGz(file("submissions")));
+    const facts = trimCompanyFacts(readGz(file("companyfacts"))).facts;
     companies.push(
       companyRecord(
         manifest.cik,
         listed,
-        parseSubmissions(readGz(file("submissions"))),
-        screeningRevenue(trimCompanyFacts(readGz(file("companyfacts"))).facts),
+        submissions,
+        screeningRevenue(facts),
+        screeningProfile({
+          sic: submissions.sic,
+          facts,
+          reportDate: latestReport(submissions)?.reportDate,
+        }),
       ),
     );
   }

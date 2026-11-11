@@ -23,4 +23,7 @@ export const NM_REASON_TEXT: Record<NmReason, string> = {
   EPS_NOT_POSITIVE: "EPS ≤ 0",
   EV_NOT_POSITIVE: "EV ≤ 0",
   ABOVE_CAP: "above 100x policy",
+  DIGITAL_ASSETS_NOT_POSITIVE: "digital assets ≤ 0",
+  EQUITY_NOT_POSITIVE: "common equity ≤ 0",
+  TCE_NOT_POSITIVE: "tangible common equity ≤ 0",
 };

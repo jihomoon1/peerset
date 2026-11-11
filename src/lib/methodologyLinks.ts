@@ -15,4 +15,11 @@ export const METHODOLOGY_ANCHORS = {
   evRevenue: "10-multiples-and-the-nm-policy",
   evEbitda: "10-multiples-and-the-nm-policy",
   pe: "5-diluted-eps-and-pe",
+  digitalAssets: "13c-digital-asset-companies-050",
+  mcapToDigitalAssets: "13c-digital-asset-companies-050",
+  commonEquity: "13d-banks-050",
+  tangibleCommonEquity: "13d-banks-050",
+  rotce: "13d-banks-050",
+  priceToBook: "13d-banks-050",
+  priceToTangibleBook: "13d-banks-050",
 } as const;

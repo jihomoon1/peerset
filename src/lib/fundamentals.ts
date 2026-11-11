@@ -263,6 +263,16 @@ export async function loadFundamentals(
     accession,
     deps,
   );
+  // §13B (0.5.0): a SIC 6000–6799 company that is neither a bank nor a
+  // digital-asset company is rejected once its facts are read.
+  if (fundamentals.kind === null) {
+    const reason = fundamentals.kindUnsupported;
+    throw new UnsupportedIssuerError(
+      reason?.message ??
+        "Financial company: not a bank or digital-asset company",
+      `${reason?.code ?? "FINANCIAL_SIC"} (CIK ${cik})`,
+    );
+  }
 
   const bytes = Buffer.byteLength(JSON.stringify(fundamentals));
   deps.logger("fundamentals", {

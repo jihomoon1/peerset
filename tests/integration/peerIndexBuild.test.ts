@@ -84,6 +84,8 @@ describe("buildFromFiles on the synthetic bulk files", async () => {
         accession: "0000000001-26-000001",
       },
       revenueNote: null,
+      kind: "operating",
+      totalAssets: null,
     });
   });
 
@@ -120,7 +122,7 @@ describe("buildFromFiles on the synthetic bulk files", async () => {
   it("writes metadata: sources, methodology version and counts", () => {
     expect(index.meta).toEqual({
       generatedAt: "2026-11-01T04:27:22.000Z", // newest Last-Modified
-      methodologyVersion: "0.4.3",
+      methodologyVersion: "0.5.0",
       sources: SOURCES,
       counts: {
         total: 9,

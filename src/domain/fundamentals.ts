@@ -8,8 +8,17 @@ import type { BalanceSheetInput, BalanceSheetItem } from "./balanceSheet";
 import { computeShareClasses, type ShareClasses } from "./capitalization";
 import { computeCash } from "./cash";
 import { computeDebt } from "./debt";
+import {
+  computeCommonEquity,
+  computeRotce,
+  computeTangibleCommonEquity,
+} from "./bankEquity";
+import { millions } from "./balanceSheet";
+import { computeDigitalAssets } from "./digitalAssets";
 import { computeNci, computePreferred } from "./evAdjustments";
-import type { LtmInput } from "./ltm";
+import { classifyIssuer } from "./issuerKind";
+import { computeLtm, type LtmInput } from "./ltm";
+import { isUsable, ltmMetric } from "./metrics/common";
 import { computeDa } from "./metrics/da";
 import { computeEbitda } from "./metrics/ebitda";
 import { computeEbitdaMargin } from "./metrics/ebitdaMargin";
@@ -21,15 +30,17 @@ import {
 import { computeNetIncome } from "./metrics/netIncome";
 import { computeOperatingIncome } from "./metrics/operatingIncome";
 import { computeRevenue } from "./metrics/revenue";
-import { METHODOLOGY_VERSION } from "./policy";
+import { CONCEPTS, METHODOLOGY_VERSION } from "./policy";
 import type {
   BalanceSheetFace,
   CompanyIdentity,
   FreshnessStatus,
+  IssuerKind,
   LTMCalculation,
   Metric,
   ReportedFinancialFact,
   ReportedTextFact,
+  UnsupportedReason,
 } from "./types";
 
 // The parts of the adapter's CompanyFactsResult the domain reads.
@@ -57,8 +68,28 @@ export const METRIC_KEYS = [
 ] as const;
 export type MetricKey = (typeof METRIC_KEYS)[number];
 
+// §13D: the bank route's equity items, as of the balance-sheet date.
+export interface BankFundamentals {
+  commonEquity: BalanceSheetItem;
+  tangibleCommonEquity: BalanceSheetItem;
+  netIncomeToCommon: Metric; // LTM
+  rotce: Metric; // LTM net income to common ÷ ending TCE
+}
+
+// §13C: the digital-asset route's additions.
+export interface DigitalAssetFundamentals {
+  digitalAssets: BalanceSheetItem;
+  cryptoRemeasurement: Metric; // LTM fair-value gain/loss in operating income, if tagged
+}
+
 export interface CompanyFundamentals {
   identity: CompanyIdentity;
+  // §13B (0.5.0): null = a SIC 6000–6799 company that is neither a bank nor a
+  // digital-asset company; kindUnsupported says why and the loader rejects it.
+  kind: IssuerKind | null;
+  kindUnsupported?: UnsupportedReason;
+  bank?: BankFundamentals;
+  digital?: DigitalAssetFundamentals;
   ltmEnd: string;
   metrics: Record<MetricKey, Metric>;
   // Keyed by metric; the D&A fallback stores each line as "da:<concept>".
@@ -106,12 +137,53 @@ export function buildFundamentals(
     freshness: input.freshness.status,
   };
 
+  const kindResult = classifyIssuer({
+    sic: input.identity.sic,
+    facts: input.facts,
+    balanceSheetDate: input.balanceSheet.date,
+  });
+  const kind = kindResult.kind;
+
   const revenue = computeRevenue(ltm);
   const operatingIncome = computeOperatingIncome(ltm);
   const da = computeDa(ltm);
   const netIncome = computeNetIncome(ltm);
   const eps = computeEps(ltm, netIncome.metric);
-  const ebitda = computeEbitda(operatingIncome.metric, da.metric);
+  let ebitda = computeEbitda(operatingIncome.metric, da.metric);
+
+  // §13C: a digital-asset company's operating income includes crypto fair-value
+  // changes (ASU 2023-08). EBITDA keeps the reported value, with a caution.
+  const crypto =
+    kind === "digitalAsset"
+      ? ltmMetric(computeLtm(ltm, CONCEPTS.cryptoRemeasurement), "USD")
+      : null;
+  if (crypto) {
+    const m = crypto.metric;
+    const message = isUsable(m)
+      ? `operating income includes an LTM digital-asset fair-value ${m.value < 0 ? "loss" : "gain"} of ${millions(m.value)} (${crypto.ltm?.concept ?? ""}); EBITDA is not adjusted`
+      : "operating income may include digital-asset fair-value gains and losses (ASU 2023-08); the filing doesn't tag the LTM amount; EBITDA is not adjusted";
+    ebitda = {
+      ...ebitda,
+      warnings: [
+        ...ebitda.warnings,
+        {
+          code: "W_EBITDA_INCLUDES_CRYPTO_REMEASUREMENT",
+          message,
+          severity: "caution",
+        },
+      ],
+    };
+  }
+  // §13D: EBITDA doesn't apply to banks.
+  if (kind === "bank")
+    ebitda = {
+      status: "unsupported",
+      reason: {
+        code: "NOT_FOR_BANKS",
+        message: "banks are valued on equity: EBITDA doesn't apply",
+      },
+      warnings: [],
+    };
   const niDiscOps = netIncome.ltm
     ? findDiscontinuedOps(input.facts, netIncome.ltm)
     : null;
@@ -134,9 +206,39 @@ export function buildFundamentals(
   for (const part of da.ltmParts) keep(`da:${part.concept}`, part);
   keep("netIncome", netIncome.ltm);
   keep("dilutedEps", eps.ltm);
+  if (crypto) keep("cryptoRemeasurement", crypto.ltm);
+
+  const preferred = computePreferred(bs);
+  let bank: BankFundamentals | undefined;
+  if (kind === "bank") {
+    const commonEquity = computeCommonEquity(bs, preferred);
+    const tangibleCommonEquity = computeTangibleCommonEquity(bs, commonEquity);
+    const toCommon = ltmMetric(
+      computeLtm(ltm, CONCEPTS.netIncomeToCommon),
+      "USD",
+    );
+    keep("netIncomeToCommon", toCommon.ltm);
+    bank = {
+      commonEquity,
+      tangibleCommonEquity,
+      netIncomeToCommon: toCommon.metric,
+      rotce: computeRotce(toCommon.metric, tangibleCommonEquity.metric),
+    };
+  }
 
   return {
     identity: input.identity,
+    kind,
+    ...(kindResult.kind === null ? { kindUnsupported: kindResult.reason } : {}),
+    ...(bank ? { bank } : {}),
+    ...(crypto
+      ? {
+          digital: {
+            digitalAssets: computeDigitalAssets(bs),
+            cryptoRemeasurement: crypto.metric,
+          },
+        }
+      : {}),
     ltmEnd: latest.reportDate,
     metrics: {
       revenue: revenue.metric,
@@ -168,7 +270,7 @@ export function buildFundamentals(
     debt: computeDebt(bs),
     cash: computeCash(bs),
     evAdjustments: {
-      preferred: computePreferred(bs),
+      preferred,
       nci: computeNci(bs),
     },
     shareClasses: computeShareClasses({

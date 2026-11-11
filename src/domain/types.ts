@@ -51,6 +51,10 @@ export type UnsupportedReason =
   | { code: "TRANSITION_PERIOD"; message: string } // 10-KT / 10-QT
   | { code: "NO_PERIODIC_FILING"; message: string };
 
+// §13B (0.5.0): how a company is valued. Only SIC 6000–6799 companies can be banks
+// or digital-asset companies; everything else is an operating company.
+export type IssuerKind = "operating" | "bank" | "digitalAsset";
+
 export interface Listing {
   ticker: string;
   exchange: string;
@@ -67,8 +71,11 @@ export interface CompanyIdentity {
   fiscalYearEnd: string; // 'MMDD' from submissions; shifts for 52/53-week filers
   stateOfIncorporation: string;
   latestPeriodic: (FilingReference & { primaryDocument: string }) | null;
+  // §13B (0.5.0): a SIC 6000–6799 company is supported only as a bank or a
+  // digital-asset company, which the filing's facts decide (kindCheck).
   support:
-    { supported: true } | { supported: false; reason: UnsupportedReason };
+    | { supported: true; kindCheck?: "financial-sic" }
+    | { supported: false; reason: UnsupportedReason };
 }
 
 // Freshness of the latest periodic filing's facts (blueprint §8.3), set by the SEC
@@ -117,7 +124,13 @@ export type WarningCode =
   | "W_NOT_IN_EV" // §9: preferred > 0 or NCI > 5% of market cap
   | "W_NOT_IN_EV_UNCLASSIFIED" // §9 (0.4.3): temporary-equity line, item Unsupported
   | "W_PRICE_STALE" // §12: price date > 7 days before the analysis date
-  | "W_PERIOD_LAG"; // §12: LTM end > 75 days from the peers' median LTM end
+  | "W_PERIOD_LAG" // §12: LTM end > 75 days from the peers' median LTM end
+  | "W_DIGITAL_ASSET_LINE_NOT_COUNTED" // §13C: company crypto line listed, not counted
+  | "W_DIGITAL_ASSETS_AT_BALANCE_SHEET_DATE" // §13C: mNAV uses balance-sheet fair value
+  | "W_DIGITAL_ASSETS_NOT_IN_EV" // §13C: digital assets > 5% of market cap
+  | "W_EBITDA_INCLUDES_CRYPTO_REMEASUREMENT" // §13C: ASU 2023-08 gains/losses in EBITDA
+  | "W_NO_PREFERRED_LINE" // §13D: no preferred line, nothing subtracted (info)
+  | "W_INTANGIBLES_INCLUDE_SERVICING"; // §13D: deducted line also holds servicing rights
 
 export interface MetricWarning {
   code: WarningCode;
@@ -131,7 +144,10 @@ export type NmReason =
   | "EBITDA_NOT_POSITIVE"
   | "EPS_NOT_POSITIVE"
   | "EV_NOT_POSITIVE"
-  | "ABOVE_CAP";
+  | "ABOVE_CAP"
+  | "DIGITAL_ASSETS_NOT_POSITIVE" // §13C
+  | "EQUITY_NOT_POSITIVE" // §13D: common equity ≤ 0
+  | "TCE_NOT_POSITIVE"; // §13D: tangible common equity ≤ 0
 
 // Metric-level reasons. Blueprint §11 reuses the issuer-level UnsupportedReason here,
 // but those codes (FOREIGN_FILER, ...) can't say "cannot reconstruct LTM", so metrics
@@ -151,7 +167,11 @@ export interface MetricUnsupportedReason {
     | "UNLISTED_SHARE_CLASS" // §6: a class with no listed ticker
     | "SHARE_CLASS_MISMATCH" // §6: share counts and symbols don't pair up by class
     | "MULTI_CLASS" // §5: P/E is for single-class companies only
-    | "SPLIT_SINCE_ANNUAL"; // §5: stock split since the last 10-K
+    | "SPLIT_SINCE_ANNUAL" // §5: stock split since the last 10-K
+    | "NOT_FOR_BANKS" // §13D: EV and EBITDA don't apply to banks
+    | "NO_PARENT_EQUITY_LINE" // §13D: no StockholdersEquity face line
+    | "UNRECOGNIZED_INTANGIBLE_LINE" // §13D
+    | "NOT_APPLICABLE"; // §13B: a column another kind has no value for
   message: string;
 }
 
@@ -253,10 +273,12 @@ export type ExclusionCode =
   | "NO_PERIODIC_FILING" // no 10-K or 10-Q in SEC's recent filings
   | "FOREIGN_FILER" // latest report is a 20-F or 40-F
   | "TRANSITION_PERIOD" // latest report is a 10-KT or 10-QT
-  | "FINANCIAL_SIC" // SIC 6000–6799
+  | "FINANCIAL_SIC" // SIC 6000–6799 (operating target), or no bank/digital-asset kind
+  | "OTHER_KIND" // a different issuer kind from the target's (§13E, 0.5.0)
   | "STALE_FILING" // latest 10-K/10-Q filed more than 200 days before the analysis date
   | "NO_SCREENING_REVENUE" // no usable latest fiscal-year revenue
-  | "OUTSIDE_SIZE_RANGE" // screening revenue outside 0.2x–5x the target's
+  | "NO_TOTAL_ASSETS" // bank without total assets at its latest report date (§13E)
+  | "OUTSIDE_SIZE_RANGE" // screening revenue (banks: total assets) outside 0.2x–5x the target's
   | "NOT_IN_TOP_N"; // passed every rule but ranked below the number kept
 
 // One SIC tier tried, for the "No peers passed the screen" state (blueprint §6):

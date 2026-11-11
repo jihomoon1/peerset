@@ -8,7 +8,6 @@
 
 import {
   buildComps,
-  COMPS_COLUMNS,
   type CompsColumn,
   type CompsPeer,
   type CompsRow,
@@ -76,7 +75,7 @@ const loadedRows = (t: CompsTable): CompsRow[] =>
 
 function missingCells(t: CompsTable): NotANumber[] {
   return loadedRows(t).flatMap((r) =>
-    COMPS_COLUMNS.flatMap((column): NotANumber[] => {
+    t.columns.flatMap((column): NotANumber[] => {
       const m = r.cells![column];
       return m.status === "reported" || m.status === "derived"
         ? []

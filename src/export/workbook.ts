@@ -15,7 +15,7 @@
 
 import ExcelJS from "exceljs";
 import {
-  STAT_COLUMNS,
+  COMPS_COLUMNS,
   type CompsColumn,
   type CompsRow,
   type StatColumn,
@@ -85,25 +85,55 @@ export const FIRST_PEER_ROW = 11;
 
 type SheetKey = "company" | "ticker" | "ltmEnd" | CompsColumn;
 
-export const COMPS_SHEET_COLUMNS: readonly {
+interface SheetColumn {
   key: SheetKey;
   header: string;
   width: number;
   fmt?: NumFmt;
-}[] = [
+}
+
+const FIXED_COLUMNS: readonly SheetColumn[] = [
   { key: "company", header: "Company", width: 34 },
   { key: "ticker", header: "Ticker", width: 9 },
   { key: "ltmEnd", header: "Fin. through", width: 12, fmt: "date" },
-  { key: "price", header: "Price", width: 10, fmt: "perShare" },
-  { key: "marketCap", header: "Equity value", width: 13, fmt: "millions" },
-  { key: "ev", header: "EV", width: 13, fmt: "millions" },
-  { key: "revenue", header: "LTM revenue", width: 13, fmt: "millions" },
-  { key: "ebitda", header: "LTM EBITDA", width: 13, fmt: "millions" },
-  { key: "ebitdaMargin", header: "EBITDA margin", width: 11, fmt: "percent" },
-  { key: "evRevenue", header: "EV/Revenue", width: 11, fmt: "multiple" },
-  { key: "evEbitda", header: "EV/EBITDA", width: 11, fmt: "multiple" },
-  { key: "pe", header: "P/E", width: 9, fmt: "multiple" },
 ];
+
+const COLUMN_DEFS: Record<CompsColumn, Omit<SheetColumn, "key">> = {
+  price: { header: "Price", width: 10, fmt: "perShare" },
+  marketCap: { header: "Equity value", width: 13, fmt: "millions" },
+  ev: { header: "EV", width: 13, fmt: "millions" },
+  revenue: { header: "LTM revenue", width: 13, fmt: "millions" },
+  ebitda: { header: "LTM EBITDA", width: 13, fmt: "millions" },
+  ebitdaMargin: { header: "EBITDA margin", width: 11, fmt: "percent" },
+  evRevenue: { header: "EV/Revenue", width: 11, fmt: "multiple" },
+  evEbitda: { header: "EV/EBITDA", width: 11, fmt: "multiple" },
+  pe: { header: "P/E", width: 9, fmt: "multiple" },
+  // §13C, §13D (0.5.0)
+  digitalAssets: { header: "Digital assets", width: 13, fmt: "millions" },
+  mcapToDigitalAssets: {
+    header: "Equity value ÷ digital assets",
+    width: 13,
+    fmt: "multiple",
+  },
+  commonEquity: { header: "Common equity", width: 13, fmt: "millions" },
+  tangibleCommonEquity: { header: "TCE", width: 13, fmt: "millions" },
+  rotce: { header: "ROTCE (LTM)", width: 10, fmt: "percent" },
+  priceToBook: { header: "P/BV", width: 9, fmt: "multiple" },
+  priceToTangibleBook: { header: "P/TBV", width: 9, fmt: "multiple" },
+};
+
+// The Trading Comps sheet's columns for a table's columns (methodology §13B).
+export function compsSheetColumns(
+  columns: readonly CompsColumn[],
+): readonly SheetColumn[] {
+  return [
+    ...FIXED_COLUMNS,
+    ...columns.map((key) => ({ key, ...COLUMN_DEFS[key] })),
+  ];
+}
+
+// The operating-company sheet (v1), the default.
+export const COMPS_SHEET_COLUMNS = compsSheetColumns(COMPS_COLUMNS);
 
 const MILLION = 1_000_000;
 const MONEY_COLUMNS: readonly CompsColumn[] = [
@@ -111,6 +141,9 @@ const MONEY_COLUMNS: readonly CompsColumn[] = [
   "ev",
   "revenue",
   "ebitda",
+  "digitalAssets",
+  "commonEquity",
+  "tangibleCommonEquity",
 ];
 
 const METRIC_LABEL: Record<MetricKey, string> = {
@@ -133,6 +166,13 @@ const COLUMN_LABEL: Record<CompsColumn, string> = {
   evRevenue: "EV/Revenue",
   evEbitda: "EV/EBITDA",
   pe: "P/E",
+  digitalAssets: "digital assets",
+  mcapToDigitalAssets: "equity value ÷ digital assets",
+  commonEquity: "common equity",
+  tangibleCommonEquity: "tangible common equity",
+  rotce: "ROTCE",
+  priceToBook: "P/BV",
+  priceToTangibleBook: "P/TBV",
 };
 
 const STATUS_TEXT = {
@@ -152,9 +192,14 @@ export function colLetter(n: number): string {
   return s;
 }
 
-const colOf = (key: SheetKey) =>
-  COMPS_SHEET_COLUMNS.findIndex((c) => c.key === key) + 1;
-const letterOf = (key: SheetKey) => colLetter(colOf(key));
+const colOf = (
+  key: SheetKey,
+  cols: readonly SheetColumn[] = COMPS_SHEET_COLUMNS,
+) => cols.findIndex((c) => c.key === key) + 1;
+const letterOf = (
+  key: SheetKey,
+  cols: readonly SheetColumn[] = COMPS_SHEET_COLUMNS,
+) => colLetter(colOf(key, cols));
 
 const isoDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 
@@ -251,6 +296,14 @@ interface CompanyRefs {
   totalDebt?: string;
   cash?: string;
   shares?: string;
+  // §13C, §13D (0.5.0)
+  digitalAssets?: string;
+  mcapToDigitalAssets?: string;
+  commonEquity?: string;
+  tangibleCommonEquity?: string;
+  rotce?: string;
+  priceToBook?: string;
+  priceToTangibleBook?: string;
 }
 
 const CALC_WIDTHS = [44, 14, 14, 14, 14, 52, 60];
@@ -690,8 +743,186 @@ function companyBlock(cur: Cursor, r: CompsRow): CompanyRefs {
       refs.pe = `E${row.number}`;
     } else putStatus(row.getCell(5), m);
   }
+
+  // §13C (0.5.0): digital assets and equity value ÷ digital assets
+  if (f.digital) {
+    cur.skip();
+    const da = f.digital.digitalAssets;
+    refs.digitalAssets = lines(
+      `Digital assets (balance sheet, ${bsDate}; USD m; methodology §13C)`,
+      da.lines.map(asBridgeLine),
+      da.lines,
+      da.metric,
+      "Digital assets (fair value)",
+    );
+    const row = cur.row();
+    putText(row.getCell(1), "Equity value ÷ digital assets", { bold: true });
+    const m = r.cells!.mcapToDigitalAssets;
+    if (usable(m) && refs.marketCap && refs.digitalAssets) {
+      putFormula(
+        row.getCell(5),
+        `${refs.marketCap}/${refs.digitalAssets}`,
+        m.value,
+        "multiple",
+      );
+      refs.mcapToDigitalAssets = `E${row.number}`;
+    } else putStatus(row.getCell(5), m);
+  }
+
+  // §13D (0.5.0): bank equity, ROTCE, P/BV and P/TBV
+  if (f.bank) bankBlock(cur, r, refs, bsDate);
   cur.skip(2);
   return refs;
+}
+
+const asBridgeLine = (l: FaceLineProvenance) => ({
+  order: l.order,
+  concept: l.concept,
+  label: l.label,
+  value: l.value,
+  included: l.included,
+  why: l.reason,
+});
+
+function bankBlock(
+  cur: Cursor,
+  r: CompsRow,
+  refs: CompanyRefs,
+  bsDate: string,
+) {
+  const f = r.fundamentals!;
+  const b = f.bank!;
+  cur.skip();
+  headerRow(cur.row(), [
+    "LTM bridge (USD m)",
+    "FY",
+    "Plus: YTD",
+    "Less: prior YTD",
+    "LTM",
+    "Concept",
+    "Periods",
+  ]);
+  const toCommon = ltmRow(
+    cur,
+    "Net income available to common stockholders",
+    b.netIncomeToCommon,
+    f.ltmDetail.netIncomeToCommon,
+    false,
+  );
+  cur.skip();
+
+  headerRow(cur.row(), [
+    `Equity (balance sheet, ${bsDate}; USD m; methodology §13D)`,
+    null,
+    "Value",
+    "Treatment",
+    null,
+    "Concept",
+    "Reason",
+  ]);
+  const inputRow = (l: FaceLineProvenance, treatment: string) => {
+    const row = cur.row();
+    putText(row.getCell(1), l.label);
+    if (l.fact)
+      putInput(
+        row.getCell(3),
+        l.fact.value / MILLION,
+        "millions",
+        `balance sheet: ${cite(l.fact)}`,
+      );
+    else putDash(row.getCell(3), "no consolidated fact at the date");
+    putText(row.getCell(4), l.included ? treatment : "Excluded");
+    putMuted(row.getCell(6), l.concept);
+    putMuted(row.getCell(7), l.reason);
+    return `C${row.number}`;
+  };
+
+  // Common equity = stockholders' equity − preferred stock inside equity
+  let equityRef: string | undefined;
+  const preferredRefs: string[] = [];
+  b.commonEquity.lines.forEach((l, i) => {
+    const ref = inputRow(l, i === 0 ? "Included" : "Subtracted");
+    if (!l.included || !l.fact) return;
+    if (i === 0) equityRef = ref;
+    else preferredRefs.push(ref);
+  });
+  {
+    const row = cur.row();
+    putText(row.getCell(1), "Common equity", { bold: true });
+    const m = b.commonEquity.metric;
+    if (usable(m) && equityRef) {
+      putFormula(
+        row.getCell(5),
+        [equityRef, ...preferredRefs].join("-"),
+        m.value / MILLION,
+        "millions",
+      );
+      refs.commonEquity = `E${row.number}`;
+    } else putStatus(row.getCell(5), m);
+  }
+
+  // TCE = common equity − goodwill and intangibles
+  const intangibleRefs: string[] = [];
+  for (const l of b.tangibleCommonEquity.lines) {
+    const ref = inputRow(l, "Subtracted");
+    if (l.included && l.fact) intangibleRefs.push(ref);
+  }
+  {
+    const row = cur.row();
+    putText(row.getCell(1), "Tangible common equity (TCE)", { bold: true });
+    const m = b.tangibleCommonEquity.metric;
+    if (usable(m) && refs.commonEquity) {
+      putFormula(
+        row.getCell(5),
+        intangibleRefs.length
+          ? `${refs.commonEquity}-SUM(${intangibleRefs.join(",")})`
+          : refs.commonEquity,
+        m.value / MILLION,
+        "millions",
+      );
+      refs.tangibleCommonEquity = `E${row.number}`;
+    } else putStatus(row.getCell(5), m);
+  }
+
+  const ratioRow = (
+    label: string,
+    m: Metric,
+    num: string | undefined,
+    den: string | undefined,
+    fmt: NumFmt,
+    key: "rotce" | "priceToBook" | "priceToTangibleBook",
+  ) => {
+    const row = cur.row();
+    putText(row.getCell(1), label);
+    if (usable(m) && num && den) {
+      putFormula(row.getCell(5), `${num}/${den}`, m.value, fmt);
+      refs[key] = `E${row.number}`;
+    } else putStatus(row.getCell(5), m);
+  };
+  ratioRow(
+    "ROTCE (LTM) = net income to common ÷ ending TCE",
+    b.rotce,
+    toCommon,
+    refs.tangibleCommonEquity,
+    "percent",
+    "rotce",
+  );
+  ratioRow(
+    "P/BV = equity value ÷ common equity",
+    r.cells!.priceToBook,
+    refs.marketCap,
+    refs.commonEquity,
+    "multiple",
+    "priceToBook",
+  );
+  ratioRow(
+    "P/TBV = equity value ÷ TCE",
+    r.cells!.priceToTangibleBook,
+    refs.marketCap,
+    refs.tangibleCommonEquity,
+    "multiple",
+    "priceToTangibleBook",
+  );
 }
 
 // ── Trading Comps ────────────────────────────────────────────────────────────
@@ -703,6 +934,13 @@ const LINKED: Partial<Record<CompsColumn, keyof CompanyRefs>> = {
   revenue: "revenue",
   ebitda: "ebitda",
   pe: "pe",
+  digitalAssets: "digitalAssets",
+  mcapToDigitalAssets: "mcapToDigitalAssets",
+  commonEquity: "commonEquity",
+  tangibleCommonEquity: "tangibleCommonEquity",
+  rotce: "rotce",
+  priceToBook: "priceToBook",
+  priceToTangibleBook: "priceToTangibleBook",
 };
 
 function compsRow(
@@ -710,6 +948,7 @@ function compsRow(
   n: number,
   r: CompsRow,
   refs: CompanyRefs,
+  cols: readonly SheetColumn[],
 ) {
   const row = ws.getRow(n);
   const f = r.fundamentals!;
@@ -719,17 +958,17 @@ function compsRow(
   d.value = isoDate(f.ltmEnd);
   d.numFmt = NUM_FMT.date;
   d.font = font("input");
-  const L = (k: SheetKey) => `${letterOf(k)}${n}`;
+  const L = (k: SheetKey) => `${letterOf(k, cols)}${n}`;
   const same: Partial<Record<CompsColumn, string>> = {
     ebitdaMargin: `${L("ebitda")}/${L("revenue")}`,
     evRevenue: `${L("ev")}/${L("revenue")}`,
     evEbitda: `${L("ev")}/${L("ebitda")}`,
   };
-  for (const col of COMPS_SHEET_COLUMNS) {
+  for (const col of cols) {
     if (col.key === "company" || col.key === "ticker" || col.key === "ltmEnd")
       continue;
     const key = col.key;
-    const cell = row.getCell(colOf(key));
+    const cell = row.getCell(colOf(key, cols));
     const m = r.cells![key];
     if (!usable(m)) {
       putStatus(cell, m);
@@ -781,7 +1020,8 @@ function tradingComps(
   const ws = wb.getWorksheet(SHEET_NAMES.comps)!;
   const { table } = s;
   const t = table.target.fundamentals!.identity;
-  ws.columns = COMPS_SHEET_COLUMNS.map((c) => ({ width: c.width }));
+  const cols = compsSheetColumns(table.columns);
+  ws.columns = cols.map((c) => ({ width: c.width }));
 
   putText(ws.getCell("A1"), "PeerSet — Trading Comparables", {
     bold: true,
@@ -799,16 +1039,22 @@ function tradingComps(
   });
 
   const header = ws.getRow(HEADER_ROW);
-  COMPS_SHEET_COLUMNS.forEach((c, i) => {
+  cols.forEach((c, i) => {
     const cell = header.getCell(i + 1);
     putText(cell, c.header, { bold: true });
     cell.border = ruleBelow;
     cell.alignment = { horizontal: i < 2 ? "left" : "right", wrapText: true };
   });
 
-  compsRow(ws, TARGET_ROW, table.target, refsOf.get(table.target.ticker)!);
+  compsRow(
+    ws,
+    TARGET_ROW,
+    table.target,
+    refsOf.get(table.target.ticker)!,
+    cols,
+  );
   const targetRow = ws.getRow(TARGET_ROW);
-  for (let c = 1; c <= COMPS_SHEET_COLUMNS.length; c++) {
+  for (let c = 1; c <= cols.length; c++) {
     const cell = targetRow.getCell(c);
     cell.fill = fill(COLOR.targetFill);
     cell.font = { ...cell.font, bold: true };
@@ -817,9 +1063,9 @@ function tradingComps(
   const loaded = table.peers.filter((r) => r.cells);
   loaded.forEach((r, i) => {
     const n = FIRST_PEER_ROW + i;
-    compsRow(ws, n, r, refsOf.get(r.ticker)!);
+    compsRow(ws, n, r, refsOf.get(r.ticker)!, cols);
     if (i % 2 === 1)
-      for (let c = 1; c <= COMPS_SHEET_COLUMNS.length; c++)
+      for (let c = 1; c <= cols.length; c++)
         ws.getRow(n).getCell(c).fill = fill(COLOR.bandFill);
   });
 
@@ -833,12 +1079,14 @@ function tradingComps(
     statRow[spec.stat] = r;
     putText(row.getCell(1), spec.label, { bold: true });
     if (spec.stat === "mean")
-      for (let c = 1; c <= COMPS_SHEET_COLUMNS.length; c++)
+      for (let c = 1; c <= cols.length; c++)
         row.getCell(c).border = {
           top: { style: "thin", color: { argb: COLOR.rule } },
         };
-    for (const col of STAT_COLUMNS) {
-      const cell = row.getCell(colOf(col));
+    for (const col of table.columns.filter(
+      (c): c is StatColumn => c !== "price",
+    )) {
+      const cell = row.getCell(colOf(col, cols));
       const stats = table.stats[col as StatColumn];
       const failed = stats.excluded.filter((e) => e.status === "failed").length;
       const value =
@@ -854,9 +1102,9 @@ function tradingComps(
         );
         continue;
       }
-      const L = letterOf(col);
+      const L = letterOf(col, cols);
       const count = spec.stat === "nValid" || spec.stat === "nExcluded";
-      const fmt = count ? null : COMPS_SHEET_COLUMNS[colOf(col) - 1].fmt!;
+      const fmt = count ? null : cols[colOf(col, cols) - 1].fmt!;
       if (fmt === null) {
         cell.value = {
           formula: spec.fn(`${L}${FIRST_PEER_ROW}:${L}${last}`),
@@ -930,8 +1178,8 @@ function tradingComps(
       putText(ws.getCell(n, 1), labels[k as keyof typeof rows], {
         bold: k === "price",
       });
-    const mL = letterOf(spec.key);
-    const metricRef = `$${letterOf(spec.metric)}$${TARGET_ROW}`;
+    const mL = letterOf(spec.key, cols);
+    const metricRef = `$${letterOf(spec.metric, cols)}$${TARGET_ROW}`;
     for (const p of IMPLIED_POINTS) {
       const c = POINT_COL[p];
       const L = colLetter(c);

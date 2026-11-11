@@ -19,3 +19,5 @@ Blueprint §10.1 builds `data/peer-index.json` monthly from SEC bulk data, estim
 ## Revisit when
 
 The file passes about 2 MB (Vercel bundles it into `/api/peers`), or SEC adds an exchange label.
+
+**Update, methodology 0.5.0 (M7):** format `peerset-peer-index/2` appends `kind` and `totalAssets` to each row; see decision 0013. Format 1 still reads.

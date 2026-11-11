@@ -3,7 +3,7 @@
 // data/peer-index.json. Raw facts only: whether a company is eligible on a given date
 // is decided when screening (src/peers/screen.ts), never baked in.
 
-import type { Listing } from "@/domain/types";
+import type { IssuerKind, Listing } from "@/domain/types";
 
 // SEC's exchange labels in company_tickers_exchange.json for NYSE, Nasdaq, NYSE
 // American and Cboe. SEC has no separate NYSE American label (those companies are
@@ -37,6 +37,11 @@ export interface PeerIndexCompany {
     accession: string;
   } | null;
   revenueNote: string | null; // why revenue is null
+  // Methodology §13E (0.5.0): the kind at the latest report date, and a bank's total
+  // assets (USD, full units) at that date. null kind: a financial SIC company that is
+  // neither a bank nor a digital-asset company, or one an older index didn't classify.
+  kind: IssuerKind | null;
+  totalAssets: { value: number; accession: string } | null;
 }
 
 export interface PeerIndexSource {
@@ -69,4 +74,7 @@ export interface PeerIndex {
   // Tickers SEC lists only off the major exchanges (OTC, TXSE, blank), so a lookup can
   // say "not listed on a major exchange" instead of "unknown ticker".
   unlisted: Listing[];
+  // false for a peerset-peer-index/1 file (before 0.5.0): financial companies have no
+  // recorded kind, so bank and digital-asset targets can't be screened until a rebuild.
+  kindsRecorded: boolean;
 }
