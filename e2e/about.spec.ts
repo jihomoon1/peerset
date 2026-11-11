@@ -19,6 +19,17 @@ test("the Why PeerSet tab opens the page, with no serious axe issues", async ({
   await expect(
     page.getByRole("heading", { name: "Who it's for" }),
   ).toBeVisible();
+  // Picking who you are swaps the card.
+  await expect(
+    page.getByRole("heading", { name: "Learning how comps are built" }),
+  ).toBeVisible();
+  await page.getByRole("tab", { name: "Investor" }).click();
+  await expect(
+    page.getByRole("heading", { name: "A quick look at valuation" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Learning how comps are built" }),
+  ).toHaveCount(0);
   const results = await new AxeBuilder({ page }).analyze();
   const bad = results.violations.filter(
     (v) => v.impact === "serious" || v.impact === "critical",

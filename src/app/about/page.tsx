@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ABOUT_EVIDENCE as ev } from "@/lib/aboutEvidence";
 import { formatDate, formatMillions } from "@/lib/format";
 import { TracedExample } from "@/ui/TracedExample";
+import { UseCaseCards } from "@/ui/UseCaseCards";
 
 export const metadata: Metadata = {
   title: "Why PeerSet",
@@ -36,44 +37,6 @@ const VALUE = [
 ];
 
 // Each use case as a before and after: where you start, what you do, what you keep.
-const USE_CASES = [
-  {
-    title: "Learning how comps are built",
-    situation:
-      "You're studying or recruiting for finance and don't have a data terminal.",
-    action:
-      "Look up a company, then click any cell to open its calculation: the LTM bridge, the EBITDA build, the enterprise value bridge.",
-    result:
-      "You can explain how each multiple on the page was built, and point to the filing lines behind it.",
-  },
-  {
-    title: "Starting a first draft",
-    situation:
-      "You need comps for a company and you're starting from a blank spreadsheet.",
-    action:
-      "Enter the ticker, review the suggested peers, remove or add companies, and enter prices.",
-    result:
-      "An Excel workbook with live formulas, ready to refine with your own judgment.",
-  },
-  {
-    title: "Checking a number",
-    situation:
-      "A screener or terminal shows a figure and you can't tell where it comes from.",
-    action:
-      "Open the same metric in PeerSet and follow it to its filing, period and XBRL concept.",
-    result: "The filing line that figure should match.",
-  },
-  {
-    title: "A quick look at valuation",
-    situation:
-      "You want to see how a U.S. company is valued next to similar companies, using public data.",
-    action:
-      "Look up the ticker, then enter closing prices or fill them with your own free Alpha Vantage key.",
-    result:
-      "EV/Revenue, EV/EBITDA and P/E for the company and its peers, with the peer median and range.",
-  },
-];
-
 const LIMITS = [
   "EBITDA is standardized and unadjusted, with no add-backs for one-time items.",
   "Multiples are historical. There are no consensus forward estimates.",
@@ -234,14 +197,6 @@ function WatscoCase() {
   );
 }
 
-const STAGES = [
-  ["situation", "Where you start"],
-  ["action", "What you do"],
-  ["result", "What you leave with"],
-] as const;
-const USE_GRID =
-  "lg:grid lg:grid-cols-[minmax(0,0.8fr)_repeat(3,minmax(0,1fr))] lg:gap-8";
-
 export default function About() {
   return (
     <main className="flex flex-1 flex-col">
@@ -313,37 +268,7 @@ export default function About() {
         <h2 id="uses-heading" className={H2}>
           Who it&apos;s for
         </h2>
-        <div>
-          <div
-            aria-hidden="true"
-            className={`hidden pb-2 text-[13px] text-muted ${USE_GRID}`}
-          >
-            <span />
-            {STAGES.map(([key, label]) => (
-              <span key={key}>{label}</span>
-            ))}
-          </div>
-          <ul className="flex flex-col">
-            {USE_CASES.map((u) => (
-              <li
-                key={u.title}
-                className={`flex flex-col gap-3 border-t border-foreground py-5 ${USE_GRID}`}
-              >
-                <h3 className="text-[17px] leading-snug font-semibold">
-                  {u.title}
-                </h3>
-                {STAGES.map(([key, label]) => (
-                  <p key={key} className="text-[15px] leading-snug">
-                    <span className="block text-[13px] text-muted lg:sr-only">
-                      {label}
-                    </span>
-                    {u[key]}
-                  </p>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <UseCaseCards />
       </section>
 
       <section
